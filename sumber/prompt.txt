@@ -1,0 +1,70 @@
+Kamu adalah asisten pembuat materi belajar interaktif. Dari file materi kuliah yang aku lampirkan, buatkan DATA (bukan aplikasi) dalam format JSON untuk "Aplikasi Belajar Interaktif" milikku. Aplikasinya sudah jadi; kamu cukup mengisi datanya supaya bisa aku impor.
+
+IDENTITAS MATERI (isi/ubah sesuai materi):
+- Kode mata kuliah: [misal SIF002]
+- Nama mata kuliah: [misal Basis Data]
+- Pertemuan ke: [misal 3]
+- Persiapan untuk: [UTS / UAS]
+- Kampus/Prodi (opsional): [misal Universitas Siber Muhammadiyah • PJJ Sistem Informasi]
+
+ISI YANG WAJIB ADA (4 fitur aplikasi):
+1. "cheatsheet" (Visual Cheat Sheet): ringkasan konsep inti dalam blok INTERAKTIF (tabel sorot/X-ray, saklar perbandingan, tebak cepat, sub-tab ringkasan slide), bukan teks panjang. Minimal 4 blok, minimal 3 di antaranya interaktif (table dengan modes, choices, reveal, tabs).
+2. "simulator" (Simulator & Studi Kasus): minimal 2 blok praktik sesuai topik, misalnya detective (cari kesalahan), terminal (simulasi perintah/kode/rumus beserta hasilnya), atau exercise (latihan merancang/menghitung dengan cek jawaban otomatis).
+3. "flashcards": 12 kartu istilah kunci / pertanyaan jebakan.
+4. "quiz": 10 soal pilihan ganda bertingkat (mudah → sulit, termasuk soal jebakan dan studi kasus), masing-masing 4 opsi, dengan "exp" (pembahasan) dan "optExp" (alasan singkat untuk SETIAP opsi kenapa benar/salah).
+5. "ringkasan": teks rangkuman kilat untuk dikirim ke WhatsApp (pakai *tebal*, emoji nomor 1️⃣ 2️⃣, dan poin •).
+
+ATURAN FORMAT:
+- Jawab HANYA dengan satu blok kode JSON yang valid (tanpa komentar, tanpa teks lain).
+- Semua isi dalam Bahasa Indonesia yang mudah dipahami mahasiswa, akurat sesuai materi yang dilampirkan.
+- Teks boleh memakai HTML sederhana: <strong>, <em>, <code>, <br>, <ul><li>. Tidak boleh <script>, gambar, atau link.
+- "ans" pada quiz adalah indeks opsi benar mulai dari 0 (0 = A, 1 = B, 2 = C, 3 = D). Sebarkan jawaban benar, jangan selalu B.
+- Pada blok table/detective, "row" dan "col" juga mulai dari 0 dan dihitung dari baris data (baris judul tidak dihitung).
+
+STRUKTUR JSON:
+{
+  "id": "slug-mata-kuliah",            // contoh "sif002-basis-data" (huruf kecil, tanpa spasi)
+  "kode": "SIF002",
+  "nama": "Basis Data",
+  "kampus": "…", "prodi": "…", "dosen": "…",
+  "meetings": [{
+    "id": "p3",                         // "p" + nomor pertemuan
+    "nomor": 3,
+    "judul": "Judul Materi Pertemuan",
+    "ujian": "UTS",
+    "hero": { "badge": "…", "title": "Kalimat penyemangat singkat", "text": "Apa yang akan dipelajari" },
+    "cheatsheet": [ BLOK, BLOK, … ],
+    "simulator": [ BLOK, BLOK, … ],
+    "flashcards": [ { "tag": "Jebakan UTS", "q": "Pertanyaan", "a": "Jawaban" } ],
+    "quiz": [ { "q": "Soal", "opts": ["A", "B", "C", "D"], "ans": 2, "exp": "Pembahasan", "optExp": ["kenapa A salah", "kenapa B salah", "kenapa C benar", "kenapa D salah"] } ],
+    "ringkasan": "*RANGKUMAN KILAT …*\n1️⃣ …"
+  }]
+}
+
+Setiap BLOK boleh punya "label" (teks kecil di atas, misal "Interaktif 1 • Topik"), "title", dan "desc". Jenis BLOK yang tersedia:
+
+{ "type": "text", "html": "Paragraf penjelasan." }
+{ "type": "callout", "tone": "info|tip|warn|danger|success", "title": "Judul", "html": "Isi kotak sorotan" }
+{ "type": "cards", "cols": 3, "items": [ { "badge": "1. Istilah", "title": "Arti singkat", "text": "Penjelasan", "tone": "indigo" } ] }
+{ "type": "list", "groups": [ { "title": "Kelompok A", "items": ["poin 1", "poin 2"], "tone": "emerald" } ] }
+{ "type": "flow", "items": ["Input", "Proses", "Output"], "arrow": "→", "highlight": 1 }   // alur/diagram sederhana
+{ "type": "tabs", "tabs": [ { "label": "1. Sub-topik", "blocks": [ BLOK, … ] } ] }        // sub-tab, cocok untuk ringkasan slide
+{ "type": "row", "cols": [5, 7], "blocks": [ BLOK, BLOK ] }                                 // dua blok berdampingan
+{ "type": "choices", "style": "toggle|pills", "options": [ { "label": "Tombol", "tone": "rose", "badge": "Label kecil", "title": "Judul penjelasan", "code": "contoh kode/rumus (opsional)", "text": "Penjelasan", "note": "Catatan (opsional)" } ], "footer": "Catatan di bawah (opsional)" }
+   // saklar perbandingan (toggle, 2-3 pilihan) atau tombol pilihan konsep (pills)
+{ "type": "table", "headers": ["kolom1", { "label": "kolom2", "note": "penjelasan bila header diklik" }], "rows": [["a", "b"]], "keyCol": 0,
+  "modes": [ { "label": "Sorot judul", "target": "header|col|row|cell|none", "row": 0, "col": 0, "title": "…", "text": "…" } ],
+  "notes": [ { "title": "…", "text": "…" } ], "defaultNote": "…" }
+   // tabel X-ray: tombol "modes" menyorot bagian tabel sambil menampilkan penjelasan
+{ "type": "reveal", "items": [ { "prompt": "Pertanyaan/istilah", "answer": "Jawaban", "reason": "Alasan" } ] }   // klik untuk membuka jawaban
+{ "type": "detective", "rules": ["Aturan 1", "Aturan 2"], "headers": ["…"], "rows": [["…"]],
+  "bugs": [ { "row": 1, "col": 2, "fixed": "nilai yang benar", "explain": "Kesalahan apa & aturan mana yang dilanggar" } ] }
+   // game detektif: sel berisi kesalahan diklik untuk diperbaiki
+{ "type": "terminal", "shell": "mysql>|$|>>>|=", "header": "Judul terminal", "scenarios": [ { "label": "Nama skenario", "code": "label kecil", "ok": false, "pill": "ERROR 1062", "cmd": "perintah/kode/rumus", "res": "hasil/output", "exp": "Penyebab & perbaikan" } ] }
+   // simulasi perintah/kode/perhitungan: pilih skenario, lihat output dan penjelasannya
+{ "type": "exercise", "preview": "teks soal/kasus (boleh multi-baris)", "headers": ["Soal", "Jawaban 1", "Jawaban 2"],
+  "rows": [ { "cells": ["teks soal baris ini"], "fields": [ { "options": ["pilihan1", "pilihan2"], "answer": "pilihan1" }, { "answer": 42, "tolerance": 0.01, "placeholder": "isi angka" } ],
+              "ok": "✓ Pesan bila benar", "hints": [ { "field": 0, "value": "pilihan2", "msg": "✗ Petunjuk khusus jika memilih ini" } ] } ] }
+   // latihan merancang/menghitung dengan cek otomatis. field dengan "options" = dropdown; tanpa "options" = isian bebas (angka dicek dengan tolerance, teks tidak peka huruf besar/kecil; "answer" boleh berupa array beberapa jawaban yang diterima)
+
+Pilih jenis blok yang paling cocok dengan topik (misal: rumus/hitungan → exercise & terminal dengan shell "="; pemrograman → terminal dengan shell "$" atau ">>>"; teori → choices, cards, tabs, reveal). Buat semuanya selengkap dan seakurat mungkin dari materi yang aku lampirkan.
