@@ -18,9 +18,12 @@ const lib=[BD, {
 }, {
   id: 'algoritma-pemrograman', nama: 'Algoritma dan Pemrograman', prodi: 'PJJ Sistem Informasi', kampus: 'Universitas Siber Muhammadiyah', dosen: 'Muhamad Rosidin, M.Kom.',
   meetings: [[1,4],[2,7],[3,0],[4,3],[5,6],[6,9],[7,2],[8,5]].map(([n,sd])=>spread(require('./data_alp_p'+n+'.js'),sd))
+}, {
+  id: 'bahasa-inggris', nama: 'Bahasa Inggris', prodi: 'PJJ Sistem Informasi', kampus: 'Universitas Siber Muhammadiyah', dosen: 'Septia Ayu Pratiwi, M.Pd',
+  meetings: [[1,3],[2,6],[3,9],[4,2],[5,5],[6,8],[7,1],[8,4]].map(([n,sd])=>spread(require('./data_bing_p'+n+'.js'),sd))
 }];
 // 📖 Materi lengkap per pertemuan
-const MAT={'dasar-sistem-informasi':require('./materi_dsi.js'),'bahasa-indonesia':require('./materi_bindo.js'),'aik':require('./materi_aik.js'),'pemrograman-web-dinamis':require('./materi_pwd.js'),'sif002-basis-data':require('./materi_bd.js'),'algoritma-pemrograman':require('./materi_alp.js')};
+const MAT={'dasar-sistem-informasi':require('./materi_dsi.js'),'bahasa-indonesia':require('./materi_bindo.js'),'aik':require('./materi_aik.js'),'pemrograman-web-dinamis':require('./materi_pwd.js'),'sif002-basis-data':require('./materi_bd.js'),'algoritma-pemrograman':require('./materi_alp.js'),'bahasa-inggris':require('./materi_bing.js')};
 Object.entries(MAT).forEach(([cid,mm])=>{const c=lib.find(x=>x.id===cid);Object.entries(mm).forEach(([mid,blocks])=>{const m=c.meetings.find(x=>x.id===mid);if(!m)throw new Error('materi '+cid+'/'+mid);m.materi=blocks;});});
 // ➕ Materi tambahan di luar modul
 const T=require('./tambahan.js');
