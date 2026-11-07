@@ -24,6 +24,25 @@
   .peta-soon { display: block; height: 2.4rem; border-radius: 6px; background: repeating-linear-gradient(135deg, transparent 0 5px, #efeee8 5px 6px); }
   .peta-sep { padding: 0; background: linear-gradient(90deg, transparent 3px, rgba(23,32,42,.25) 3px 5px, transparent 5px); }
   .peta-babak { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #6c7480; text-align: left; padding-left: 2px; }
+  /* Dropdown Sinau */
+  .dd-btn { width: 100%; display: flex; align-items: center; gap: .5rem; height: 2.5rem; padding: 0 .75rem; border-radius: .75rem; border: 1.5px solid #17202a; background: #fff; font-size: 13px; font-weight: 700; color: #17202a; transition: box-shadow .12s; }
+  .dd-btn:hover { box-shadow: 3px 3px 0 #17202a; }
+  .dd-btn[aria-expanded="true"] { box-shadow: 3px 3px 0 #ffe14d, 3px 3px 0 1.5px #17202a; }
+  .dd-btn:focus-visible { outline: 3px solid #1f5c52; outline-offset: 2px; }
+  .dd-caret { flex-shrink: 0; transition: transform .15s; }
+  .dd-btn[aria-expanded="true"] .dd-caret { transform: rotate(180deg); }
+  .dd-list { position: absolute; z-index: 60; top: calc(100% + 6px); left: 0; width: max(100%, min(26rem, calc(100vw - 2rem))); max-height: min(70vh, 30rem); overflow-y: auto; padding: .35rem; border-radius: .9rem; border: 1.5px solid #17202a; background: #fff; box-shadow: 6px 6px 0 rgba(23,32,42,.12); }
+  .dd-opt { display: flex; align-items: center; gap: .65rem; padding: .55rem .6rem; border-radius: .6rem; font-size: 13px; cursor: pointer; outline: none; }
+  .dd-opt:hover, .dd-opt:focus { background: #fff6c2; }
+  .dd-opt[aria-selected="true"] { background: #f6f5ef; }
+  .dd-opt[aria-selected="true"]:hover, .dd-opt[aria-selected="true"]:focus { background: #fff6c2; }
+  .dd-sw { flex-shrink: 0; width: .9rem; height: .9rem; border-radius: 4px; transform: rotate(-6deg); box-shadow: inset 0 0 0 1px rgba(23,32,42,.15); }
+  .dd-p { flex-shrink: 0; width: 2.4rem; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; color: #17202a; }
+  .dd-mark { flex-shrink: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 10px; font-weight: 800; padding: .05rem .4rem; border-radius: 5px; box-shadow: inset 0 0 0 1.5px #17202a; color: #17202a; }
+  .dd-pct { flex-shrink: 0; min-width: 2.4rem; text-align: right; font-size: 11px; font-weight: 700; color: #17202a; font-variant-numeric: tabular-nums; }
+  .dd-check { flex-shrink: 0; font-weight: 800; color: #1f5c52; }
+  .dd-group { padding: .6rem .6rem .25rem; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #6c7480; }
+  @media (prefers-reduced-motion: reduce) { .dd-caret, .dd-btn { transition: none; } }
   .babak > summary::-webkit-details-marker { display: none; }
   @media (prefers-reduced-motion: reduce) { .peta-cell { transition: none; } .peta-cell:hover { transform: none; } }
   .perspective-1000 { perspective: 1000px; }
