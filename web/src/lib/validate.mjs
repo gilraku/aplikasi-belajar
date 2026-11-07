@@ -9,7 +9,7 @@ const IMG = /^materi\/[a-z0-9/_-]+\.(webp|png|jpg)$/;
 const imgOk = src => IMG.test(String(src)) && fs.existsSync(path.resolve(process.cwd(), 'public', String(src)));
 
 // Jenis blok yang dikenali mesin (objek R di src/scripts/engine.js)
-export const BLOCK_TYPES = ['text', 'article', 'ayat', 'code', 'playground', 'callout', 'cards', 'list', 'flow', 'row', 'tabs', 'choices', 'table', 'diagram', 'steps', 'shot', 'symbols', 'reveal', 'say', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'exercise'];
+export const BLOCK_TYPES = ['text', 'article', 'ayat', 'code', 'playground', 'callout', 'cards', 'list', 'flow', 'row', 'tabs', 'choices', 'table', 'diagram', 'steps', 'shot', 'symbols', 'cara', 'reveal', 'say', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'exercise'];
 
 const str = z.string().trim().min(1, 'tidak boleh kosong');
 const optValue = o => (o && typeof o === 'object' ? o.value : o);
@@ -26,6 +26,7 @@ const Block = z.lazy(() => z.looseObject({
   if (b.type === 'shot' && !imgOk(b.src)) ctx.addIssue({ code: 'custom', path: ['src'], message: `gambar "${b.src}" tidak ada (taruh di web/public/materi/<matkul>/<pN>/nama.webp)` });
   if (b.type === 'steps') (b.items || []).forEach((x, i) => { if (x && x.img && !imgOk(x.img.src)) ctx.addIssue({ code: 'custom', path: ['items', i, 'img', 'src'], message: `gambar "${x.img.src}" tidak ada di web/public` }); });
   if (b.type === 'symbols' && !(Array.isArray(b.groups) && b.groups.length && b.groups.every(g => Array.isArray(g.headers) && Array.isArray(g.rows) && g.rows.every(r => r && typeof r.svg === 'string' && typeof r.name === 'string')))) ctx.addIssue({ code: 'custom', path: ['groups'], message: 'symbols butuh groups[] berisi headers[] dan rows[] { svg, name }' });
+  if (b.type === 'cara') (b.tabs || []).forEach((t, ti) => ['klik', 'query'].forEach(k => ((t && t[k] && t[k].imgs) || []).forEach((im, ii) => { if (!imgOk(im && im.src)) ctx.addIssue({ code: 'custom', path: ['tabs', ti, k, 'imgs', ii], message: `gambar "${im && im.src}" tidak ada di web/public` }); })));
   if (b.type === 'steps' && !(Array.isArray(b.items) && b.items.length && b.items.every(x => x && typeof x.title === 'string'))) ctx.addIssue({ code: 'custom', path: ['items'], message: 'steps butuh items berisi { title }' });
   if (b.type === 'trace-lab') {
     if (!Array.isArray(b.cases) || !b.cases.length) ctx.addIssue({ code: 'custom', path: ['cases'], message: 'trace-lab butuh minimal 1 kasus' });
