@@ -810,11 +810,11 @@ function renderHeader() {
   const tabs = m ? availableTabs(m) : [];
   $('appHeader').innerHTML = `<div class="max-w-6xl mx-auto px-4 py-2.5 space-y-2.5">
     <div class="flex items-center gap-2.5 min-w-0">
-      <button onclick="go('#/')" title="Beranda" aria-label="Beranda" class="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm hover:bg-indigo-700">${svg(m ? 'db' : 'book', 'w-5 h-5')}</button>
+      ${m ? `<button onclick="go('#/')" title="Sinau — beranda" aria-label="Beranda" class="w-10 h-10 shrink-0 rounded-xl bg-[#ffe14d] text-ink font-display font-extrabold text-xl leading-none flex items-center justify-center hover:bg-[#ffd60a]">s</button>` : ''}
       <div class="min-w-0 flex-1">
         ${m ? `<div class="text-[11px] font-bold text-indigo-700 truncate">${esc((c.kode ? c.kode + ' • ' : '') + c.nama)} • Pertemuan ${esc(m.nomor)}</div>
           <h1 class="text-[15px] sm:text-lg font-extrabold text-slate-900 leading-snug line-clamp-2" title="${esc(m.judul)}">${esc(m.judul)}</h1>`
-        : `<h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-snug">Aplikasi Belajar Interaktif</h1><p class="text-xs text-slate-500 truncate">${esc([APP.semester, programLine()].filter(Boolean).join(' • ') || 'Semua mata kuliah & pertemuan dalam satu file')}</p>`}
+        : `<h1 class="leading-none"><button onclick="go('#/')" class="wordmark text-[28px] sm:text-[32px]" aria-label="Sinau — beranda">sinau</button></h1><p class="mt-1.5 text-xs text-slate-500 truncate">${esc(['belajar bareng', APP.semester, programLine()].filter(Boolean).join(' • '))}</p>`}
       </div>
       ${m ? `<div class="md:hidden shrink-0 h-10 px-2 rounded-xl bg-indigo-50 text-indigo-700 flex flex-col items-center justify-center leading-none" title="Kesiapan ${esc(m.ujian)}"><span id="readinessPill" class="text-sm font-extrabold">0%</span><span class="text-[9px] font-bold uppercase tracking-wide">siap</span></div>` : ''}
       <button onclick="openProgressModal()" title="Progres belajarku (simpan / pindah perangkat)" aria-label="Progres belajarku" class="shrink-0 h-10 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1.5">${svg('chart', 'w-4 h-4')}<span class="hidden sm:inline">Progresku</span></button>
@@ -858,7 +858,7 @@ function renderFooter() {
   const c = S.course, m = S.meeting;
   $('appFooter').innerHTML = `<div class="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-slate-500">
     <div>${m ? `<strong class="text-slate-700">${esc(c.nama)}${c.kode ? ' (' + esc(c.kode) + ')' : ''} — Pertemuan ${esc(m.nomor)}: ${esc(m.judul)}</strong><br>${esc([c.prodi, c.kampus].filter(Boolean).join(' • '))}${c.dosen ? ' • Dosen: ' + esc(c.dosen) : ''}`
-      : `<strong class="text-slate-700">Aplikasi Belajar Interaktif</strong><br>Materi dimuat per pertemuan supaya halaman lebih ringan.`}</div>
+      : `<span class="wordmark text-base">sinau</span><br><span class="inline-block mt-1">Sinau (Jawa): belajar. Materi dimuat per pertemuan supaya halaman lebih ringan.</span>`}</div>
     <button onclick="openShareModal()" class="self-start sm:self-auto px-3 py-2 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700">Bagikan / Unduh HTML</button>
   </div>`;
 }
@@ -926,8 +926,8 @@ function route(forced) {
     if (changedMeeting) { S.prog = loadProgress(c, m); S.fcFilter = 'all'; S.quizFilter = 'all'; S.exam = null; S.interactiveTotal = countInteractive(m); }
     if (!S.prog.visited.has(tab)) { S.prog.visited.add(tab); saveProgress(); }
     PROGRESS.setLast(routeFor(c, m, tab));
-    document.title = `Belajar Interaktif ${m.ujian} — ${c.nama} Pertemuan ${m.nomor}`;
-  } else { S.prog = null; document.title = c ? `Belajar Interaktif — ${c.nama}` : 'Aplikasi Belajar Interaktif' + (APP.semester ? ' — ' + APP.semester : ''); }
+    document.title = `${c.nama} P${m.nomor} — Sinau`;
+  } else { S.prog = null; document.title = c ? `${c.nama} — Sinau` : 'Sinau' + (APP.semester ? ' — ' + APP.semester : ''); }
   renderHeader(); renderFooter(); renderNext();
   if (m) renderMeeting(changedMeeting); else renderHome(c);
   updateReadiness();
@@ -945,19 +945,24 @@ window.addEventListener('hashchange', onHistory);
 document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('a[href^="#/"]'); if (!a) return; e.preventDefault(); go(a.getAttribute('href')); }, true);
 
 // ---------- Beranda ----------
+// Warna stabilo per mata kuliah (urut sesuai daftar matkul); teks di atasnya selalu tinta gelap.
+const HL = ['#ffe14d', '#8fe3a2', '#ff9ec7', '#ffb766', '#9cc7ff', '#c6b0ff', '#7fdcd2', '#f5a3a3'];
+const courseHL = c => HL[Math.max(0, LIB.indexOf(c)) % HL.length];
+const shortName = c => (c.kode || c.nama).replace(/\s*\(.*?\)\s*/g, '').trim();
 function renderHome(only) {
   const list = only ? [only] : LIB;
-  const meetingCard = (c, m) => { const pct = storedReadiness(c, m);
-    return `<div class="relative group p-4 rounded-2xl border border-slate-200 bg-white hover:border-indigo-400 hover:shadow-md transition flex flex-col gap-2">
-      <button type="button" onclick="go('${routeFor(c, m)}')" class="absolute inset-0 w-full h-full rounded-2xl cursor-pointer" aria-label="Buka pertemuan ${esc(m.nomor)}"></button>
-      <div class="flex items-center justify-between gap-2"><span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-100 text-indigo-800">Pertemuan ${esc(m.nomor)}</span>
-        <span class="flex items-center gap-1.5"><span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600">${esc(m.ujian)}</span>
-        ${m._imported ? `<button onclick="confirmDelete('${esc(c.id)}','${esc(m.id)}')" class="relative z-10 px-2 py-0.5 rounded-md text-[11px] font-bold text-rose-600 hover:bg-rose-50" title="Hapus materi tambahan ini">Hapus</button>` : ''}</span></div>
-      <div class="font-bold text-slate-900 leading-snug">${esc(m.judul)}</div>
-      <div class="text-xs text-slate-500">${fcCount(m)} flashcard • ${quizAns(m).length} soal kuis${m._imported ? ' • materi tambahan' : ''}</div>
-      <div class="mt-auto pt-1"><div class="flex justify-between text-[11px] font-semibold text-slate-500 mb-1"><span>Kesiapan</span><span>${pct}%</span></div><div class="h-1.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500" style="width:${pct}%"></div></div></div>
-    </div>`; };
-  // Kartu "Lanjutkan belajar" dari halaman terakhir yang dibuka
+  const meetingRow = (c, m) => { const pct = storedReadiness(c, m);
+    return `<li class="relative group">
+      <button type="button" onclick="go('${routeFor(c, m)}')" class="w-full text-left px-3 sm:px-4 py-3 grid grid-cols-[2.75rem_minmax(0,1fr)_auto] items-center gap-3 hover:bg-[#f6f5ef] focus-visible:bg-[#f6f5ef] transition" aria-label="Buka pertemuan ${esc(m.nomor)}: ${esc(m.judul)}">
+        <span class="font-display font-extrabold text-lg text-ink"><span class="stabilo" style="--hl:${courseHL(c)}">P${esc(m.nomor)}</span></span>
+        <span class="min-w-0"><span class="block font-bold text-slate-900 leading-snug">${esc(m.judul)}</span>
+          <span class="block text-xs text-slate-500 mt-0.5">${fcCount(m)} kartu • ${quizAns(m).length} soal • ${esc(m.ujian)}${m._imported ? ' • materi tambahan' : ''}</span></span>
+        <span class="w-14 sm:w-24 text-right"><span class="block text-xs font-bold tabular-nums ${pct ? 'text-ink' : 'text-slate-400'}">${pct ? pct + '%' : 'belum'}</span>
+          <span class="block mt-1 h-1.5 rounded-full bg-[#ecebe4] overflow-hidden"><span class="block h-full" style="width:${pct}%;background:${courseHL(c)}"></span></span></span>
+      </button>
+      ${m._imported ? `<button onclick="confirmDelete('${esc(c.id)}','${esc(m.id)}')" class="absolute right-2 top-1 px-2 py-0.5 rounded-md text-[11px] font-bold text-rose-600 hover:bg-rose-50" title="Hapus materi tambahan ini">Hapus</button>` : ''}
+    </li>`; };
+  // Baris "Lanjutkan belajar" dari halaman terakhir yang dibuka
   let cont = '';
   const last = !only && PROGRESS.getLast();
   if (last) {
@@ -965,30 +970,42 @@ function renderHome(only) {
     const lc = pp[0] === 'c' && findCourse(pp[1]), lm = lc && pp[2] === 'm' && findMeeting(lc, pp[3]);
     if (lm) {
       const pct = storedReadiness(lc, lm), tab = availableTabs(lm).find(t => t.id === (pp[4] || defaultTab(lm)));
-      cont = `<button onclick="go('${esc(last.hash)}')" class="w-full text-left p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white shadow-sm hover:shadow-md transition flex items-center gap-4">
-        <div class="min-w-0 flex-1 space-y-1"><div class="text-[11px] font-bold uppercase tracking-wider text-indigo-200">Lanjutkan belajar</div>
-          <div class="text-xs font-semibold text-indigo-100 truncate">${esc(lc.nama)} • Pertemuan ${esc(lm.nomor)}${tab ? ' • ' + esc(tab.short(lm)) : ''}</div>
-          <div class="font-extrabold leading-snug line-clamp-2">${esc(lm.judul)}</div>
-          <div class="flex items-center gap-2 pt-1"><div class="flex-1 h-1.5 rounded-full bg-white/20 overflow-hidden"><div class="h-full bg-white" style="width:${pct}%"></div></div><span class="text-xs font-bold">${pct}% siap</span></div></div>
-        <span class="shrink-0 w-10 h-10 rounded-full bg-white/15 flex items-center justify-center text-lg font-bold">→</span></button>`;
+      cont = `<button onclick="go('${esc(last.hash)}')" class="w-full text-left p-4 rounded-2xl border border-slate-200 bg-white hover:border-ink transition flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="min-w-0 flex-1 space-y-1"><div class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Lanjutkan belajar • ${esc(lc.nama)} • P${esc(lm.nomor)}${tab ? ' • ' + esc(tab.short(lm)) : ''}</div>
+          <div class="font-display font-extrabold text-lg leading-snug text-ink"><span class="stabilo" style="--hl:${courseHL(lc)}">${esc(lm.judul)}</span></div>
+          <div class="text-xs text-slate-500">${pct}% siap</div></div>
+        <span class="shrink-0 self-start sm:self-auto px-4 py-2.5 rounded-xl bg-ink text-white text-sm font-bold">Lanjutkan →</span></button>`;
     }
+  }
+  // Peta: semua matkul × nomor pertemuan, warna makin pekat = makin siap
+  let peta = '';
+  if (!only && LIB.length > 1) {
+    const nums = [...new Set(LIB.flatMap(c => c.meetings.map(m => String(m.nomor))))].sort((a, b) => (parseFloat(a) - parseFloat(b)) || a.localeCompare(b));
+    const cell = (c, n) => { const m = c.meetings.find(x => String(x.nomor) === n);
+      if (!m) return `<td><span class="peta-none" title="${esc(c.nama)} tidak punya Pertemuan ${esc(n)}">—</span></td>`;
+      const pct = storedReadiness(c, m);
+      return `<td><button type="button" onclick="go('${routeFor(c, m)}')" class="peta-cell" style="--hl:${courseHL(c)};--p:${pct}" ${pct ? `data-pct="${pct}"` : ''} title="${esc(c.nama)} • P${esc(n)}: ${esc(m.judul)} • ${pct}% siap" aria-label="${esc(c.nama)} Pertemuan ${esc(n)}, ${pct}% siap">${pct ? pct : ''}</button></td>`; };
+    peta = `<section class="space-y-2" aria-label="Peta belajar">
+      <div class="flex flex-wrap items-end justify-between gap-2"><h2 class="text-xl font-extrabold text-ink">Peta belajar</h2>
+        <p class="text-xs text-slate-500">Angka = % siap. Kotak abu-abu belum dibuka. Klik kotak untuk masuk.</p></div>
+      <div class="-mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-auto"><table class="peta w-full min-w-[600px]">
+        <thead><tr><th class="w-[7rem] sm:w-[9.5rem]"></th>${nums.map(n => `<th class="text-[11px] font-bold text-slate-500 font-display">P${esc(n)}</th>`).join('')}</tr></thead>
+        <tbody>${LIB.map(c => `<tr><th scope="row" class="sticky left-0 z-10 bg-paper pr-2 text-left"><button onclick="go('#/c/${encodeURIComponent(c.id)}')" class="text-left text-xs sm:text-[13px] font-display font-bold text-ink leading-tight hover:underline">${esc(shortName(c))}</button></th>${nums.map(n => cell(c, n)).join('')}</tr>`).join('')}</tbody>
+      </table></div></section>`;
   }
   const courseSummary = c => {
     const pcts = c.meetings.map(m => storedReadiness(c, m)), started = pcts.filter(x => x > 0).length;
     const avg = Math.round(pcts.reduce((a, b) => a + b, 0) / Math.max(1, pcts.length));
-    return `<div class="w-full sm:w-56"><div class="flex justify-between text-[11px] font-semibold text-slate-500 mb-1"><span>${started}/${pcts.length} pertemuan dimulai</span><span class="font-bold text-indigo-700">${avg}%</span></div>
-      <div class="h-1.5 rounded-full bg-slate-200 overflow-hidden"><div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500" style="width:${avg}%"></div></div></div>`;
+    return `<div class="w-full sm:w-56"><div class="flex justify-between text-[11px] font-semibold text-slate-500 mb-1"><span>${started}/${pcts.length} pertemuan dimulai</span><span class="font-bold text-ink">${avg}%</span></div>
+      <div class="h-1.5 rounded-full bg-[#ecebe4] overflow-hidden"><div class="h-full" style="width:${avg}%;background:${courseHL(c)}"></div></div></div>`;
   };
-  $('appMain').innerHTML = `<div class="space-y-6">${cont}
-    ${list.length ? list.map(c => `<section class="space-y-3">
+  $('appMain').innerHTML = `<div class="space-y-8">${cont}${peta}
+    ${list.length ? list.map(c => `<section class="space-y-3" id="mk-${esc(c.id)}">
       <div class="flex flex-wrap items-end justify-between gap-2"><div>
-        <div class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Mata Kuliah${c.kode ? ' • ' + esc(c.kode) : ''}</div>
-        <h2 class="text-xl font-extrabold text-slate-900">${esc(c.nama)}</h2>
-        ${c.dosen ? `<p class="text-xs text-slate-500">Dosen: ${esc(c.dosen)}</p>` : ''}</div>
+        <h2 class="text-2xl font-extrabold text-ink"><span class="stabilo" style="--hl:${courseHL(c)}">${esc(c.nama)}</span></h2>
+        ${c.dosen ? `<p class="text-xs text-slate-500 mt-1">Dosen: ${esc(c.dosen)}</p>` : ''}</div>
         <div class="w-full sm:w-auto flex flex-col sm:items-end gap-2">${courseSummary(c)}${only ? `<button onclick="go('#/')" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200">← Semua mata kuliah</button>` : ''}</div></div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">${c.meetings.map(m => meetingCard(c, m)).join('')}
-
-      </div></section>`).join('')
+      <ol class="rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100 overflow-hidden">${c.meetings.map(m => meetingRow(c, m)).join('')}</ol></section>`).join('')
     : `<div class="p-8 rounded-2xl border-2 border-dashed border-slate-300 text-center text-slate-500">Belum ada materi.</div>`}
   </div>`;
 }
@@ -1008,7 +1025,7 @@ function renderMeeting(fresh) {
   const main = $('appMain');
   if (S.tab === 'materi' || S.tab === 'cheatsheet' || S.tab === 'simulator') {
     // Render ulang hanya bila perlu, supaya status interaktif tetap terjaga
-    const hero = (S.tab === 'materi' || S.tab === 'cheatsheet') && m.hero ? `<div class="rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white px-4 py-4 sm:px-6 sm:py-5 shadow-sm space-y-1.5 on-dark">
+    const hero = (S.tab === 'materi' || S.tab === 'cheatsheet') && m.hero ? `<div class="rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-900 text-white px-4 py-4 sm:px-6 sm:py-5 shadow-sm space-y-1.5 on-dark">
         ${m.hero.badge ? `<span class="hidden sm:inline-block px-2 py-0.5 rounded-md bg-white/15 text-[11px] font-bold rich">${rich(m.hero.badge)}</span>` : ''}
         ${m.hero.title ? `<h2 class="text-lg sm:text-xl font-extrabold leading-snug rich">${rich(m.hero.title)}</h2>` : ''}
         ${m.hero.text ? `<p class="text-[13px] sm:text-sm text-indigo-100 max-w-4xl leading-relaxed rich line-clamp-3 sm:line-clamp-none">${rich(m.hero.text)}</p>` : ''}
@@ -1113,7 +1130,7 @@ function renderQuiz() {
       ${controls}</div>
     <div class="space-y-4">${idx.map(card).join('')}${empty}</div>
     ${ex ? `<button onclick="finishExam()" class="w-full px-4 py-3 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white">Selesai & lihat nilai (${exDone}/${total} terjawab)</button>` : ''}
-    ${!ex && f === 'all' && st.answered === total && total ? `<div class="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white text-center space-y-3">
+    ${!ex && f === 'all' && st.answered === total && total ? `<div class="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-900 text-white text-center space-y-3">
       <h3 class="text-lg sm:text-xl font-extrabold">${score / total >= 0.8 ? '🎉 Luar Biasa!' : '💪 Terus Semangat!'} Skor ${esc(m.ujian)} Kamu: ${Math.round(score / total * 100)} / 100 (${score}/${total} Benar)</h3>
       <p class="text-sm text-indigo-100">${score / total >= 0.8 ? `Kamu sudah sangat siap menghadapi soal-soal ${esc(m.ujian)} Pertemuan ${esc(m.nomor)}.` : 'Baca kembali pembahasan pada soal yang masih keliru, atau tekan "Ulangi yang salah" untuk mengerjakannya lagi.'}</p>
       <div class="flex flex-wrap justify-center gap-2">${st.wrong.length ? `<button onclick="retryWrong()" class="px-4 py-2 rounded-xl bg-white text-indigo-700 text-sm font-bold hover:bg-indigo-50">🔁 Ulangi yang salah (${st.wrong.length})</button>` : ''}<button onclick="resetQuiz()" class="px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-sm font-bold">Coba Kerjakan Ulang</button>

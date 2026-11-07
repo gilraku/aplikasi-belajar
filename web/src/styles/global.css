@@ -3,7 +3,21 @@
 @tailwind utilities;
 
 /* Gaya khusus aplikasi (sama dengan sumber/engine.html) */
-  body { font-family: 'Inter', system-ui, sans-serif; }
+  body { font-family: 'Atkinson Hyperlegible', system-ui, sans-serif; }
+  h1, h2, h3, .font-display { font-family: 'Bricolage Grotesque', 'Atkinson Hyperlegible', system-ui, sans-serif; letter-spacing: -.01em; }
+  /* Wordmark "sinau": coretan stabilo kuning miring di belakang huruf */
+  .wordmark { position: relative; z-index: 0; display: inline-block; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; letter-spacing: -.035em; line-height: 1; color: #17202a; }
+  .wordmark::after { content: ""; position: absolute; left: -.12em; right: -.16em; bottom: .08em; height: .42em; background: #ffe14d; z-index: -1; transform: rotate(-1.5deg); border-radius: 2px 8px 3px 6px; }
+  /* Teks yang distabilo (dipakai di beranda) */
+  .stabilo { background: linear-gradient(transparent 45%, var(--hl, #ffe14d) 45% 88%, transparent 88%); padding: 0 .15em; }
+  /* Peta matkul × pertemuan */
+  .peta { border-collapse: separate; border-spacing: 4px; }
+  .peta-cell { display: flex; align-items: center; justify-content: center; width: 100%; height: 2.4rem; border-radius: 6px; background: #ecebe4; font-size: 12px; font-weight: 700; color: #17202a; font-variant-numeric: tabular-nums; transition: transform .12s, box-shadow .12s; }
+  .peta-cell:hover { transform: translateY(-1px); box-shadow: 0 0 0 2px #17202a; }
+  .peta-cell:focus-visible { outline: 3px solid #1f5c52; outline-offset: 1px; }
+  .peta-cell[data-pct] { background: var(--hl); background: color-mix(in srgb, var(--hl) calc(35% + var(--p) * .65%), #ecebe4); }
+  .peta-none { display: flex; align-items: center; justify-content: center; height: 2.4rem; border-radius: 6px; border: 1.5px dashed #dcdbd2; color: #9aa0a6; font-size: 12px; }
+  @media (prefers-reduced-motion: reduce) { .peta-cell { transition: none; } .peta-cell:hover { transform: none; } }
   .perspective-1000 { perspective: 1000px; }
   [id^="blk-"] { scroll-margin-top: 9.5rem; }
   .hdr-compact .hdr-collapse { display: none; }
@@ -13,16 +27,16 @@
   .flip-back { transform: rotateY(180deg); }
   @keyframes pulseGlow { 0%,100% { box-shadow: 0 0 0 0 rgba(225,29,72,.35); } 50% { box-shadow: 0 0 0 6px rgba(225,29,72,0); } }
   .highlight-pulse { animation: pulseGlow 2s infinite; }
-  .rich code, code.k { font-family: 'JetBrains Mono', monospace; font-size: .88em; background: rgba(99,102,241,.1); color: #4338ca; padding: .05em .35em; border-radius: .35em; }
+  .rich code, code.k { font-family: 'JetBrains Mono', monospace; font-size: .88em; background: rgba(255,225,77,.45); color: #17202a; padding: .05em .35em; border-radius: .35em; }
   .on-dark code { background: rgba(255,255,255,.15); color: inherit; }
   .rich ul { list-style: disc; padding-left: 1.25rem; margin: .4rem 0; }
   .rich ol { list-style: decimal; padding-left: 1.25rem; margin: .4rem 0; }
   .rich li { margin: .15rem 0; }
   .rich p + p { margin-top: .5rem; }
-  .dg svg { width: 100%; height: auto; display: block; font-family: Inter, system-ui, sans-serif; }
+  .dg svg { width: 100%; height: auto; display: block; font-family: 'Atkinson Hyperlegible', system-ui, sans-serif; }
   .dg [data-act] { cursor: pointer; transition: opacity .15s; }
   .dg [data-act]:hover { opacity: .8; }
-  .dg [data-on] { filter: drop-shadow(0 0 5px rgba(79,70,229,.9)); }
+  .dg [data-on] { filter: drop-shadow(0 0 5px rgba(31,92,82,.9)); }
   .article p + p, .article p + ul, .article p + ol, .article ul + p, .article ol + p { margin-top: .75rem; }
   .article li { margin: .3rem 0; }
   .ar { display: inline-block; max-width: 100%; font-family: 'Amiri', 'Scheherazade New', 'Traditional Arabic', 'Noto Naskh Arabic', serif; font-size: 1.3em; line-height: 2; font-weight: 400; unicode-bidi: isolate; }
@@ -31,5 +45,5 @@
   .split { display: grid; gap: 1.25rem; grid-template-columns: minmax(0,1fr); }
   @media (min-width: 900px) { .split { grid-template-columns: var(--cols); } }
   ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-track { background: #f1f5f9; }
+  ::-webkit-scrollbar-track { background: #f1f0ea; }
   ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
