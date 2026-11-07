@@ -8,15 +8,15 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 const { hash } = await engine();
 const config = { semester, base, v: dataVersion };
 ---
-<Base title={`Aplikasi Belajar Interaktif — ${semester}`}>
+<Base title={semester ? `Sinau — ${semester}` : 'Sinau'}>
   <div id="toastContainer" class="fixed bottom-4 right-4 left-4 sm:left-auto z-[70] flex flex-col gap-2 pointer-events-none sm:max-w-sm"></div>
   <div id="modalRoot"></div>
-  <header id="appHeader" class="bg-white/95 backdrop-blur border-b border-slate-200 sticky top-0 z-40"></header>
+  <header id="appHeader" class="bg-paper/95 backdrop-blur border-b border-slate-200 sticky top-0 z-40"></header>
   <main id="appMain" class="flex-1 w-full max-w-6xl mx-auto px-4 py-6">
     <noscript><p class="p-6 rounded-2xl bg-amber-50 text-amber-900 text-sm font-semibold">Aplikasi ini butuh JavaScript. Aktifkan JavaScript di browser, lalu muat ulang halaman.</p></noscript>
   </main>
   <div id="appNext" class="w-full max-w-6xl mx-auto px-4"></div>
-  <footer id="appFooter" class="border-t border-slate-200 bg-white"></footer>
+  <footer id="appFooter" class="border-t border-slate-200 bg-paper"></footer>
 
   <script id="library-data" type="application/json" is:inline set:html={enc(indexData())}></script>
   <script id="prompt-data" type="application/json" is:inline set:html={enc(prompt)}></script>

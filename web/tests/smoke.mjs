@@ -110,7 +110,7 @@ try {
     await op.waitForFunction(() => typeof S !== 'undefined' && S.meeting && !document.querySelector('#appMain .animate-spin'), null, { timeout: 15000 }).catch(() => fail('materi tidak terbuka saat offline'));
     const txt = await op.evaluate(() => $('appMain').innerText).catch(() => '');
     if (/Materi gagal dimuat/.test(txt) || txt.trim().length < 40) fail('materi kosong/gagal saat offline');
-    if ((await op.evaluate(() => getComputedStyle(document.body).backgroundColor)) !== 'rgb(248, 250, 252)') fail('CSS tidak tersimpan untuk offline');
+    if ((await op.evaluate(() => getComputedStyle(document.body).backgroundColor)) !== 'rgb(251, 251, 248)') fail('CSS tidak tersimpan untuk offline');
     console.log('  PWA: service worker aktif, materi & CSS terbuka saat offline');
     await octx.setOffline(false);
   }
