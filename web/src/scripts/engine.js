@@ -808,12 +808,8 @@ function renderHeader() {
   const courseOpts = LIB.map(x => `<option value="${esc(x.id)}" ${c && x.id === c.id ? 'selected' : ''}>${esc((x.kode ? x.kode + ' • ' : '') + x.nama)}</option>`).join('');
   const meetOpts = c ? c.meetings.map(x => `<option value="${esc(x.id)}" ${m && x.id === m.id ? 'selected' : ''}>Pertemuan ${esc(x.nomor)}: ${esc(x.judul)}</option>`).join('') : '';
   const tabs = m ? availableTabs(m) : [];
-  const navBtn = 'h-10 w-9 text-base font-bold text-slate-700 hover:bg-slate-200 disabled:opacity-30 disabled:hover:bg-transparent';
   $('appHeader').innerHTML = `<div class="max-w-6xl mx-auto px-4 py-2.5 space-y-2.5">
     <div class="flex items-center gap-2.5 min-w-0">
-      ${NAV.hist.length || NAV.fwd.length ? `<div class="flex shrink-0 rounded-xl bg-slate-100 overflow-hidden">
-        <button onclick="goBack()" ${NAV.hist.length ? '' : 'disabled'} title="Kembali ke halaman sebelumnya" aria-label="Kembali" class="${navBtn}">←</button>
-        <button onclick="goForward()" ${NAV.fwd.length ? '' : 'disabled'} title="Maju ke halaman berikutnya" aria-label="Maju" class="${navBtn}">→</button></div>` : ''}
       <button onclick="go('#/')" title="Beranda" aria-label="Beranda" class="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm hover:bg-indigo-700">${svg(m ? 'db' : 'book', 'w-5 h-5')}</button>
       <div class="min-w-0 flex-1">
         ${m ? `<div class="text-[11px] font-bold text-indigo-700 truncate">${esc((c.kode ? c.kode + ' • ' : '') + c.nama)} • Pertemuan ${esc(m.nomor)}</div>
@@ -871,20 +867,18 @@ function updateReadiness() {
 
 // ---------- Routing ----------
 const routeFor = (c, m, tab) => '#/c/' + encodeURIComponent(c.id) + (m ? '/m/' + encodeURIComponent(m.id) + (tab && tab !== defaultTab(m) ? '/' + tab : '') : '');
-// Navigasi di dalam aplikasi TIDAK menambah riwayat browser (aman di embed Google Sites: tombol Back browser tidak membuat frame blank).
-// Riwayat internal dipakai tombol "← Kembali" di header.
-const NAV = { cur: null, hist: [], fwd: [] };
-const pageKey = h => (h || '').replace(/^(#\/c\/[^/]+(\/m\/[^/]+)?).*$/, '$1');
+// Versi ini dibuka langsung (bukan embed Google Sites), jadi tiap pindah halaman/tab dicatat di riwayat browser:
+// tombol Back/Forward browser (dan gesture kembali di HP) bekerja seperti biasa.
+const NAV = { cur: null };
 function curHash() { return NAV.cur != null ? NAV.cur : (location.hash || '#/'); }
 function go(hash, mode) {
   const prev = curHash();
-  if (!mode && pageKey(prev) !== pageKey(hash)) { NAV.hist.push(prev); if (NAV.hist.length > 50) NAV.hist.shift(); NAV.fwd = []; }
   NAV.cur = hash;
-  try { history.replaceState(null, '', hash); } catch (e) {}
+  try { if (mode === 'nav' || hash === prev) history.replaceState(null, '', hash); else history.pushState(null, '', hash); } catch (e) {}
   route(hash);
 }
-function goBack() { if (!NAV.hist.length) return; NAV.fwd.push(curHash()); go(NAV.hist.pop(), 'nav'); }
-function goForward() { if (!NAV.fwd.length) return; NAV.hist.push(curHash()); go(NAV.fwd.pop(), 'nav'); }
+function goBack() { history.back(); }
+function goForward() { history.forward(); }
 // ---------- Muat isi pertemuan (data/<matkul>/<pertemuan>.json) ----------
 const MEETING_LOADS = {};
 let routeSeq = 0;
@@ -940,7 +934,9 @@ function route(forced) {
 }
 (function () { let compact = false; window.addEventListener('scroll', () => { const h = $('appHeader'); if (!h) return;
   const want = innerWidth < 768 && (compact ? scrollY > 40 : scrollY > 160); if (want !== compact) { compact = want; h.classList.toggle('hdr-compact', compact); } }, { passive: true }); })();
-window.addEventListener('hashchange', () => { if (location.hash !== NAV.cur) { NAV.cur = location.hash; route(location.hash); } });
+const onHistory = () => { const h = location.hash || '#/'; if (h !== NAV.cur) { NAV.cur = h; route(h); } };
+window.addEventListener('popstate', onHistory);
+window.addEventListener('hashchange', onHistory);
 // Di dalam embed (mis. Google Sites) link href="#/..." bisa diarahkan ke URL frame luar; tangani klik link internal sendiri.
 document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('a[href^="#/"]'); if (!a) return; e.preventDefault(); go(a.getAttribute('href')); }, true);
 
