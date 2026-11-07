@@ -337,13 +337,14 @@ module.exports = fix({
       desc: "Klik <strong>Ganti Tema</strong> di pratinjau. Lalu kerjakan modifikasi modul: <strong>ubah warna teks nav</strong> saat tema diganti, dan <strong>ubah teks tombol</strong> menjadi “Tema Terang”/“Tema Gelap” sesuai tema aktif.",
       file: "theme-switch.html",
       js: true,
+      assessment: "theme",
       starter: THEME(THEME_JS),
       solution: THEME(THEME_JS_SOLUSI),
       tasks: [
         { label: "Pilih elemen/link nav dengan `querySelector`/`querySelectorAll`", regex: "querySelector(All)?\\s*\\(\\s*[\"'`]nav" },
-        { label: "Ubah `style.color` untuk nav", regex: "\\.style\\.color\\s*=" },
-        { label: "Teks tombol jadi “Tema Terang” saat gelap", regex: "textContent\\s*=\\s*[\"'`]Tema Terang" },
-        { label: "Teks tombol jadi “Tema Gelap” saat terang", regex: "textContent\\s*=\\s*[\"'`]Tema Gelap" }
+        { label: "Ubah `style.color` untuk nav", behavior: "nav", regex: "\\.style\\.color\\s*=" },
+        { label: "Teks tombol jadi “Tema Terang” saat gelap", behavior: "lightLabel", regex: "textContent\\s*=\\s*[\"'`]Tema Terang" },
+        { label: "Teks tombol jadi “Tema Gelap” saat terang", behavior: "darkLabel", regex: "textContent\\s*=\\s*[\"'`]Tema Gelap" }
       ]
     },
     {
@@ -353,15 +354,16 @@ module.exports = fix({
       desc: "Form & tabel kosong sudah disiapkan. Tulis JavaScript-nya: <strong>Tambah Data</strong> menambah baris tabel dari form dengan <code>createElement</code> + <code>appendChild</code>; <strong>Hapus Semua</strong> mengosongkan tabel. Contoh jawaban sudah memakai cara aman <code>textContent</code>. Di laptop, kumpulkan <code>dom-manipulation.html</code>, <code>.css</code>, <code>.js</code>.",
       file: "dom-manipulation.html",
       js: true,
+      assessment: "dom-table",
       starter: DOM_STARTER,
       solution: DOM_SOLUSI,
       tasks: [
-        { label: "Struktur semantik: header, nav, main, section, footer", sel: "header, nav, main, section, footer", min: 5 },
-        { label: "Tabel punya thead 4 kolom & tbody id=\"table-body\"", sel: "#data-table thead th, #data-table tbody#table-body", min: 5 },
+        { label: "Struktur semantik: header, nav, main, section, footer", elements: [["header"], ["nav"], ["main"], ["section"], ["footer"]] },
+        { label: "Tabel punya thead 4 kolom & tbody id=\"table-body\"", elements: [["#data-table thead th", 4], ["#data-table tbody#table-body"]] },
         { label: "Seleksi elemen dengan `getElementById`/`querySelector`", regex: "(getElementById\\s*\\(\\s*[\"'`](add-btn|clear-btn|table-body)|querySelector\\s*\\(\\s*[\"'`]#(add-btn|clear-btn|table-body))" },
-        { label: "Membuat baris dengan `createElement(\"tr\")`", regex: "createElement\\s*\\(\\s*[\"'`]tr[\"'`]" },
-        { label: "Menempel baris dengan `appendChild`", regex: "\\.appendChild\\s*\\(" },
-        { label: "Hapus Semua: `innerHTML = \"\"` atau `.remove()`", regex: "(innerHTML\\s*=\\s*([\"'`])\\2|\\.remove\\s*\\(\\s*\\))" }
+        { label: "Membuat baris dengan `createElement(\"tr\")`", behavior: "add", regex: "createElement\\s*\\(\\s*[\"'`]tr[\"'`]" },
+        { label: "Menempel baris dengan `appendChild`", behavior: "text", regex: "\\.appendChild\\s*\\(" },
+        { label: "Hapus Semua: `innerHTML = \"\"` atau `.remove()`", behavior: "remove", regex: "(innerHTML\\s*=\\s*([\"'`])\\2|\\.remove\\s*\\(\\s*\\))" }
       ]
     },
     {

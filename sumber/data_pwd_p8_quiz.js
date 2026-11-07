@@ -84,4 +84,4 @@ const S = [
   [7, "Method untuk menghapus satu elemen dari halaman adalah …", ["`el.delete()`", "`el.remove()`", "`el.hide()`", "`el.clear()`", "`el.textContent = null`"], 1, "Mengosongkan semua baris: `tbody.innerHTML = \"\"`."]
 ];
 
-module.exports = S.map(([p, q, opts, ans, exp]) => ({ q: q, opts, ans, exp: "<strong>P" + p + "</strong> • " + exp }));
+module.exports = S.map(([p, q, opts, ans, exp]) => ({ q, opts, ans, topic: "P" + p, exp: "<strong>P" + p + "</strong> • " + exp }));

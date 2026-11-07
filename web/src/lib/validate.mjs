@@ -3,7 +3,7 @@
 import { z } from 'zod';
 
 // Jenis blok yang dikenali mesin (objek R di src/scripts/engine.js)
-export const BLOCK_TYPES = ['text', 'article', 'ayat', 'code', 'playground', 'callout', 'cards', 'list', 'flow', 'row', 'tabs', 'choices', 'table', 'diagram', 'reveal', 'say', 'detective', 'terminal', 'exercise'];
+export const BLOCK_TYPES = ['text', 'article', 'ayat', 'code', 'playground', 'callout', 'cards', 'list', 'flow', 'row', 'tabs', 'choices', 'table', 'diagram', 'reveal', 'say', 'detective', 'terminal', 'sql-lab', 'exercise'];
 
 const str = z.string().trim().min(1, 'tidak boleh kosong');
 const optValue = o => (o && typeof o === 'object' ? o.value : o);

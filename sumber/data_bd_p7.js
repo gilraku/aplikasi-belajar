@@ -1,5 +1,4 @@
 // Basis Data — Pertemuan 7: DDL, Membuat Basis Data dan Tabel
-const T = (head, rows, foot) => { const w = head.map((h, i) => Math.max(h.length, ...rows.map(r => String(r[i]).length))); const line = "+" + w.map(n => "-".repeat(n + 2)).join("+") + "+"; const fmt = r => "| " + r.map((c, i) => String(c).padEnd(w[i])).join(" | ") + " |"; return [line, fmt(head), line, ...rows.map(fmt), line, foot || (rows.length + (rows.length === 1 ? " row" : " rows") + " in set")].join("\n"); };
 const CREATE_BUKU = `CREATE TABLE buku (
   id_buku   CHAR(5)     NOT NULL,
   judul     VARCHAR(80) NOT NULL,
@@ -37,16 +36,14 @@ CREATE TABLE nama_tabel (
       rows: [["1046 No database selected", "Belum memilih basis data (USE / klik di kiri)"], ["1050 Table 'buku' already exists", "Nama tabel sudah dipakai"], ["1051 Unknown table 'perpustakaan.anggota'", "Tabel yang dihapus tidak ada"], ["4161 Unknown data type: 'VARCAHR'", "Tipe data salah ketik (MariaDB; MySQL: 1064)"], ["1064 You have an error in your SQL syntax", "Koma terlewat / kurung tidak lengkap"], ["1068 Multiple primary key defined", "PRIMARY KEY ditulis dua kali"]] }
   ],
   simulator: [
-    { type: "terminal", label: "Permainan Interaktif 1 • Contoh Modul", title: "Membuat dan Memeriksa Tabel buku", desc: "Jalankan berurutan.", shell: "MariaDB [perpustakaan]>", header: "Basis data perpustakaan",
-      scenarios: [
-        { label: "1. CREATE TABLE buku", pill: "0 rows", ok: true, cmd: CREATE_BUKU, res: "Query OK, 0 rows affected (0.012 sec)", exp: "Di phpMyAdmin muncul “MySQL mengembalikan hasil kosong (nol baris)”. Itu wajar: CREATE hanya membuat rangka." },
-        { label: "2. SHOW TABLES", pill: "1 row", ok: true, cmd: "SHOW TABLES;", res: T(["Tables_in_perpustakaan"], [["buku"]]), exp: "Satu tabel, sesuai rencana." },
-        { label: "3. DESCRIBE buku", pill: "5 rows", ok: true, cmd: "DESCRIBE buku;", res: T(["Field", "Type", "Null", "Key", "Default", "Extra"], [["id_buku", "char(5)", "NO", "PRI", "NULL", ""], ["judul", "varchar(80)", "NO", "", "NULL", ""], ["pengarang", "varchar(50)", "NO", "", "NULL", ""], ["tahun", "year(4)", "NO", "", "NULL", ""], ["stok", "int(11)", "NO", "", "NULL", ""]]), exp: "Null = NO di semua kolom (NOT NULL); PRI hanya di id_buku. year(4)/int(11) = lebar tampilan MariaDB; MySQL 8 menulis year/int saja." },
-        { label: "4. SELECT tabel baru", pill: "Empty set", ok: true, cmd: "SELECT * FROM buku;", res: "Empty set (0.001 sec)", exp: "Rangka ada, isi belum. Mengisi data = Bab 9 (INSERT)." },
-        { label: "5. CREATE dua kali", code: "1050", pill: "ERROR 1050", ok: false, cmd: "CREATE TABLE buku (a INT);", res: "ERROR 1050 (42S01): Table 'buku' already exists", exp: "Tabel lama tidak ditimpa sedikit pun. ➕ <code>CREATE TABLE IF NOT EXISTS</code> menghindari galat ini." },
-        { label: "6. DROP tabel yang tidak ada", code: "1051", pill: "ERROR 1051", ok: false, cmd: "DROP TABLE anggota;", res: "ERROR 1051 (42S02): Unknown table 'perpustakaan.anggota'", exp: "Tabel anggota baru dibuat di Bab 8. ➕ <code>DROP TABLE IF EXISTS anggota;</code> tidak galat." },
-        { label: "7. Tanpa memilih basis data", code: "1046", pill: "ERROR 1046", ok: false, cmd: "CREATE TABLE coba (a INT);", res: "ERROR 1046 (3D000): No database selected", exp: "Klik perpustakaan di sisi kiri atau ketik <code>USE perpustakaan;</code> dulu." },
-        { label: "8. Tabel coba lalu DROP", pill: "tanpa tanya", ok: true, cmd: "USE perpustakaan;\nCREATE TABLE coba (a INT, b VARCHAR(10));\nDROP TABLE coba;\nSHOW TABLES;", res: "Database changed\nQuery OK, 0 rows affected\nQuery OK, 0 rows affected\n" + T(["Tables_in_perpustakaan"], [["buku"]]), exp: "Langkah 7–8 praktik terpandu. MySQL tidak bertanya ulang. ➕ phpMyAdmin bawaannya menampilkan kotak konfirmasi untuk DROP; itu pengaman milik phpMyAdmin, bukan MySQL." }
+    { type: "sql-lab", profile: "p7", label: "Lab Basis Data", title: "Membuat dan Memeriksa Tabel buku",
+      desc: "Gunakan basis data perpustakaan dari P6. Pilih basis data di sebelah kiri, jalankan contoh CREATE TABLE, lalu cek struktur dan isinya.",
+      examples: [
+        { label: "Buat tabel buku", sql: CREATE_BUKU },
+        { label: "Daftar tabel", sql: "SHOW TABLES;" },
+        { label: "Lihat kolom buku", sql: "DESCRIBE buku;" },
+        { label: "Lihat isi tabel baru", sql: "SELECT * FROM buku;" },
+        { label: "Buat dan hapus tabel coba", sql: "CREATE TABLE coba (a INT, b VARCHAR(10));\nDROP TABLE coba;\nSHOW TABLES;" }
       ] },
     { type: "detective", label: "Permainan Interaktif 2 • Latihan Tingkat 2 Modul", title: "Detektif: CREATE TABLE anggota yang Ditolak", desc: "Klik baris perintah yang salah. Ada 5 kesalahan.",
       rules: ["Nama kolom tanpa spasi.", "Setiap baris kolom diakhiri koma, kecuali yang terakhir.", "Ejaan tipe data harus benar.", "Hanya satu PRIMARY KEY.", "Perintah diakhiri titik koma."],

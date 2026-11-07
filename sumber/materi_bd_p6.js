@@ -8,7 +8,7 @@ const jalur = diagram({
   label: "Diagram Interaktif", title: "Jalur Permintaan: Peramban sampai Basis Data (Gambar 1 Modul)", desc: "Klik setiap bagian.", minw: 660,
   svg: svg(820, 230,
     `<rect x="160" y="20" width="645" height="190" rx="12" fill="none" stroke="#94a3b8" stroke-dasharray="6 4"/>` + text(480, 38, "Paket MAMP (di komputer sendiri = localhost)", { size: 12, color: "#475569" }) +
-    box(10, 85, 130, 64, "Peramban|localhost/phpMyAdmin", "slate", "browser", { size: 11 }) + arrow(140, 117, 180, 117) +
+    box(10, 85, 130, 64, "Peramban|WebStart MAMP", "slate", "browser", { size: 11 }) + arrow(140, 117, 180, 117) +
     box(185, 85, 130, 64, "Apache|server web", "sky", "apache", { size: 13 }) + arrow(315, 117, 350, 117) +
     box(355, 85, 150, 64, "PHP + phpMyAdmin|menyusun halaman", "violet", "php", { size: 12 }) + arrow(505, 117, 545, 117) +
     box(550, 70, 240, 94, "MySQL (DBMS)|perpustakaan • mysql • sys …", "emerald", "mysql", { size: 13 }) +
@@ -16,9 +16,9 @@ const jalur = diagram({
   ),
   parts: [
     { id: "browser", label: "Peramban", title: "Pengunjung loket", text: "Kamu mengetik alamat phpMyAdmin seperti membuka situs biasa." },
-    { id: "apache", label: "Apache", title: "Server web", text: "Menerima permintaan di porta 80 (Windows) atau 8888 (macOS)." },
+    { id: "apache", label: "Apache", title: "Server web", text: "Menerima permintaan di porta Apache yang aktif, misalnya 8888 pada konfigurasi bawaan MAMP." },
     { id: "php", label: "PHP + phpMyAdmin", title: "Halaman pengelola", text: "phpMyAdmin adalah aplikasi web yang ditulis dengan PHP. Ia menerjemahkan klik dan formulir menjadi perintah SQL untuk MySQL." },
-    { id: "mysql", label: "MySQL", title: "Tempat data sebenarnya", text: "Menyimpan dan mengambilkan data. Mendengarkan di porta 3306 (Windows) atau 8889 (macOS). ➕ Banyak distribusi Linux/XAMPP memakai MariaDB, “saudara kembar” MySQL dengan perintah yang hampir sama; layar modul menunjukkan Jenis server: MariaDB." }
+    { id: "mysql", label: "MySQL", title: "Tempat data sebenarnya", text: "Menyimpan dan mengambilkan data. Porta MySQL bawaan MAMP adalah 8889. ➕ Banyak distribusi Linux/XAMPP memakai MariaDB, “saudara kembar” MySQL dengan perintah yang hampir sama; layar modul menunjukkan Jenis server: MariaDB." }
   ]
 });
 
@@ -46,13 +46,13 @@ const layar = diagram({
 module.exports = [
   A("Mengapa Perlu Server di Komputer Sendiri?", `<p>Lima pertemuan pertama dikerjakan di atas kertas. Mulai sekarang rancangan dipindahkan ke komputer, dan untuk itu diperlukan DBMS yang benar-benar berjalan.</p>
 <p>DBMS tidak dibuka seperti dokumen. Ia adalah <strong>layanan</strong> yang menunggu permintaan lalu menjawabnya: <strong>server</strong>. Karena berjalan di komputer sendiri, namanya <strong>server lokal</strong>, ibarat ruang arsip mini di rumah sendiri yang hanya melayani penghuninya.</p>
-<p>➕ <code>localhost</code> adalah nama khusus yang selalu berarti “komputer ini sendiri”, dengan alamat IP <code>127.0.0.1</code>. Jadi <code>127.0.0.1/phpMyAdmin</code> biasanya sama dengan <code>localhost/phpMyAdmin</code>.</p>`, "Bagian 1"),
+<p>➕ <code>localhost</code> adalah nama khusus yang selalu berarti “komputer ini sendiri”, dengan alamat loopback seperti <code>127.0.0.1</code> atau <code>::1</code>.</p>`, "Bagian 1"),
   jalur,
-  A("Alamat dan Porta", `<p>Nomor <strong>porta</strong> adalah nomor pintu masuk layanan. Satu komputer bisa menjalankan banyak layanan, masing-masing di porta berbeda, seperti satu gedung dengan banyak loket. Alamat tanpa porta berarti porta 80 (halaman web).</p>
-<p>MAMP Windows: <code>localhost/phpMyAdmin</code> (Apache 80, MySQL 3306). MAMP macOS: <code>localhost:8888/phpMyAdmin</code> (Apache 8888, MySQL 8889). Porta bisa diubah di Preferences; catat yang berlaku di komputermu bersama nama pengguna dan kata sandinya.</p>
-<p>➕ Alternatif MAMP yang banyak dipakai di Windows: <strong>XAMPP</strong> atau <strong>Laragon</strong>. Isinya serupa (Apache, MySQL/MariaDB, PHP, phpMyAdmin). Kalau dua paket terpasang dan dijalankan bersamaan, porta 80/3306 akan bentrok.</p>`, "Bagian 2"),
+  A("Alamat dan Porta", `<p>Nomor <strong>porta</strong> adalah nomor pintu masuk layanan. Satu komputer bisa menjalankan banyak layanan, masing-masing di porta berbeda, seperti satu gedung dengan banyak loket. Alamat HTTP tanpa porta memakai 80, sedangkan HTTPS memakai 443.</p>
+<p>Pada MAMP Windows dan macOS, konfigurasi bawaan memakai Apache <code>8888</code> dan MySQL <code>8889</code>. <code>80</code> dan <code>3306</code> adalah preset lain. Jalankan server, klik <strong>WebStart</strong>, lalu buka <strong>phpMyAdmin</strong> dari halaman tersebut. Periksa porta aktif di Preferences/Settings.</p>
+<p>➕ Alternatif MAMP yang banyak dipakai di Windows: <strong>XAMPP</strong> atau <strong>Laragon</strong>. Isinya serupa (Apache, MySQL/MariaDB, PHP, phpMyAdmin). Dua layanan bentrok jika dijalankan bersamaan pada porta yang sama.</p>`, "Bagian 2"),
   layar,
-  { type: "flow", label: "Praktik Terpandu", title: "Delapan Langkah Modul", items: ["Unduh MAMP sesuai OS", "Pasang (pilihan bawaan)", "Start Servers → 2 lampu hijau", "Buka phpMyAdmin, kenali 5 bagian", "Buat perpustakaan lewat menu", "Pastikan muncul di kiri", "SHOW DATABASES; di tab SQL", "Catat alamat, porta, user, sandi"], highlight: 2, note: "Langkah 1–3 di modul diisi tangkapan layar masing-masing karena tampilan MAMP berbeda per OS dan versi." },
+  { type: "flow", label: "Praktik Terpandu", title: "Delapan Langkah Modul", items: ["Unduh MAMP sesuai OS", "Pasang (pilihan bawaan)", "Start Servers → cek status layanan", "Buka WebStart → phpMyAdmin dan kenali 5 bagian", "Buat perpustakaan lewat menu", "Pastikan muncul di kiri", "SHOW DATABASES; di tab SQL", "Catat alamat, porta, dan nama pengguna"], highlight: 2, note: "Langkah 1–3 di modul diisi tangkapan layar masing-masing karena tampilan MAMP berbeda per OS dan versi." },
   { type: "code", label: "Contoh Kode", title: "Perintah Pertemuan Ini", file: "p6.sql", code: `CREATE DATABASE perpustakaan;
 SHOW DATABASES;
 

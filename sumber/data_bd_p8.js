@@ -5,32 +5,32 @@ const Q = (p, q, opts, ans, exp) => ({ q: `[P${p}] ${q}`, opts, ans, exp });
 const baru = [
   // P5
   Q(5, "Sumber utama dari ketiga anomali data adalah…", ["Redundansi", "Kunci tamu", "Tipe data DATE", "Porta 3306"], 0, "Keterangan yang sama disimpan di banyak tempat."),
-  Q(5, "Dosen baru tidak bisa dicatat di tabel jadwal karena belum mengajar kelas mana pun. Ini anomali…", ["Pengubahan", "Penyisipan", "Penghapusan", "Rujukan"], 1, ""),
-  Q(5, "Harga produk diperbarui hanya di sebagian baris penjualan. Ini anomali…", ["Pengubahan", "Penyisipan", "Penghapusan", "Transitif"], 0, ""),
+  Q(5, "Dosen baru tidak bisa dicatat di tabel jadwal karena belum mengajar kelas mana pun. Ini anomali…", ["Pengubahan", "Penyisipan", "Penghapusan", "Rujukan"], 1, "Penyisipan terhambat karena data dosen dan data kelas ditaruh dalam tabel yang sama."),
+  Q(5, "Harga produk diperbarui hanya di sebagian baris penjualan. Ini anomali…", ["Pengubahan", "Penyisipan", "Penghapusan", "Transitif"], 0, "Pengubahan sebagian baris membuat harga produk yang sama tidak konsisten."),
   Q(5, "Notasi id_anggota → nama berarti…", ["nama menentukan id_anggota", "Jika id_anggota diketahui, nama pasti bisa ditentukan", "id_anggota adalah kunci tamu", "nama boleh NULL"], 1, "Ketergantungan fungsional."),
   Q(5, "Kolom telepon1, telepon2, telepon3 dalam satu tabel melanggar…", ["1NF", "2NF", "3NF", "Integritas rujukan"], 0, "Kelompok kolom berulang."),
   Q(5, "Ketergantungan id_denda → id_anggota → nama_anggota disebut ketergantungan…", ["Parsial", "Transitif", "Penuh", "Gabungan"], 1, "Dibuang pada 3NF."),
   Q(5, "Tabel dengan kunci primer satu kolom otomatis memenuhi…", ["1NF", "2NF (jika sudah 1NF)", "3NF", "Semua bentuk normal"], 1, "2NF baru terasa pada kunci gabungan."),
   Q(5, "Hasil normalisasi tabel peminjaman_kacau sama dengan hasil…", ["Instalasi MAMP", "Transformasi ERD pada P4", "Perintah DROP", "SHOW DATABASES"], 1, "Dua jalan, satu hasil."),
   // P6
-  Q(6, "DBMS disebut server karena…", ["Dibuka seperti dokumen", "Merupakan layanan yang menunggu dan menjawab permintaan", "Hanya berjalan di internet", "Berbentuk berkas .sql"], 1, ""),
-  Q(6, "Komponen MAMP yang menyusun halaman phpMyAdmin adalah…", ["Apache", "MySQL", "PHP", "Peramban"], 2, ""),
-  Q(6, "Menghapus aplikasi phpMyAdmin akan…", ["Menghapus semua basis data", "Tidak menghapus data di MySQL", "Menghapus tabel buku saja", "Mematikan porta 80 selamanya"], 1, ""),
+  Q(6, "DBMS disebut server karena…", ["Dibuka seperti dokumen", "Merupakan layanan yang menunggu dan menjawab permintaan", "Hanya berjalan di internet", "Berbentuk berkas .sql"], 1, "DBMS melayani permintaan dari klien, termasuk menjalankan perintah SQL."),
+  Q(6, "Komponen MAMP yang menyusun halaman phpMyAdmin adalah…", ["Apache", "MySQL", "PHP", "Peramban"], 2, "PHP menjalankan aplikasi phpMyAdmin dan menyusun halaman yang dikirim ke peramban."),
+  Q(6, "Menghapus aplikasi phpMyAdmin akan…", ["Menghapus semua basis data", "Tidak menghapus data di MySQL", "Menghapus tabel buku saja", "Mematikan porta 80 selamanya"], 1, "phpMyAdmin adalah aplikasi pengelola. Data tetap tersimpan di server MySQL."),
   Q(6, "Porta bawaan Apache pada MAMP macOS adalah…", ["80", "3306", "8888", "8889"], 2, "MySQL macOS: 8889."),
   Q(6, "Basis data yang menyimpan daftar pengguna dan hak akses MySQL adalah…", ["mysql", "perpustakaan", "information_schema", "phpmyadmin"], 0, "Jangan dihapus."),
-  Q(6, "Perintah yang benar untuk membuat basis data adalah…", ["CREATE TABLE perpustakaan;", "CREATE DATABASE perpustakaan;", "NEW DATABASE perpustakaan;", "MAKE perpustakaan;"], 1, ""),
-  Q(6, "Halaman localhost/phpMyAdmin tidak dapat dijangkau. Langkah pertama yang tepat…", ["Menghapus basis data mysql", "Menekan Start Servers di MAMP dan mencocokkan alamat", "Mengganti nama basis data", "Menjalankan DROP DATABASE"], 1, ""),
-  Q(6, "ERROR 1007 muncul ketika…", ["Membuat basis data dengan nama yang sudah ada", "Menghapus tabel yang tidak ada", "Lupa memilih basis data", "Kunci tamu tidak ditemukan"], 0, ""),
+  Q(6, "Perintah yang benar untuk membuat basis data adalah…", ["CREATE TABLE perpustakaan;", "CREATE DATABASE perpustakaan;", "NEW DATABASE perpustakaan;", "MAKE perpustakaan;"], 1, "CREATE DATABASE membuat basis data. CREATE TABLE membuat tabel di dalam basis data."),
+  Q(6, "phpMyAdmin melalui WebStart tidak dapat dijangkau. Langkah pertama yang tepat…", ["Menghapus basis data mysql", "Menekan Start Servers di MAMP dan mencocokkan alamat", "Mengganti nama basis data", "Menjalankan DROP DATABASE"], 1, "Periksa dulu apakah server berjalan dan apakah alamat WebStart memakai porta Apache yang aktif."),
+  Q(6, "ERROR 1007 muncul ketika…", ["Membuat basis data dengan nama yang sudah ada", "Menghapus tabel yang tidak ada", "Lupa memilih basis data", "Kunci tamu tidak ditemukan"], 0, "MySQL menolak pembuatan basis data dengan nama yang sudah ada dan mengembalikan galat 1007."),
   // P7
-  Q(7, "Perintah yang termasuk DDL adalah…", ["INSERT", "SELECT", "CREATE TABLE", "COMMIT"], 2, ""),
+  Q(7, "Perintah yang termasuk DDL adalah…", ["INSERT", "SELECT", "CREATE TABLE", "COMMIT"], 2, "CREATE TABLE mendefinisikan struktur tabel sehingga termasuk Data Definition Language."),
   Q(7, "ALTER pada kelompok DDL digunakan untuk…", ["Mengubah isi data", "Mengubah struktur/rangka tabel", "Membatalkan transaksi", "Memberi hak akses"], 1, "Dibahas di Bab 8."),
-  Q(7, "Kolom judul berisi teks yang panjangnya berbeda-beda paling banyak 80 huruf. Tipe yang tepat…", ["CHAR(80)", "VARCHAR(80)", "INT(80)", "YEAR"], 1, ""),
+  Q(7, "Kolom judul berisi teks yang panjangnya berbeda-beda paling banyak 80 huruf. Tipe yang tepat…", ["CHAR(80)", "VARCHAR(80)", "INT(80)", "YEAR"], 1, "VARCHAR menyimpan teks dengan panjang variabel sampai batas yang ditentukan."),
   Q(7, "Penulisan nilai tipe DATE yang benar adalah…", ["12/09/2026", "'2026-09-12'", "2026.09.12", "'12-09-2026'"], 1, "Tahun-bulan-hari dalam kutip tunggal."),
   Q(7, "Perintah berikut menghasilkan galat: CREATE TABLE coba (a INT); padahal belum memilih basis data. Galatnya…", ["ERROR 1046", "ERROR 1050", "ERROR 1051", "ERROR 1068"], 0, "No database selected."),
   Q(7, "DROP TABLE anggota; padahal tabel anggota belum dibuat menghasilkan…", ["ERROR 1050", "ERROR 1051", "ERROR 1452", "Berhasil"], 1, "Unknown table."),
-  Q(7, "Pada DESCRIBE buku, kolom Null bernilai NO karena…", ["Kolom ditulis NOT NULL", "Kolom bertipe CHAR", "Tabel masih kosong", "Kolom adalah kunci tamu"], 0, ""),
-  Q(7, "Dua baris PRIMARY KEY dalam satu CREATE TABLE menghasilkan…", ["ERROR 1068 Multiple primary key defined", "ERROR 1007", "Tabel dengan dua kunci", "ERROR 1046"], 0, ""),
-  Q(7, "Satu-satunya cara mengembalikan tabel yang terhapus dengan DROP adalah…", ["ROLLBACK", "Salinan cadangan (backup)", "UNDO TABLE", "SHOW TABLES"], 1, "DROP adalah DDL, tidak bisa di-ROLLBACK.")
+  Q(7, "Pada DESCRIBE buku, kolom Null bernilai NO karena…", ["Kolom ditulis NOT NULL", "Kolom bertipe CHAR", "Tabel masih kosong", "Kolom adalah kunci tamu"], 0, "NOT NULL membuat kolom wajib berisi nilai sehingga DESCRIBE menampilkan NO."),
+  Q(7, "Dua baris PRIMARY KEY dalam satu CREATE TABLE menghasilkan…", ["ERROR 1068 Multiple primary key defined", "ERROR 1007", "Tabel dengan dua kunci", "ERROR 1046"], 0, "Satu tabel hanya memiliki satu PRIMARY KEY. Kunci gabungan ditulis dalam satu deklarasi."),
+  Q(7, "Apa yang dapat digunakan untuk memulihkan tabel setelah DROP?", ["ROLLBACK", "Salinan cadangan (backup)", "UNDO TABLE", "SHOW TABLES"], 1, "DROP adalah DDL, tidak bisa di-ROLLBACK.")
 ];
 module.exports = {
   id: "p8", nomor: 8, judul: "UTS: Ulasan Pertemuan 1–7", ujian: "UTS",
@@ -52,7 +52,7 @@ module.exports = {
       { badge: "PK vs FK", tone: "rose", title: "Penanda vs penunjuk", text: "PK unik di tabelnya (garis penuh). FK menunjuk PK tabel lain, boleh berulang (titik-titik, MUL)." },
       { badge: "DDL vs DML", tone: "violet", title: "Rangka vs isi", text: "CREATE/ALTER/DROP vs INSERT/SELECT/UPDATE/DELETE." },
       { badge: "ALTER vs UPDATE", tone: "amber", title: "Struktur vs nilai", text: "ALTER menambah kolom; UPDATE mengubah isi kolom." },
-      { badge: "DELETE vs DROP", tone: "rose", title: "Baris vs tabel", text: "DELETE menghapus baris (bisa ROLLBACK). DROP menghapus tabel/basis data (tidak bisa)." },
+      { badge: "DELETE vs DROP", tone: "rose", title: "Baris vs tabel", text: "DELETE menghapus baris dan bisa dibatalkan pada tabel transaksional sebelum COMMIT. DROP menghapus tabel/basis data dan tidak dapat di-rollback." },
       { badge: "MySQL vs phpMyAdmin", tone: "emerald", title: "Lemari vs loket", text: "Data di MySQL; phpMyAdmin hanya halaman pengelola." }
     ] },
     { type: "table", label: "Interaktif 4 • Kardinalitas ke Tabel", title: "Rumus Kilat P3 → P4", headers: ["Kardinalitas", "Hasil tabel", "Letak FK"],
@@ -65,14 +65,15 @@ module.exports = {
     { type: "exercise", label: "Permainan Interaktif 2 • Galat Apa?", title: "Tebak Nomor Galatnya", headers: ["Kejadian", "Galat"],
       rows: [["INSERT peminjaman dengan id_buku BK999", "1452"], ["CREATE TABLE buku untuk kedua kalinya", "1050"], ["INSERT mahasiswa dengan NIM yang sudah ada", "1062"], ["CREATE DATABASE perpustakaan untuk kedua kalinya", "1007"], ["SELECT * FROM bukku;", "1146"], ["CREATE TABLE tanpa memilih basis data", "1046"]]
         .map(([c, a]) => ({ cells: [c], fields: [{ options: ["1007", "1046", "1050", "1062", "1146", "1452"], answer: a }], ok: "✓" })) },
-    { type: "terminal", label: "Permainan Interaktif 3 • SQL Campuran", title: "DDL, DML, dan Galatnya dalam Satu Sesi", desc: "Satu sesi dari nol sampai berisi data.", shell: "mysql>", header: "Ulasan P4 + P6 + P7",
-      scenarios: [
-        { label: "1. Buat basis data", pill: "OK", ok: true, cmd: "CREATE DATABASE perpustakaan;\nUSE perpustakaan;", res: "Query OK, 1 row affected\nDatabase changed", exp: "P6 + P7." },
-        { label: "2. Buat tabel anggota", pill: "OK", ok: true, cmd: "CREATE TABLE anggota (\n  id_anggota CHAR(5) NOT NULL,\n  nama VARCHAR(50) NOT NULL,\n  prodi VARCHAR(40) NOT NULL,\n  PRIMARY KEY (id_anggota)\n);", res: "Query OK, 0 rows affected", exp: "P7: kunci jawaban cek pemahaman no. 2." },
-        { label: "3. Isi satu anggota", pill: "1 row", ok: true, cmd: "INSERT INTO anggota VALUES ('AG001','Ahmad Fauzi','Sistem Informasi');", res: "Query OK, 1 row affected", exp: "P4: teks dalam kutip tunggal." },
-        { label: "4. Isi dengan nama NULL", code: "1048", pill: "ERROR 1048", ok: false, cmd: "INSERT INTO anggota VALUES ('AG002', NULL, 'Teknik Informatika');", res: "ERROR 1048 (23000): Column 'nama' cannot be null", exp: "P2 + P7: NOT NULL menolak nilai kosong." },
-        { label: "5. Tampilkan anggota SI", pill: "1 row", ok: true, cmd: "SELECT nama FROM anggota WHERE prodi = 'Sistem Informasi';", res: "+-------------+\n| nama        |\n+-------------+\n| Ahmad Fauzi |\n+-------------+\n1 row in set", exp: "P4: WHERE." },
-        { label: "6. Hapus tabel tanpa ROLLBACK", pill: "permanen", ok: false, cmd: "START TRANSACTION;\nDROP TABLE anggota;\nROLLBACK;\nSHOW TABLES;", res: "Query OK, 0 rows affected\nQuery OK, 0 rows affected\nQuery OK, 0 rows affected\nEmpty set", exp: "⚠️ DROP (DDL) langsung permanen, ROLLBACK tidak menolong. Beda dengan DELETE (DML) di P4." }
+    { type: "sql-lab", profile: "p8", label: "Lab Basis Data", title: "DDL, DML, dan Galatnya dalam Satu Sesi",
+      desc: "Mulai dengan basis data kosong. Buat skema, masukkan satu anggota, lalu jalankan SELECT. Bandingkan hasil jika urutannya diubah.",
+      examples: [
+        { label: "Buat dan pilih basis data", sql: "CREATE DATABASE perpustakaan;\nUSE perpustakaan;" },
+        { label: "Buat tabel anggota", sql: "CREATE TABLE anggota (id_anggota CHAR(5) NOT NULL, nama VARCHAR(50) NOT NULL, prodi VARCHAR(40) NOT NULL, PRIMARY KEY (id_anggota));" },
+        { label: "Isi satu anggota", sql: "INSERT INTO anggota VALUES ('AG001', 'Ahmad Fauzi', 'Sistem Informasi');" },
+        { label: "Coba nama NULL", sql: "INSERT INTO anggota VALUES ('AG002', NULL, 'Teknik Informatika');" },
+        { label: "Tampilkan anggota SI", sql: "SELECT nama FROM anggota WHERE prodi = 'Sistem Informasi';" },
+        { label: "Coba ROLLBACK setelah DROP", sql: "START TRANSACTION;\nDROP TABLE anggota;\nROLLBACK;\nSHOW TABLES;" }
       ] },
     { type: "reveal", label: "Studi Kasus Ujung ke Ujung", title: "Kasus Baru: Klinik Kampus", items: [
       { prompt: "Cerita: “Pasien datang berobat ke dokter. Setiap kunjungan dicatat tanggal dan keluhannya. Satu pasien bisa ke banyak dokter, satu dokter melayani banyak pasien.” Entitas, relasi, kardinalitas?", answer: "Pasien —M— berobat —N— Dokter; tanggal & keluhan = atribut relasi", reason: "P3: kata benda → entitas, kata kerja → relasi." },

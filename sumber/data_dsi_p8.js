@@ -193,7 +193,7 @@ module.exports = {
     { tag: "P7", q: "5 masalah file tradisional?", a: "Redundancy & inconsistency, program-data dependence, lack of flexibility, poor security, lack of data sharing & availability." },
     { tag: "P7", q: "4 information specialist?", a: "System analyst, database administrator, operator, network specialist." }
   ],
-  quiz: S.map(([p, q, opts, ans, exp]) => ({ q, opts, ans, exp: "<strong>P" + p + "</strong>" + (exp ? " • " + exp : "") })),
+  quiz: S.map(([p, q, opts, ans, exp]) => ({ q, opts, ans, topic: "P" + p, exp: "<strong>P" + p + "</strong>" + (exp ? " • " + exp : "") })),
   ringkasan: `*RANGKUMAN KILAT UTS — DASAR-DASAR SISTEM INFORMASI (P1–P7)*
 
 P1 Sistem: elemen–interaksi–tujuan; boundary, input, processing, output, control, feedback (−/+).

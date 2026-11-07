@@ -74,7 +74,7 @@ module.exports = {
     Q("Dua if terpisah dengan kondisi yang tumpang tindih berbeda dengan else-if karena…", ["Keduanya bisa sama-sama dijalankan", "Hanya satu yang dijalankan", "Tidak ada bedanya", "if kedua tidak pernah dijalankan"], 0, "Setiap if berdiri sendiri dan diperiksa semuanya."),
     Q("Struktur if di dalam if disebut…", ["Nested if", "Else-if", "Switch", "Loop"], 0, "Contoh: pilih fakultas dulu, lalu prodi."),
     Q("Operator yang tepat untuk menentukan bilangan habis dibagi 3 adalah…", ["%", "/", "*", "&&"], 0, "x % 3 == 0."),
-    Q("int a = -1; if (a < 0) cout << \"negatif\"; else cout << \"positif\"; Hasil untuk a = 0 adalah…", ["positif", "negatif", "nol", "Tidak ada"], 0, "➕ 0 bukan negatif, tetapi juga bukan positif. Butuh else-if untuk nol."),
+    Q("int a = 0; if (a < 0) cout << \"negatif\"; else cout << \"positif\"; Hasil untuk a = 0 adalah…", ["positif", "negatif", "nol", "Tidak ada"], 0, "➕ 0 bukan negatif, tetapi juga bukan positif. Butuh else-if untuk nol."),
     Q("Kode yang benar menyimpan teks hasil percabangan adalah…", ["string ket; if (n < 0) ket = \"negatif\"; else ket = \"positif\";", "if (n < 0) ket = “negatif”;", "if n < 0 then ket = \"negatif\";", "ket = if (n < 0) \"negatif\";"], 0, "Variabel harus dideklarasikan dan memakai petik lurus.")
   ],
   ringkasan: `*RANGKUMAN P4 ALGORITMA & PEMROGRAMAN*
