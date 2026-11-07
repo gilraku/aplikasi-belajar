@@ -34,6 +34,28 @@ const Quiz = z.looseObject({
 
 const Flashcard = z.looseObject({ q: str, a: str, tag: z.string().optional() });
 
+const Referensi = z.object({
+  judul: str,
+  url: z.url({ protocol: /^https$/, error: 'url harus https://' }).nullable(),
+  sumber: str,
+  bahasa: z.enum(['ID', 'EN', 'AR']),
+  ket: z.string().optional(),
+  bagian: z.string().optional()
+});
+
+// Judul bagian di tab Materi (termasuk blok di dalam row/tabs), untuk mencocokkan "bagian" referensi
+export function sectionTitles(m) {
+  const t = [];
+  const walk = list => (Array.isArray(list) ? list : []).forEach(b => {
+    if (!b || typeof b !== 'object') return;
+    if (typeof b.title === 'string') t.push(b.title);
+    if (b.type === 'row') walk(b.blocks);
+    if (b.type === 'tabs') (b.tabs || []).forEach(x => walk(x.blocks));
+  });
+  walk(m.materi);
+  return t;
+}
+
 const Meeting = z.looseObject({
   id: z.string().regex(/^[a-z0-9-]+$/, 'id hanya huruf kecil, angka, dan "-"'),
   nomor: z.number().int().positive(),
@@ -43,7 +65,13 @@ const Meeting = z.looseObject({
   cheatsheet: z.array(Block),
   simulator: z.array(Block),
   flashcards: z.array(Flashcard),
-  quiz: z.array(Quiz)
+  quiz: z.array(Quiz),
+  referensi: z.array(Referensi).optional()
+}).superRefine((m, ctx) => {
+  const titles = sectionTitles(m);
+  (m.referensi || []).forEach((r, i) => {
+    if (r.bagian && !titles.some(t => t.includes(r.bagian))) ctx.addIssue({ code: 'custom', path: ['referensi', i, 'bagian'], message: `tidak ada bagian Materi yang judulnya memuat "${r.bagian}"` });
+  });
 });
 
 const Course = z.looseObject({
@@ -73,4 +101,10 @@ export function validateLibrary(lib) {
   const r = Library.safeParse(lib);
   if (r.success) return [];
   return r.error.issues.map(is => `${where(lib, is.path)}: ${is.message}`);
+}
+
+// Kunci referensi.js harus menunjuk pertemuan yang ada (salah ketik id tidak boleh diam-diam hilang)
+export function validateReferensiKeys(lib, refs) {
+  const ada = new Set(lib.flatMap(c => c.meetings.map(m => `${c.id}/${m.id}`)));
+  return Object.keys(refs || {}).filter(k => !ada.has(k)).map(k => `referensi.js: kunci "${k}" tidak cocok dengan pertemuan mana pun`);
 }

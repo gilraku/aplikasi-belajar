@@ -22,4 +22,9 @@ const config = { semester, base, v: dataVersion };
   <script id="prompt-data" type="application/json" is:inline set:html={enc(prompt)}></script>
   <script id="app-config" type="application/json" is:inline set:html={enc(config)}></script>
   <script is:inline src={`${base}app-${hash}.js`}></script>
+  {import.meta.env.PROD && <script is:inline define:vars={{ base }}>
+    // PWA: pasang service worker supaya bisa dibuka tanpa internet (hanya di https/localhost)
+    if ('serviceWorker' in navigator && window.isSecureContext)
+      window.addEventListener('load', () => navigator.serviceWorker.register(base + 'sw.js', { scope: base }).catch(() => {}));
+  </script>}
 </Base>

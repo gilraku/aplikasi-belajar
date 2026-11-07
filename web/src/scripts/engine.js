@@ -1018,6 +1018,28 @@ function confirmDelete(cid, mid) {
     <button onclick="deleteImported('${esc(cid)}','${esc(mid)}');closeModal();showToast('Materi dihapus.');route()" class="px-4 py-2 rounded-xl text-sm font-bold bg-rose-600 text-white hover:bg-rose-700">Hapus</button></div>`, 'max-w-md');
 }
 
+// ---------- Referensi & bacaan lanjut ----------
+const REF_LANG = { ID: '🇮🇩 Indonesia', EN: '🇬🇧 Inggris', AR: '📖 Arab + terjemahan' };
+// Hanya link https yang ditampilkan (materi impor bisa berisi apa saja)
+const refList = m => (Array.isArray(m.referensi) ? m.referensi : []).filter(r => r && r.judul && (r.url == null || /^https:\/\//i.test(String(r.url))));
+function defTitles(def) {
+  const t = [];
+  const walk = b => { if (!b || typeof b !== 'object') return; if (typeof b.title === 'string') t.push(b.title); if (b.type === 'row') (b.blocks || []).forEach(walk); if (b.type === 'tabs') (b.tabs || []).forEach(x => (x.blocks || []).forEach(walk)); };
+  walk(def); return t;
+}
+function refsHTML(refs) {
+  return `<div id="blk-ref" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 min-w-0">
+    <span class="inline-block text-[11px] font-bold uppercase tracking-wider text-indigo-600">Bacaan lanjut</span>
+    <h3 class="text-lg sm:text-xl font-extrabold text-slate-900 leading-snug">📚 Referensi</h3>
+    <p class="text-sm text-slate-600 mb-4">Kalau ada bagian yang belum jelas, sumber-sumber ini menjelaskannya dengan cara lain. Link terbuka di tab baru.</p>
+    <ul class="grid sm:grid-cols-2 gap-2.5">${refs.map(r => `<li class="p-3 rounded-xl border border-slate-200 bg-slate-50 ${r.url ? 'hover:border-indigo-300 hover:bg-indigo-50/60' : ''} transition">
+      ${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener" class="font-bold text-indigo-700 hover:underline break-words">${esc(r.judul)} ↗</a>` : `<span class="font-bold text-slate-800">📕 ${esc(r.judul)}</span>`}
+      <div class="mt-0.5 text-[11px] font-semibold text-slate-500">${esc(r.sumber)}${REF_LANG[r.bahasa] ? ' • ' + REF_LANG[r.bahasa] : ''}</div>
+      ${r.ket ? `<p class="mt-1 text-xs text-slate-600 leading-relaxed">${esc(r.ket)}</p>` : ''}
+    </li>`).join('')}</ul>
+  </div>`;
+}
+
 // ---------- Halaman pertemuan ----------
 function renderMeeting(fresh) {
   const m = S.meeting;
@@ -1032,11 +1054,22 @@ function renderMeeting(fresh) {
       </div>` : '';
     const ids = S.blockIds[S.tab];
     const tocItems = ids.map(n => { const d = BLOCKS[n].def; const t = d.title || d.label || d.heading; return t ? { n, t: String(t).replace(/<[^>]+>/g, '').replace(/`/g, '') } : null; }).filter(Boolean);
+    // 📚 Referensi: di akhir tab Materi (atau Ringkasan bila tidak ada Materi) + "Baca juga" di bawah bagian yang cocok
+    const refs = refList(m), refTab = (m.materi || []).length ? 'materi' : 'cheatsheet';
+    const showRefs = refs.length && S.tab === refTab;
+    // Setiap referensi hanya ditempel di bagian pertama yang cocok
+    const at = new Map();
+    if (showRefs && S.tab === 'materi') refs.forEach(r => { if (!r.bagian) return; const n = ids.find(n => defTitles(BLOCKS[n].def).some(t => t.includes(r.bagian))); if (n) at.set(n, (at.get(n) || []).concat(r)); });
+    const inline = n => {
+      const hit = at.get(n) || [];
+      return hit.length ? `<div class="-mt-2 px-3 sm:px-4 text-xs text-slate-600 flex flex-wrap items-baseline gap-x-2 gap-y-1"><span class="font-bold text-slate-500">📚 Baca juga:</span>${hit.map(r => r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener" class="font-semibold text-indigo-700 hover:underline">${esc(r.judul)} <span class="text-slate-400 font-normal">(${esc(r.sumber)})</span></a>` : `<span class="italic">${esc(r.judul)}</span>`).join('<span class="text-slate-300">•</span>')}</div>` : '';
+    };
+    if (showRefs && tocItems.length >= 4) tocItems.push({ n: 'ref', t: '📚 Referensi' });
     const toc = tocItems.length >= 4 ? `<div class="p-3 rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Lompat ke bagian (${tocItems.length})</div>
         <div class="flex gap-1.5 overflow-x-auto pb-0.5">${tocItems.map((x, k) => `<button onclick="scrollToBlk('${x.n}')" class="shrink-0 max-w-[15rem] truncate px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700" title="${esc(x.t)}">${k + 1}. ${esc(x.t)}</button>`).join('')}</div>
       </div>` : '';
-    main.innerHTML = `<section class="space-y-5">${hero}${toc}${ids.map(blockHTML).join('')}</section>`;
+    main.innerHTML = `<section class="space-y-5">${hero}${toc}${ids.map(n => blockHTML(n) + inline(n)).join('')}${showRefs ? refsHTML(refs) : ''}</section>`;
   } else if (S.tab === 'flashcard') renderFlashcards();
   else renderQuiz();
 }
@@ -1185,6 +1218,28 @@ function openModal(html, width = 'max-w-lg') {
 function closeModal() { $('modalRoot').innerHTML = ''; }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
+// ---------- Pasang sebagai aplikasi (PWA) ----------
+let INSTALL_PROMPT = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); INSTALL_PROMPT = e; });
+window.addEventListener('appinstalled', () => { INSTALL_PROMPT = null; showToast('Aplikasi terpasang. Buka dari layar utama, bisa tanpa internet.', 'success'); });
+const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+async function installApp() {
+  if (!INSTALL_PROMPT) return;
+  const p = INSTALL_PROMPT; INSTALL_PROMPT = null;
+  p.prompt();
+  try { await p.userChoice; } catch (e) { }
+  closeModal();
+}
+function installBox(box, b) {
+  if (!('serviceWorker' in navigator) || !window.isSecureContext) return '';
+  const title = 'Pasang sebagai Aplikasi (bisa tanpa internet)';
+  if (isStandalone()) return box(title, '✅ Sudah terpasang. Semua materi tersimpan di perangkat ini, jadi tetap bisa dibuka saat tidak ada sinyal.', '');
+  if (INSTALL_PROMPT) return box(title, 'Muncul sebagai ikon <strong>Belajar</strong> di layar utama, terbuka tanpa bilah browser, dan semua materi bisa dibuka saat offline.', b('installApp()', 'Pasang Aplikasi'));
+  if (isIOS()) return box(title, 'Di iPhone/iPad (Safari): ketuk tombol <strong>Bagikan</strong> <span aria-hidden="true">⬆️</span> di bawah, lalu pilih <strong>Tambah ke Layar Utama</strong>. Setelah itu materi bisa dibuka tanpa internet.', '');
+  return box(title, 'Buka menu browser (<strong>⋮</strong>), lalu pilih <strong>Instal aplikasi</strong> atau <strong>Tambahkan ke layar utama</strong>. Setelah dibuka sekali, materi tetap bisa dibuka tanpa internet.', '');
+}
+
 function openShareModal() {
   const c = S.course, m = S.meeting;
   const box = (title, text, btn) => `<div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2"><p class="font-bold text-slate-900 text-sm">${title}</p><p class="text-xs text-slate-600">${text}</p>${btn}</div>`;
@@ -1192,6 +1247,7 @@ function openShareModal() {
   openModal(`<div class="flex items-center gap-3 mb-4 pr-8"><div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">${svg('share')}</div>
       <div><h3 class="text-lg font-extrabold text-slate-900">Bagikan ke Teman Kuliah</h3><p class="text-xs text-slate-500">Bisa dibuka di HP/Laptop tanpa instal aplikasi tambahan</p></div></div>
     <div class="space-y-3">
+      ${installBox(box, b)}
       ${box('Cara 1: Unduh File Aplikasi Mandiri (.html)', 'Semua materi, flashcard, dan kuis tersimpan dalam <strong>1 file HTML</strong>, termasuk materi yang kamu tambahkan. Kirim lewat grup WhatsApp/Telegram, temanmu cukup membukanya di browser.',
         `<div class="grid ${m ? 'sm:grid-cols-2' : ''} gap-2">${b('downloadApp(\'all\')', 'Unduh (semua materi)')}${m ? b('downloadApp(\'meeting\')', 'Unduh (pertemuan ini saja)', 'bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-50') : ''}</div>`)}
       ${m ? box('Cara 2: Salin Ringkasan Cepat untuk WhatsApp', `Intisari Pertemuan ${esc(m.nomor)} yang sudah diformat rapi untuk langsung ditempel ke chat.`, b('copySummary()', 'Salin Ringkasan ke Clipboard', 'bg-emerald-600 hover:bg-emerald-700 text-white')) : ''}

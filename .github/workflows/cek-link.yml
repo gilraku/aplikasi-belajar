@@ -1,0 +1,41 @@
+name: Cek link referensi
+
+# Memastikan link di sumber/referensi.js masih hidup.
+# Berjalan setiap Senin pagi dan setiap kali referensi diubah. Gagal = ada link mati yang perlu diganti.
+on:
+  pull_request:
+    paths: ['sumber/referensi.js', 'web/scripts/ref-urls.cjs', '.github/workflows/cek-link.yml']
+  push:
+    branches: [main]
+    paths: ['sumber/referensi.js']
+  schedule:
+    - cron: '0 1 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cek:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Kumpulkan URL
+        run: node web/scripts/ref-urls.cjs > ref-urls.txt
+      - name: Cek link dengan lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          # 403/429: beberapa situs menolak bot tetapi bisa dibuka biasa di browser.
+          # Dikecualikan (dicek manual): *.kemdikbud.go.id tidak bisa diakses dari server GitHub di luar
+          # Indonesia, dan learnenglish.britishcouncil.org menolak klien HTTP/2 lychee.
+          args: >-
+            --no-progress --max-retries 3 --retry-wait-time 5 --timeout 30
+            --accept 200..=299,403,429
+            --exclude 'kemdikbud\.go\.id'
+            --exclude 'learnenglish\.britishcouncil\.org'
+            ref-urls.txt
+          fail: true
+          jobSummary: true
