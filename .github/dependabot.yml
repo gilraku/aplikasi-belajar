@@ -1,0 +1,20 @@
+# Dependabot membuka PR otomatis untuk versi baru & patch keamanan.
+# Setiap PR-nya ikut dicek workflow (audit + build + tes) sebelum boleh di-merge.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /web
+    schedule:
+      interval: weekly
+    groups:
+      semua-paket:
+        patterns: ["*"]
+        update-types: [minor, patch]
+    ignore:
+      # Tailwind 4 = ganti major (konfigurasi berubah); dikerjakan terpisah
+      - dependency-name: tailwindcss
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

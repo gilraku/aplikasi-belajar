@@ -1,0 +1,76 @@
+// Validasi materi saat build: kalau ada data yang rusak, build GAGAL dan situs tidak diterbitkan.
+// Pesan error menyebut matkul, pertemuan, dan lokasi datanya supaya mudah dicari di sumber/.
+import { z } from 'zod';
+
+// Jenis blok yang dikenali mesin (objek R di src/scripts/engine.js)
+export const BLOCK_TYPES = ['text', 'article', 'ayat', 'code', 'playground', 'callout', 'cards', 'list', 'flow', 'row', 'tabs', 'choices', 'table', 'diagram', 'reveal', 'say', 'detective', 'terminal', 'exercise'];
+
+const str = z.string().trim().min(1, 'tidak boleh kosong');
+const optValue = o => (o && typeof o === 'object' ? o.value : o);
+
+const Block = z.lazy(() => z.looseObject({
+  type: z.enum(BLOCK_TYPES, { error: i => `jenis blok "${i.input}" tidak dikenal (yang ada: ${BLOCK_TYPES.join(', ')})` }),
+  blocks: z.array(Block).optional(),
+  tabs: z.array(z.looseObject({ blocks: z.array(Block).optional() })).optional()
+}).superRefine((b, ctx) => {
+  if (b.type === 'exercise') (b.rows || []).forEach((r, ri) => (r.fields || []).forEach((f, fi) => {
+    if (Array.isArray(f.options) && f.answer != null && !f.options.map(optValue).includes(f.answer))
+      ctx.addIssue({ code: 'custom', path: ['rows', ri, 'fields', fi, 'answer'], message: `jawaban "${f.answer}" tidak ada di pilihan (${f.options.map(optValue).join(' / ')})` });
+  }));
+  if (b.type === 'diagram' && typeof b.svg !== 'string') ctx.addIssue({ code: 'custom', path: ['svg'], message: 'diagram butuh svg (string)' });
+}));
+
+const Quiz = z.looseObject({
+  q: str,
+  opts: z.array(z.string()).min(2, 'minimal 2 opsi'),
+  ans: z.number().int('ans harus bilangan bulat'),
+  exp: z.string().optional(),
+  optExp: z.array(z.string()).optional()
+}).superRefine((q, ctx) => {
+  if (q.ans < 0 || q.ans >= q.opts.length) ctx.addIssue({ code: 'custom', path: ['ans'], message: `ans = ${q.ans}, padahal opsinya hanya ${q.opts.length} (0–${q.opts.length - 1})` });
+  if (q.optExp && q.optExp.length !== q.opts.length) ctx.addIssue({ code: 'custom', path: ['optExp'], message: `optExp ada ${q.optExp.length}, opts ada ${q.opts.length}` });
+  if (new Set(q.opts.map(o => o.trim())).size !== q.opts.length) ctx.addIssue({ code: 'custom', path: ['opts'], message: 'ada opsi yang kembar' });
+});
+
+const Flashcard = z.looseObject({ q: str, a: str, tag: z.string().optional() });
+
+const Meeting = z.looseObject({
+  id: z.string().regex(/^[a-z0-9-]+$/, 'id hanya huruf kecil, angka, dan "-"'),
+  nomor: z.number().int().positive(),
+  judul: str,
+  ujian: str,
+  materi: z.array(Block).optional(),
+  cheatsheet: z.array(Block),
+  simulator: z.array(Block),
+  flashcards: z.array(Flashcard),
+  quiz: z.array(Quiz)
+});
+
+const Course = z.looseObject({
+  id: z.string().regex(/^[a-z0-9-]+$/, 'id hanya huruf kecil, angka, dan "-"'),
+  nama: str,
+  meetings: z.array(Meeting).min(1, 'belum ada pertemuan')
+}).superRefine((c, ctx) => {
+  const seen = new Set();
+  c.meetings.forEach((m, i) => { if (seen.has(m.id)) ctx.addIssue({ code: 'custom', path: ['meetings', i, 'id'], message: `id pertemuan "${m.id}" dipakai dua kali` }); seen.add(m.id); });
+});
+
+const Library = z.array(Course).superRefine((lib, ctx) => {
+  const seen = new Set();
+  lib.forEach((c, i) => { if (seen.has(c.id)) ctx.addIssue({ code: 'custom', path: [i, 'id'], message: `id matkul "${c.id}" dipakai dua kali` }); seen.add(c.id); });
+});
+
+// Ubah path zod (mis. [2,'meetings',3,'quiz',4,'ans']) jadi "AIK › P4 › quiz[4].ans"
+function where(lib, path) {
+  const out = []; let i = 0;
+  const c = lib[path[0]]; out.push(c && c.nama ? c.nama : `matkul[${path[0]}]`); i = 1;
+  if (path[1] === 'meetings') { const m = c && c.meetings && c.meetings[path[2]]; out.push(m && m.nomor ? `P${m.nomor}` : `meetings[${path[2]}]`); i = 3; }
+  const rest = path.slice(i).map(p => (typeof p === 'number' ? `[${p}]` : '.' + p)).join('').replace(/^\./, '');
+  return out.join(' › ') + (rest ? ' › ' + rest : '');
+}
+
+export function validateLibrary(lib) {
+  const r = Library.safeParse(lib);
+  if (r.success) return [];
+  return r.error.issues.map(is => `${where(lib, is.path)}: ${is.message}`);
+}

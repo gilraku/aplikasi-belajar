@@ -1,21 +1,25 @@
-# Bangun versi Astro (web/) dari materi di sumber/ dan terbitkan sebagai situs utama
+# Bangun versi Astro (web/) dari materi di sumber/, cek dulu, lalu terbitkan sebagai situs utama
 # https://gilraku.github.io/aplikasi-belajar/ setiap ada push ke main.
-# Syarat: Settings → Pages → Source = "GitHub Actions".
+# Di pull request hanya build + cek (tidak terbit). Syarat: Settings → Pages → Source = "GitHub Actions".
 name: Deploy ke GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 permissions:
   contents: read
   pages: write
   id-token: write
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,13 +28,20 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
-        working-directory: web
-      - run: npm run build
-        working-directory: web
-      - uses: actions/upload-pages-artifact@v3
+      - name: Cek kerentanan paket (gagal kalau ada yang tingkat tinggi)
+        run: npm audit --audit-level=high
+      - name: Build (sekaligus validasi data materi)
+        run: npm run build
+      - name: Siapkan browser untuk tes
+        run: npx playwright install --with-deps chromium
+      - name: Tes semua halaman
+        run: npm test
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
         with:
           path: web/dist
   deploy:
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:
