@@ -2,7 +2,7 @@
 import { semester } from '../lib/library.mjs';
 const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 export const GET = () => new Response(JSON.stringify({
-  name: semester ? `Sinau — ${semester}` : 'Sinau',
+  name: semester ? `Sinau · ${semester}` : 'Sinau',
   short_name: 'Sinau',
   description: 'Materi, flashcard, dan kuis persiapan ujian, bisa dibuka tanpa internet.',
   lang: 'id',

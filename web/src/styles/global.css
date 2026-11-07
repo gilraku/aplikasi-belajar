@@ -17,6 +17,10 @@
   .peta-cell:focus-visible { outline: 3px solid #1f5c52; outline-offset: 1px; }
   .peta-cell[data-pct] { background: var(--hl); background: color-mix(in srgb, var(--hl) calc(35% + var(--p) * .65%), #ecebe4); }
   .peta-none { display: flex; align-items: center; justify-content: center; height: 2.4rem; border-radius: 6px; border: 1.5px dashed #dcdbd2; color: #9aa0a6; font-size: 12px; }
+  .peta-soon { display: block; height: 2.4rem; border-radius: 6px; background: repeating-linear-gradient(135deg, transparent 0 5px, #efeee8 5px 6px); }
+  .peta-sep { width: 2px; padding: 0; background: #17202a; opacity: .25; border-radius: 1px; }
+  .peta-babak { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #6c7480; text-align: left; padding-left: 2px; }
+  .babak > summary::-webkit-details-marker { display: none; }
   @media (prefers-reduced-motion: reduce) { .peta-cell { transition: none; } .peta-cell:hover { transform: none; } }
   .perspective-1000 { perspective: 1000px; }
   [id^="blk-"] { scroll-margin-top: 9.5rem; }
