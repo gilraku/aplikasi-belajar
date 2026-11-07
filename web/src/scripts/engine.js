@@ -814,7 +814,7 @@ function renderHeader() {
       <div class="min-w-0 flex-1">
         ${m ? `<div class="text-[11px] font-bold text-indigo-700 truncate">${esc((c.kode ? c.kode + ' • ' : '') + c.nama)} • Pertemuan ${esc(m.nomor)}</div>
           <h1 class="text-[15px] sm:text-lg font-extrabold text-slate-900 leading-snug line-clamp-2" title="${esc(m.judul)}">${esc(m.judul)}</h1>`
-        : `<h1 class="leading-none"><button onclick="go('#/')" class="wordmark text-[28px] sm:text-[32px]" aria-label="Beranda Sinau">sinau</button></h1><p class="mt-1.5 text-xs text-slate-500 truncate">${esc(['belajar bareng', APP.semester, programLine()].filter(Boolean).join(' • '))}</p>`}
+        : `<h1 class="leading-none"><button onclick="go('#/')" class="wordmark text-[28px] sm:text-[32px]" aria-label="Beranda Sinau">sinau</button></h1><p class="mt-1.5 text-xs text-slate-500 truncate">${esc(['rangkuman', APP.semester, programLine()].filter(Boolean).join(' • '))}</p>`}
       </div>
       ${m ? `<div class="md:hidden shrink-0 h-10 px-2 rounded-xl bg-indigo-50 text-indigo-700 flex flex-col items-center justify-center leading-none" title="Kesiapan ${esc(m.ujian)}"><span id="readinessPill" class="text-sm font-extrabold">0%</span><span class="text-[9px] font-bold uppercase tracking-wide">siap</span></div>` : ''}
       <button onclick="openProgressModal()" title="Progres belajarku (simpan / pindah perangkat)" aria-label="Progres belajarku" class="shrink-0 h-10 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1.5">${svg('chart', 'w-4 h-4')}<span class="hidden sm:inline">Progresku</span></button>
@@ -953,6 +953,13 @@ const shortName = c => (c.kode || c.nama).replace(/\s*\(.*?\)\s*/g, '').trim();
 const SEMESTER_LEN = 16;
 const BABAK = [{ id: 'uts', label: 'Menuju UTS' }, { id: 'uas', label: 'Menuju UAS' }];
 const babakOf = n => parseFloat(n) > SEMESTER_LEN / 2 ? 'uas' : 'uts';
+// Penanda pertemuan ujian/tugas di peta, dibaca dari judulnya (mis. "UTS: Ulasan…", "… & CPMK 1", "Tugas 1: …")
+const examMark = m => { const j = String(m.judul || '');
+  const u = j.match(/\b(UTS|UAS)\b/); if (u) return u[1];
+  if (/\bCPMK\b/.test(j)) return 'CPMK';
+  if (/^Tugas\b/i.test(j)) return 'Tugas';
+  if (/^(Evaluasi|Kuis)\b/i.test(j)) return 'Kuis';
+  return ''; };
 function renderHome(only) {
   const list = only ? [only] : LIB;
   const meetingRow = (c, m) => { const pct = storedReadiness(c, m);
@@ -993,12 +1000,13 @@ function renderHome(only) {
         ? `<td><span class="peta-none" title="${esc(c.nama)} tidak punya Pertemuan ${esc(n)}">×</span></td>`
         : `<td><span class="peta-soon" title="Pertemuan ${esc(n)} belum ada materinya"></span></td>`;
       const pct = storedReadiness(c, m);
-      return `<td><button type="button" onclick="go('${routeFor(c, m)}')" class="peta-cell" style="--hl:${courseHL(c)};--p:${pct}" ${pct ? `data-pct="${pct}"` : ''} title="${esc(c.nama)} • P${esc(n)}: ${esc(m.judul)} • ${pct}% siap" aria-label="${esc(c.nama)} Pertemuan ${esc(n)}, ${pct}% siap">${pct ? pct : ''}</button></td>`; };
+      return `<td><button type="button" onclick="go('${routeFor(c, m)}')" class="peta-cell" style="--hl:${courseHL(c)};--p:${pct}" ${pct ? `data-pct="${pct}"` : ''} ${examMark(m) ? 'data-exam' : ''} title="${esc(c.nama)} • P${esc(n)}: ${esc(m.judul)} • ${pct}% siap" aria-label="${esc(c.nama)} Pertemuan ${esc(n)}${examMark(m) ? ' (' + examMark(m) + ')' : ''}, ${pct}% siap">${examMark(m) ? `<span class="peta-mark">${examMark(m)}</span>${pct ? `<span class="peta-num">${pct}</span>` : ''}` : pct ? pct : ''}</button></td>`; };
     const cols = (c, f) => utsN.map(n => f(c, n)).join('') + (uasN.length ? '<td class="peta-sep" aria-hidden="true"></td>' + uasN.map(n => f(c, n)).join('') : '');
     peta = `<section class="space-y-2" aria-label="Peta belajar">
       <div class="flex flex-wrap items-end justify-between gap-2"><h2 class="text-xl font-extrabold text-ink">Peta belajar</h2>
-        <p class="text-xs text-slate-500">Angka = % siap. Klik kotak untuk masuk, atau nama matkul untuk melihat daftar pertemuannya.</p></div>
+        <p class="text-xs text-slate-500">Angka = % siap. Kotak bergaris tebal = pertemuan ujian, CPMK, atau tugas. Klik kotak untuk masuk, atau nama matkul untuk daftar pertemuannya.</p></div>
       <div class="-mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-auto"><table class="peta w-full ${uasN.length ? 'min-w-[880px]' : 'min-w-[600px]'}">
+        <colgroup><col class="w-[7rem] sm:w-[9.5rem]">${utsN.map(() => '<col>').join('')}${uasN.length ? '<col style="width:8px">' + uasN.map(() => '<col>').join('') : ''}</colgroup>
         <thead>${uasN.length ? `<tr><th></th><th colspan="${utsN.length}" class="peta-babak">Menuju UTS</th><th></th><th colspan="${uasN.length}" class="peta-babak">Menuju UAS</th></tr>` : ''}
           <tr><th class="w-[7rem] sm:w-[9.5rem]"></th>${cols(null, (c, n) => `<th class="text-[11px] font-bold text-slate-500 font-display">P${esc(n)}</th>`).replace('<td class="peta-sep" aria-hidden="true"></td>', '<th></th>')}</tr></thead>
         <tbody>${LIB.map(c => `<tr><th scope="row" class="sticky left-0 z-10 bg-paper pr-2 text-left"><button onclick="go('#/c/${encodeURIComponent(c.id)}')" class="text-left text-xs sm:text-[13px] font-display font-bold text-ink leading-tight hover:underline">${esc(shortName(c))}</button></th>${cols(c, cell)}</tr>`).join('')}</tbody>
