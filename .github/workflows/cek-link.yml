@@ -28,10 +28,14 @@ jobs:
       - name: Cek link dengan lychee
         uses: lycheeverse/lychee-action@v2
         with:
-          # 403/429: beberapa situs menolak bot tetapi bisa dibuka biasa di browser
+          # 403/429: beberapa situs menolak bot tetapi bisa dibuka biasa di browser.
+          # Dikecualikan (dicek manual): *.kemdikbud.go.id tidak bisa diakses dari server GitHub di luar
+          # Indonesia, dan learnenglish.britishcouncil.org menolak klien HTTP/2 lychee.
           args: >-
             --no-progress --max-retries 3 --retry-wait-time 5 --timeout 30
             --accept 200..=299,403,429
+            --exclude 'kemdikbud\.go\.id'
+            --exclude 'learnenglish\.britishcouncil\.org'
             ref-urls.txt
           fail: true
           jobSummary: true

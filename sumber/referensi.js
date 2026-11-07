@@ -38,7 +38,6 @@ module.exports = {
     R('SQL DELETE', 'https://www.w3schools.com/sql/sql_delete.asp', W3, 'EN', 'Menghapus baris dengan aman.'),
   ],
   'sif002-basis-data/p5': [
-    R('Normalisasi basis data', 'https://id.wikipedia.org/wiki/Normalisasi_basis_data', WIKI_ID, 'ID', 'Ringkasan 1NF, 2NF, 3NF dalam bahasa Indonesia.', 'Tiga Tahap Normalisasi'),
     R('Database normalization', 'https://en.wikipedia.org/wiki/Database_normalization', WIKI_EN, 'EN', 'Contoh bertahap dari tabel belum normal sampai 3NF.', 'Tahapan Normalisasi'),
     R('Functional dependency', 'https://en.wikipedia.org/wiki/Functional_dependency', WIKI_EN, 'EN', 'Dasar teori ketergantungan fungsional.', 'Ketergantungan Fungsional'),
   ],
@@ -56,7 +55,7 @@ module.exports = {
   'sif002-basis-data/p8': [
     R('SQL Tutorial (ringkas semua perintah)', 'https://www.w3schools.com/sql/', W3, 'EN', 'Untuk mengulang sintaks SQL dengan cepat sebelum ujian.'),
     R('SQL Quiz', 'https://www.w3schools.com/sql/sql_quiz.asp', W3, 'EN', 'Latihan soal tambahan.'),
-    R('Normalisasi basis data', 'https://id.wikipedia.org/wiki/Normalisasi_basis_data', WIKI_ID, 'ID', 'Ulasan cepat normalisasi.'),
+    R('Database normalization', 'https://en.wikipedia.org/wiki/Database_normalization', WIKI_EN, 'EN', 'Ulasan cepat normalisasi 1NF–3NF.'),
   ],
 
   // ===================== BAHASA INDONESIA =====================
@@ -274,32 +273,29 @@ module.exports = {
   // ===================== BAHASA INGGRIS =====================
   'bahasa-inggris/p1': [
     R('Part of speech', 'https://en.wikipedia.org/wiki/Part_of_speech', WIKI_EN, 'EN', 'Ringkasan delapan kelas kata.', 'Mengapa Belajar Parts of Speech'),
-    R('Prepositions of time: at, in, on', 'https://learnenglish.britishcouncil.org/grammar/a1-a2-grammar/prepositions-time-at-in-on', BC, 'EN', 'Penjelasan dan latihan in–on–at.', 'in – on – at'),
+    R('Prepositions of time: at, in, on', 'https://learnenglish.britishcouncil.org/free-resources/grammar/a1-a2-grammar/prepositions-of-time-at-in-on', BC, 'EN', 'Penjelasan dan latihan in–on–at.', 'in – on – at'),
     R('Cambridge Dictionary', 'https://dictionary.cambridge.org/', CAM, 'EN', 'Cek kelas kata dan dengarkan pelafalan.', 'Dengarkan Istilah Kunci'),
   ],
   'bahasa-inggris/p2': [
-    R('A1–A2 grammar', 'https://learnenglish.britishcouncil.org/grammar/a1-a2-grammar', BC, 'EN', 'Kumpulan materi grammar dasar dengan latihan.', 'to be'),
+    R('Present simple: to be', 'https://learnenglish.britishcouncil.org/free-resources/grammar/a1-a2/present-simple-be', BC, 'EN', 'am/is/are dengan latihan.', 'to be'),
     R('Cambridge Dictionary', 'https://dictionary.cambridge.org/', CAM, 'EN', 'Pelafalan nama negara dan kebangsaan.', 'Negara & Kebangsaan'),
   ],
   'bahasa-inggris/p3': [
-    R('Present simple', 'https://learnenglish.britishcouncil.org/grammar/a1-a2-grammar/present-simple', BC, 'EN', 'Penjelasan dan latihan present simple.', 'Present Simple: Bentuk'),
-    R('Telling the time', 'https://learnenglish.britishcouncil.org/vocabulary/a1-a2-vocabulary/telling-the-time', BC, 'EN', 'past, to, o\'clock dengan latihan.', 'Jam Analog'),
+    R('Present simple', 'https://learnenglish.britishcouncil.org/free-resources/grammar/a1-a2/present-simple', BC, 'EN', 'Penjelasan dan latihan present simple.', 'Present Simple: Bentuk'),
   ],
   'bahasa-inggris/p4': [
-    R('Present simple', 'https://learnenglish.britishcouncil.org/grammar/a1-a2-grammar/present-simple', BC, 'EN', 'Ulang present simple.'),
+    R('Present simple', 'https://learnenglish.britishcouncil.org/free-resources/grammar/a1-a2/present-simple', BC, 'EN', 'Ulang present simple.'),
     R('A1–A2 grammar', 'https://learnenglish.britishcouncil.org/grammar/a1-a2-grammar', BC, 'EN', 'Latihan tambahan.'),
   ],
   'bahasa-inggris/p5': [
-    R('Present simple', 'https://learnenglish.britishcouncil.org/grammar/a1-a2-grammar/present-simple', BC, 'EN', 'Bagian he/she/it dan does.', '-s yang Berpindah'),
-    R('Adverbs of frequency', 'https://learnenglish.britishcouncil.org/grammar/a1-a2-grammar/adverbs-frequency', BC, 'EN', 'always, usually, often, sometimes, never.', 'Adverbs of Frequency'),
+    R('Present simple', 'https://learnenglish.britishcouncil.org/free-resources/grammar/a1-a2/present-simple', BC, 'EN', 'Bagian he/she/it dan does.', '-s yang Berpindah'),
     R('English plurals (pengucapan -s)', 'https://en.wikipedia.org/wiki/English_plurals', WIKI_EN, 'EN', 'Aturan bunyi /s/, /z/, /ɪz/.', 'Akhiran -s'),
   ],
   'bahasa-inggris/p6': [
-    R('Articles: a, an, the', 'https://learnenglish.britishcouncil.org/grammar/a1-a2-grammar/articles-a-an-the', BC, 'EN', 'Kapan memakai a, an, the.', 'Articles'),
-    R('can and can\'t', 'https://learnenglish.britishcouncil.org/grammar/a1-a2-grammar/can-cant', BC, 'EN', 'can untuk kemampuan.', 'can dan can\'t'),
+    R('Articles: a, an, the', 'https://learnenglish.britishcouncil.org/free-resources/grammar/a1-a2-grammar/articles-a-an-the', BC, 'EN', 'Kapan memakai a, an, the.', 'Articles'),
   ],
   'bahasa-inggris/p7': [
-    R('Count nouns and uncount nouns', 'https://learnenglish.britishcouncil.org/grammar/a1-a2-grammar/count-nouns-uncount-nouns', BC, 'EN', 'Countable dan uncountable dengan latihan.', 'Satu Pertanyaan'),
+    R('Nouns: countable and uncountable', 'https://learnenglish.britishcouncil.org/free-resources/grammar/a1-a2/nouns-countable-uncountable', BC, 'EN', 'Countable dan uncountable dengan latihan.', 'Satu Pertanyaan'),
     R('Quantifiers: some and any', 'https://dictionary.cambridge.org/grammar/british-grammar/some-and-any', CAM, 'EN', 'Aturan some dan any.', 'some/any'),
   ],
   'bahasa-inggris/p8': [
