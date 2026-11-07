@@ -371,15 +371,15 @@ function storedReadiness(c, m) {
 // ---------- State aplikasi ----------
 const S = { course: null, meeting: null, tab: 'cheatsheet', prog: null, fcFilter: 'all', interactiveTotal: 0 };
 const TAB_DEFS = [
-  { id: 'materi', name: m => '📖 Materi Lengkap' },
-  { id: 'cheatsheet', name: m => 'Visual Cheat Sheet' },
-  { id: 'simulator', name: m => 'Simulator & Studi Kasus' },
-  { id: 'flashcard', name: m => `Flashcard 3D (${fcCount(m)})` },
-  { id: 'quiz', name: m => `Kuis Simulasi ${m.ujian}` }
+  { id: 'materi', name: m => '📖 Materi Lengkap', short: m => '📖 Materi' },
+  { id: 'cheatsheet', name: m => 'Visual Cheat Sheet', short: m => 'Cheat Sheet' },
+  { id: 'simulator', name: m => 'Simulator & Studi Kasus', short: m => 'Simulator' },
+  { id: 'flashcard', name: m => `Flashcard 3D (${fcCount(m)})`, short: m => `Flashcard (${fcCount(m)})` },
+  { id: 'quiz', name: m => `Kuis Simulasi ${m.ujian}`, short: m => 'Kuis' }
 ];
 function availableTabs(m) {
   const list = TAB_DEFS.filter(t => m._lazy ? m._sum.tabs.includes(t.id) : t.id === 'materi' ? (m.materi || []).length : t.id === 'cheatsheet' ? m.cheatsheet.length : t.id === 'simulator' ? m.simulator.length : t.id === 'flashcard' ? m.flashcards.length : m.quiz.length);
-  return list.map((t, i) => ({ id: t.id, label: mm => (i + 1) + '. ' + t.name(mm) }));
+  return list.map((t, i) => ({ id: t.id, label: mm => (i + 1) + '. ' + t.name(mm), short: mm => t.short(mm) }));
 }
 const defaultTab = m => { const t = availableTabs(m); return t.length ? t[0].id : 'cheatsheet'; };
 
@@ -816,17 +816,21 @@ function renderHeader() {
           <h1 class="text-[15px] sm:text-lg font-extrabold text-slate-900 leading-snug line-clamp-2" title="${esc(m.judul)}">${esc(m.judul)}</h1>`
         : `<h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-snug">Aplikasi Belajar Interaktif</h1><p class="text-xs text-slate-500 truncate">${esc([APP.semester, programLine()].filter(Boolean).join(' • ') || 'Semua mata kuliah & pertemuan dalam satu file')}</p>`}
       </div>
+      ${m ? `<div class="md:hidden shrink-0 h-10 px-2 rounded-xl bg-indigo-50 text-indigo-700 flex flex-col items-center justify-center leading-none" title="Kesiapan ${esc(m.ujian)}"><span id="readinessPill" class="text-sm font-extrabold">0%</span><span class="text-[9px] font-bold uppercase tracking-wide">siap</span></div>` : ''}
       <button onclick="openProgressModal()" title="Progres belajarku (simpan / pindah perangkat)" aria-label="Progres belajarku" class="shrink-0 h-10 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1.5">${svg('chart', 'w-4 h-4')}<span class="hidden sm:inline">Progresku</span></button>
       <button onclick="openShareModal()" title="Bagikan / Unduh" aria-label="Bagikan / Unduh" class="shrink-0 h-10 px-3 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 flex items-center gap-1.5">${svg('share', 'w-4 h-4')}<span class="hidden sm:inline">Bagikan / Unduh</span></button>
     </div>
     <div class="hdr-collapse flex flex-wrap md:flex-nowrap items-center gap-2">
       ${LIB.length ? `<select id="selCourse" aria-label="Pilih mata kuliah" class="flex-1 min-w-0 md:flex-none md:w-56 p-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold"><option value="">— Mata kuliah —</option>${courseOpts}</select>` : ''}
       ${c ? `<select id="selMeeting" aria-label="Pilih pertemuan" class="flex-1 min-w-0 md:flex-none md:w-80 p-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold"><option value="">— Pertemuan —</option>${meetOpts}</select>` : ''}
-      ${m ? `<div class="w-full md:w-48 md:ml-auto"><div class="flex justify-between text-[11px] font-bold text-slate-500 mb-1"><span>Kesiapan ${esc(m.ujian)}</span><span id="readinessLabel" class="text-indigo-700">0%</span></div><div class="h-1.5 rounded-full bg-slate-200 overflow-hidden"><div id="readinessBar" class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-500" style="width:0%"></div></div></div>` : ''}
+      ${m ? `<div class="hidden md:block md:w-48 md:ml-auto"><div class="flex justify-between text-[11px] font-bold text-slate-500 mb-1"><span>Kesiapan ${esc(m.ujian)}</span><span id="readinessLabel" class="text-indigo-700">0%</span></div><div class="h-1.5 rounded-full bg-slate-200 overflow-hidden"><div id="readinessBar" class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-500" style="width:0%"></div></div></div>` : ''}
     </div>
-    ${tabs.length ? `<nav class="flex gap-1.5 overflow-x-auto pb-0.5" aria-label="Menu Utama">${tabs.map(t =>
-      `<button onclick="go('${routeFor(c, m, t.id)}')" class="shrink-0 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${S.tab === t.id ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">${esc(t.label(m))}</button>`).join('')}</nav>` : ''}
+    ${tabs.length ? `<div class="relative -mx-4 sm:mx-0"><nav id="tabNav" class="flex gap-1.5 overflow-x-auto pb-0.5 px-4 sm:px-0 scroll-px-4" aria-label="Menu Utama">${tabs.map(t =>
+      `<button onclick="go('${routeFor(c, m, t.id)}')" ${S.tab === t.id ? 'aria-current="page"' : ''} class="shrink-0 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${S.tab === t.id ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}"><span class="sm:hidden">${esc(t.short(m))}</span><span class="hidden sm:inline">${esc(t.label(m))}</span></button>`).join('')}</nav>
+      <div class="sm:hidden pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white"></div></div>` : ''}
   </div>`;
+  const nav = $('tabNav'), at = nav && nav.querySelector('[aria-current="page"]');
+  if (at && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = at.offsetLeft - (nav.clientWidth - at.offsetWidth) / 2;
   const sc = $('selCourse'); if (sc) sc.onchange = () => { const nc = findCourse(sc.value); if (!nc) return go('#/'); go(nc.meetings.length === 1 ? routeFor(nc, nc.meetings[0]) : '#/c/' + encodeURIComponent(nc.id)); };
   const sm = $('selMeeting'); if (sm) sm.onchange = () => { const nm = findMeeting(c, sm.value); go(nm ? routeFor(c, nm) : '#/c/' + encodeURIComponent(c.id)); };
 }
@@ -861,8 +865,8 @@ function renderFooter() {
 function updateReadiness() {
   if (!S.meeting) return;
   const pct = readiness(S.meeting, S.prog, S.interactiveTotal);
-  const l = $('readinessLabel'), b = $('readinessBar');
-  if (l) l.textContent = pct + '%'; if (b) b.style.width = pct + '%';
+  const l = $('readinessLabel'), b = $('readinessBar'), pl = $('readinessPill');
+  if (l) l.textContent = pct + '%'; if (b) b.style.width = pct + '%'; if (pl) pl.textContent = pct + '%';
 }
 
 // ---------- Routing ----------
@@ -919,7 +923,7 @@ function route(forced) {
     const tabs = availableTabs(m);
     if (!tabs.some(t => t.id === tab)) tab = tabs.length ? tabs[0].id : 'cheatsheet';
     S.tab = tab;
-    if (changedMeeting) { S.prog = loadProgress(c, m); S.fcFilter = 'all'; S.interactiveTotal = countInteractive(m); }
+    if (changedMeeting) { S.prog = loadProgress(c, m); S.fcFilter = 'all'; S.quizFilter = 'all'; S.exam = null; S.interactiveTotal = countInteractive(m); }
     if (!S.prog.visited.has(tab)) { S.prog.visited.add(tab); saveProgress(); }
     PROGRESS.setLast(routeFor(c, m, tab));
     document.title = `Belajar Interaktif ${m.ujian} — ${c.nama} Pertemuan ${m.nomor}`;
@@ -953,13 +957,35 @@ function renderHome(only) {
       <div class="text-xs text-slate-500">${fcCount(m)} flashcard • ${quizAns(m).length} soal kuis${m._imported ? ' • materi tambahan' : ''}</div>
       <div class="mt-auto pt-1"><div class="flex justify-between text-[11px] font-semibold text-slate-500 mb-1"><span>Kesiapan</span><span>${pct}%</span></div><div class="h-1.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500" style="width:${pct}%"></div></div></div>
     </div>`; };
-  $('appMain').innerHTML = `<div class="space-y-6">
+  // Kartu "Lanjutkan belajar" dari halaman terakhir yang dibuka
+  let cont = '';
+  const last = !only && PROGRESS.getLast();
+  if (last) {
+    const pp = last.hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
+    const lc = pp[0] === 'c' && findCourse(pp[1]), lm = lc && pp[2] === 'm' && findMeeting(lc, pp[3]);
+    if (lm) {
+      const pct = storedReadiness(lc, lm), tab = availableTabs(lm).find(t => t.id === (pp[4] || defaultTab(lm)));
+      cont = `<button onclick="go('${esc(last.hash)}')" class="w-full text-left p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white shadow-sm hover:shadow-md transition flex items-center gap-4">
+        <div class="min-w-0 flex-1 space-y-1"><div class="text-[11px] font-bold uppercase tracking-wider text-indigo-200">Lanjutkan belajar</div>
+          <div class="text-xs font-semibold text-indigo-100 truncate">${esc(lc.nama)} • Pertemuan ${esc(lm.nomor)}${tab ? ' • ' + esc(tab.short(lm)) : ''}</div>
+          <div class="font-extrabold leading-snug line-clamp-2">${esc(lm.judul)}</div>
+          <div class="flex items-center gap-2 pt-1"><div class="flex-1 h-1.5 rounded-full bg-white/20 overflow-hidden"><div class="h-full bg-white" style="width:${pct}%"></div></div><span class="text-xs font-bold">${pct}% siap</span></div></div>
+        <span class="shrink-0 w-10 h-10 rounded-full bg-white/15 flex items-center justify-center text-lg font-bold">→</span></button>`;
+    }
+  }
+  const courseSummary = c => {
+    const pcts = c.meetings.map(m => storedReadiness(c, m)), started = pcts.filter(x => x > 0).length;
+    const avg = Math.round(pcts.reduce((a, b) => a + b, 0) / Math.max(1, pcts.length));
+    return `<div class="w-full sm:w-56"><div class="flex justify-between text-[11px] font-semibold text-slate-500 mb-1"><span>${started}/${pcts.length} pertemuan dimulai</span><span class="font-bold text-indigo-700">${avg}%</span></div>
+      <div class="h-1.5 rounded-full bg-slate-200 overflow-hidden"><div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500" style="width:${avg}%"></div></div></div>`;
+  };
+  $('appMain').innerHTML = `<div class="space-y-6">${cont}
     ${list.length ? list.map(c => `<section class="space-y-3">
       <div class="flex flex-wrap items-end justify-between gap-2"><div>
         <div class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Mata Kuliah${c.kode ? ' • ' + esc(c.kode) : ''}</div>
         <h2 class="text-xl font-extrabold text-slate-900">${esc(c.nama)}</h2>
         ${c.dosen ? `<p class="text-xs text-slate-500">Dosen: ${esc(c.dosen)}</p>` : ''}</div>
-        ${only ? `<button onclick="go('#/')" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200">← Semua mata kuliah</button>` : ''}</div>
+        <div class="w-full sm:w-auto flex flex-col sm:items-end gap-2">${courseSummary(c)}${only ? `<button onclick="go('#/')" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200">← Semua mata kuliah</button>` : ''}</div></div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">${c.meetings.map(m => meetingCard(c, m)).join('')}
 
       </div></section>`).join('')
@@ -983,9 +1009,9 @@ function renderMeeting(fresh) {
   if (S.tab === 'materi' || S.tab === 'cheatsheet' || S.tab === 'simulator') {
     // Render ulang hanya bila perlu, supaya status interaktif tetap terjaga
     const hero = (S.tab === 'materi' || S.tab === 'cheatsheet') && m.hero ? `<div class="rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white px-4 py-4 sm:px-6 sm:py-5 shadow-sm space-y-1.5 on-dark">
-        ${m.hero.badge ? `<span class="inline-block px-2 py-0.5 rounded-md bg-white/15 text-[11px] font-bold rich">${rich(m.hero.badge)}</span>` : ''}
+        ${m.hero.badge ? `<span class="hidden sm:inline-block px-2 py-0.5 rounded-md bg-white/15 text-[11px] font-bold rich">${rich(m.hero.badge)}</span>` : ''}
         ${m.hero.title ? `<h2 class="text-lg sm:text-xl font-extrabold leading-snug rich">${rich(m.hero.title)}</h2>` : ''}
-        ${m.hero.text ? `<p class="text-[13px] sm:text-sm text-indigo-100 max-w-4xl leading-relaxed rich">${rich(m.hero.text)}</p>` : ''}
+        ${m.hero.text ? `<p class="text-[13px] sm:text-sm text-indigo-100 max-w-4xl leading-relaxed rich line-clamp-3 sm:line-clamp-none">${rich(m.hero.text)}</p>` : ''}
       </div>` : '';
     const ids = S.blockIds[S.tab];
     const tocItems = ids.map(n => { const d = BLOCKS[n].def; const t = d.title || d.label || d.heading; return t ? { n, t: String(t).replace(/<[^>]+>/g, '').replace(/`/g, '') } : null; }).filter(Boolean);
@@ -1038,39 +1064,98 @@ function toggleMaster(i) {
   saveProgress(); renderFlashcards(); updateReadiness();
 }
 
+function quizStats(m, ans) {
+  const out = { total: m.quiz.length, answered: 0, score: 0, wrong: [] };
+  m.quiz.forEach((q, i) => { if (ans[i] === undefined) return; out.answered++; if (ans[i] === q.ans) out.score++; else out.wrong.push(i); });
+  return out;
+}
 function renderQuiz() {
-  const m = S.meeting, ans = S.prog.quiz; const total = m.quiz.length;
-  const answered = Object.keys(ans).filter(k => k < total).length;
-  const score = m.quiz.reduce((s, q, i) => s + (ans[i] === q.ans ? 1 : 0), 0);
-  const L = 'ABCDEFGH';
-  $('appMain').innerHTML = `<section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-5">
-    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3"><div>
-      <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Evaluasi Mandiri Terpadu</span>
-      <h2 class="text-xl font-extrabold text-slate-900">Simulasi Kuis ${esc(m.ujian)} — Pertemuan ${esc(m.nomor)} (${total} Soal)</h2>
-      <p class="text-sm text-slate-600">Pilih jawaban yang paling tepat. Pembahasan langsung muncul setiap kali kamu menjawab!</p></div>
-      <div class="flex items-center gap-2"><span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-100 text-indigo-800">Skor: ${score} / ${total}</span>
-        <button onclick="resetQuiz()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700">Ulangi Kuis</button></div></div>
-    <div class="space-y-4">${m.quiz.map((q, qi) => { const ch = ans[qi]; const done = ch !== undefined;
-      return `<div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3">
+  const m = S.meeting, ex = S.exam, L = 'ABCDEFGH';
+  const saved = S.prog.quiz, st = quizStats(m, saved), total = st.total, score = st.score;
+  const ans = ex ? ex.ans : saved;
+  const f = ex ? 'all' : (S.quizFilter || 'all');
+  const idx = m.quiz.map((q, i) => i).filter(i => f === 'todo' ? saved[i] === undefined : f === 'wrong' ? st.wrong.includes(i) : true);
+  const btn = 'px-3 py-1.5 rounded-xl text-xs font-bold';
+  const chip = (id, label, n) => `<button onclick="setQuizFilter('${id}')" class="${btn} ${f === id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">${label} (${n})</button>`;
+  const exDone = ex ? Object.keys(ex.ans).length : 0;
+  const controls = ex
+    ? `<div class="p-3 rounded-xl bg-amber-50 border border-amber-200 flex flex-wrap items-center gap-2">
+        <span class="text-xs font-bold text-amber-900 flex-1 min-w-[10rem]">📝 Mode ujian • terjawab ${exDone}/${total}</span>
+        <button onclick="cancelExam()" class="${btn} bg-white border border-slate-300 text-slate-700 hover:bg-slate-50">Batal</button>
+        <button onclick="finishExam()" class="${btn} bg-indigo-600 hover:bg-indigo-700 text-white">Selesai & lihat nilai</button></div>`
+    : `<div class="space-y-2">
+        <div class="flex items-center gap-2 overflow-x-auto pb-0.5 [&>*]:shrink-0">
+          <span class="${btn} bg-indigo-100 text-indigo-800">Skor: ${score} / ${total}</span>
+          ${chip('all', 'Semua', total)}${chip('todo', 'Belum dijawab', total - st.answered)}${chip('wrong', 'Salah', st.wrong.length)}</div>
+        <div class="flex flex-wrap items-center gap-2">
+          ${st.wrong.length ? `<button onclick="retryWrong()" class="${btn} bg-rose-50 text-rose-700 hover:bg-rose-100">🔁 Ulangi yang salah (${st.wrong.length})</button>` : ''}
+          <button onclick="startExam()" class="${btn} bg-amber-50 text-amber-800 hover:bg-amber-100">📝 Mode ujian</button>
+          <button onclick="resetQuiz()" class="${btn} bg-slate-100 hover:bg-slate-200 text-slate-700">↺ Ulangi kuis</button></div></div>`;
+  const card = qi => { const q = m.quiz[qi], ch = ans[qi], done = !ex && ch !== undefined;
+    return `<div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3">
         <p class="font-bold text-slate-900 text-sm sm:text-[15px] leading-snug"><span class="text-indigo-600">${qi + 1}.</span> <span class="rich">${rich(q.q)}</span></p>
         <div class="grid gap-2">${q.opts.map((o, oi) => {
-          let cls = !done ? 'bg-white border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 text-slate-800' : oi === q.ans ? 'bg-emerald-100 border-emerald-500 text-emerald-950 font-bold' : oi === ch ? 'bg-rose-100 border-rose-400 text-rose-950 font-semibold' : 'bg-white/60 border-slate-200 text-slate-500';
+          const cls = ex ? (oi === ch ? 'bg-indigo-50 border-indigo-500 text-indigo-950 font-semibold' : 'bg-white border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 text-slate-800')
+            : !done ? 'bg-white border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 text-slate-800' : oi === q.ans ? 'bg-emerald-100 border-emerald-500 text-emerald-950 font-bold' : oi === ch ? 'bg-rose-100 border-rose-400 text-rose-950 font-semibold' : 'bg-white/60 border-slate-200 text-slate-500';
+          const badge = ex ? (oi === ch ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600') : done && oi === q.ans ? 'bg-emerald-600 text-white' : done && oi === ch ? 'bg-rose-500 text-white' : 'bg-slate-100 text-slate-600';
           const oe = done && Array.isArray(q.optExp) && q.optExp[oi] ? `<span class="block mt-1 text-xs font-normal ${oi === q.ans ? 'text-emerald-800' : 'text-slate-500'} rich">${rich(q.optExp[oi])}</span>` : '';
-          return `<button ${done ? 'disabled' : ''} onclick="answerQuiz(${qi},${oi})" class="w-full text-left p-3 rounded-xl border text-xs sm:text-sm font-medium transition flex items-start gap-2.5 ${cls}">
-            <span class="w-6 h-6 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${done && oi === q.ans ? 'bg-emerald-600 text-white' : done && oi === ch ? 'bg-rose-500 text-white' : 'bg-slate-100 text-slate-600'}">${L[oi]}</span>
+          return `<button ${done ? 'disabled' : ''} onclick="${ex ? 'examAnswer' : 'answerQuiz'}(${qi},${oi})" class="w-full text-left p-3 rounded-xl border text-xs sm:text-sm font-medium transition flex items-start gap-2.5 ${cls}">
+            <span class="w-6 h-6 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${badge}">${L[oi]}</span>
             <span class="min-w-0"><span class="rich">${rich(o)}</span>${oe}</span></button>`; }).join('')}</div>
         ${done ? `<div class="p-3 rounded-xl text-xs sm:text-sm ${ch === q.ans ? 'bg-emerald-50 border border-emerald-200 text-emerald-950' : 'bg-rose-50 border border-rose-200 text-rose-950'}"><strong>${ch === q.ans ? '✅ Jawaban Benar!' : '❌ Kurang Tepat.'} Pembahasan:</strong> <span class="rich">${rich(q.exp || ('Jawaban yang benar adalah ' + L[q.ans] + '.'))}</span></div>` : ''}
-      </div>`; }).join('')}</div>
-    ${answered === total && total ? `<div class="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white text-center space-y-3">
+      </div>`; };
+  const empty = !idx.length ? `<div class="p-6 rounded-2xl border-2 border-dashed border-slate-200 text-center text-sm font-semibold text-slate-500">${f === 'wrong' ? '🎉 Tidak ada jawaban yang salah.' : f === 'todo' ? '✅ Semua soal sudah dijawab.' : 'Belum ada soal.'}</div>` : '';
+  $('appMain').innerHTML = `<section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-5">
+    <div class="space-y-3"><div>
+      <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Evaluasi Mandiri Terpadu</span>
+      <h2 class="text-xl font-extrabold text-slate-900">Simulasi Kuis ${esc(m.ujian)} — Pertemuan ${esc(m.nomor)} (${total} Soal)</h2>
+      <p class="text-sm text-slate-600">${ex ? 'Seperti ujian sungguhan: jawaban bisa diganti, pembahasan dan nilai baru muncul setelah kamu menekan <strong>Selesai</strong>.' : 'Pilih jawaban yang paling tepat. Pembahasan langsung muncul setiap kali kamu menjawab!'}</p></div>
+      ${controls}</div>
+    <div class="space-y-4">${idx.map(card).join('')}${empty}</div>
+    ${ex ? `<button onclick="finishExam()" class="w-full px-4 py-3 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white">Selesai & lihat nilai (${exDone}/${total} terjawab)</button>` : ''}
+    ${!ex && f === 'all' && st.answered === total && total ? `<div class="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white text-center space-y-3">
       <h3 class="text-lg sm:text-xl font-extrabold">${score / total >= 0.8 ? '🎉 Luar Biasa!' : '💪 Terus Semangat!'} Skor ${esc(m.ujian)} Kamu: ${Math.round(score / total * 100)} / 100 (${score}/${total} Benar)</h3>
-      <p class="text-sm text-indigo-100">${score / total >= 0.8 ? `Kamu sudah sangat siap menghadapi soal-soal ${esc(m.ujian)} Pertemuan ${esc(m.nomor)}.` : 'Baca kembali pembahasan pada soal yang masih keliru atau ulangi Flashcard 3D agar kesiapanmu mencapai 100%!'}</p>
-      <div class="flex flex-wrap justify-center gap-2"><button onclick="resetQuiz()" class="px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-sm font-bold">Coba Kerjakan Ulang</button>
-      <button onclick="openShareModal()" class="px-4 py-2 rounded-xl bg-white text-indigo-700 text-sm font-bold hover:bg-indigo-50">Bagikan / Unduh untuk Teman Kelas</button></div>
+      <p class="text-sm text-indigo-100">${score / total >= 0.8 ? `Kamu sudah sangat siap menghadapi soal-soal ${esc(m.ujian)} Pertemuan ${esc(m.nomor)}.` : 'Baca kembali pembahasan pada soal yang masih keliru, atau tekan "Ulangi yang salah" untuk mengerjakannya lagi.'}</p>
+      <div class="flex flex-wrap justify-center gap-2">${st.wrong.length ? `<button onclick="retryWrong()" class="px-4 py-2 rounded-xl bg-white text-indigo-700 text-sm font-bold hover:bg-indigo-50">🔁 Ulangi yang salah (${st.wrong.length})</button>` : ''}<button onclick="resetQuiz()" class="px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-sm font-bold">Coba Kerjakan Ulang</button>
+      <button onclick="openShareModal()" class="px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-sm font-bold">Bagikan / Unduh</button></div>
     </div>` : ''}
   </section>`;
 }
+function setQuizFilter(f) { S.quizFilter = f; renderQuiz(); window.scrollTo({ top: 0 }); }
+function retryWrong() {
+  const st = quizStats(S.meeting, S.prog.quiz); if (!st.wrong.length) return;
+  st.wrong.forEach(i => delete S.prog.quiz[i]); saveProgress();
+  S.quizFilter = 'todo'; renderQuiz(); updateReadiness(); window.scrollTo({ top: 0 });
+  showToast(`${st.wrong.length} soal yang salah dibuka lagi. Coba kerjakan ulang!`);
+}
+function startExam() {
+  openModal(`<h3 class="text-lg font-extrabold text-slate-900">📝 Mulai mode ujian?</h3>
+    <ul class="text-sm text-slate-600 mt-2 list-disc pl-5 space-y-1"><li>Semua ${S.meeting.quiz.length} soal dikerjakan tanpa melihat pembahasan.</li><li>Jawaban bisa diganti sebelum kamu menekan <strong>Selesai</strong>.</li><li>Setelah selesai, nilai dan pembahasan muncul, dan jawaban kuis sebelumnya di pertemuan ini <strong>diganti</strong> hasil ujian ini.</li></ul>
+    <div class="flex justify-end gap-2 mt-5"><button onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200">Batal</button>
+    <button onclick="beginExam()" class="px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700">Mulai</button></div>`, 'max-w-md');
+}
+function beginExam() { closeModal(); S.exam = { ans: {}, start: Date.now() }; renderQuiz(); window.scrollTo({ top: 0 }); }
+function examAnswer(qi, oi) { if (!S.exam) return; S.exam.ans[qi] = oi; const y = window.scrollY; renderQuiz(); window.scrollTo(0, y); }
+function cancelExam() { S.exam = null; renderQuiz(); window.scrollTo({ top: 0 }); }
+function finishExam(force) {
+  const ex = S.exam, m = S.meeting; if (!ex) return;
+  const left = m.quiz.length - Object.keys(ex.ans).length;
+  if (left && !force) {
+    openModal(`<h3 class="text-lg font-extrabold text-slate-900">Masih ada ${left} soal belum dijawab</h3>
+      <p class="text-sm text-slate-600 mt-2">Soal yang kosong tidak mendapat nilai. Tetap selesai sekarang?</p>
+      <div class="flex justify-end gap-2 mt-5"><button onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200">Lanjut mengerjakan</button>
+      <button onclick="finishExam(true)" class="px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700">Selesai</button></div>`, 'max-w-md');
+    return;
+  }
+  closeModal();
+  S.prog.quiz = Object.assign({}, ex.ans); saveProgress();
+  const min = Math.max(1, Math.round((Date.now() - ex.start) / 60000));
+  S.exam = null; S.quizFilter = 'all'; renderQuiz(); updateReadiness(); window.scrollTo({ top: 0 });
+  const st = quizStats(m, S.prog.quiz);
+  showToast(`Nilai ujian: ${Math.round(st.score / Math.max(1, st.total) * 100)} (${st.score}/${st.total} benar, ±${min} menit).`, 'success');
+}
 function answerQuiz(qi, oi) { S.prog.quiz[qi] = oi; saveProgress(); const y = window.scrollY; renderQuiz(); window.scrollTo(0, y); updateReadiness(); }
-function resetQuiz() { S.prog.quiz = {}; saveProgress(); renderQuiz(); updateReadiness(); showToast('Kuis direset. Silakan kerjakan kembali!'); }
+function resetQuiz() { S.exam = null; S.quizFilter = 'all'; S.prog.quiz = {}; saveProgress(); renderQuiz(); updateReadiness(); showToast('Kuis direset. Silakan kerjakan kembali!'); }
 
 // =====================================================================
 //  MODAL: Bagikan / Unduh & Tambah Materi

@@ -54,6 +54,21 @@ try {
     }
   }
 
+  cur = 'kuis: ulangi yang salah & mode ujian';
+  const qr = routes.find(r => r.tab === 'quiz');
+  await page.evaluate(h => go(h), qr.h); await ready();
+  await page.evaluate(() => { const q = S.meeting.quiz; answerQuiz(0, (q[0].ans + 1) % q[0].opts.length); });
+  await page.evaluate(() => retryWrong());
+  if (await page.evaluate(() => S.prog.quiz[0] !== undefined || S.quizFilter !== 'todo')) fail('"Ulangi yang salah" tidak membuka ulang soal yang salah');
+  await page.evaluate(() => { startExam(); beginExam(); examAnswer(0, S.meeting.quiz[0].ans); });
+  if (await page.locator('#appMain').getByText('Pembahasan:').count()) fail('mode ujian menampilkan pembahasan sebelum selesai');
+  await page.evaluate(() => finishExam(true));
+  if (await page.evaluate(() => S.exam !== null || S.prog.quiz[0] !== S.meeting.quiz[0].ans)) fail('hasil mode ujian tidak tersimpan');
+
+  cur = 'beranda';
+  await page.evaluate(() => go('#/')); await ready();
+  if (!(await page.getByText('Lanjutkan belajar').count())) fail('kartu "Lanjutkan belajar" tidak muncul di beranda');
+
   cur = 'navigasi';
   await page.evaluate(h => go(h), routes[0].h);
   await page.evaluate(h => go(h), routes[1].h);
