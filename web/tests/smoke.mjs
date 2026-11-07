@@ -25,7 +25,7 @@ const URL0 = `http://127.0.0.1:${server.address().port}${BASE}`;
 
 const fails = [];
 const fail = m => { fails.push(m); console.log('  ✗ ' + m); };
-const browser = await chromium.launch();
+const browser = await chromium.launch(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {}) // PW_CHROMIUM: pakai browser lain bila versinya tidak cocok;
 try {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort()); // font tidak penting untuk tes
@@ -47,6 +47,14 @@ try {
     if (st.c !== r.c || st.m !== r.m || st.tab !== r.tab) fail(`${cur}: terbuka halaman yang salah (${st.c}/${st.m}/${st.tab})`);
     else if (/Materi gagal dimuat/.test(st.text)) fail(`${cur}: data pertemuan gagal dimuat`);
     else if (st.text.trim().length < 40) fail(`${cur}: isi halaman kosong`);
+    if (r.tab === 'materi' || r.tab === 'cheatsheet') {
+      const ref = await page.evaluate(() => { const m = S.meeting, want = (m.referensi || []).length && S.tab === ((m.materi || []).length ? 'materi' : 'cheatsheet');
+        const box = $('blk-ref'); return { want: !!want, has: !!box, links: box ? box.querySelectorAll('a[href^="https://"][target="_blank"][rel~="noopener"]').length : 0, urls: (m.referensi || []).filter(x => x.url).length, inline: (m.referensi || []).filter(x => x.bagian).length, baca: [...document.querySelectorAll('#appMain span')].filter(e => e.textContent === '📚 Baca juga:').length }; });
+      if (ref.want && !ref.has) fail(`${cur}: bagian Referensi tidak tampil`);
+      if (!ref.want && ref.has) fail(`${cur}: bagian Referensi tampil di tab yang salah`);
+      if (ref.has && ref.links !== ref.urls) fail(`${cur}: ${ref.links} dari ${ref.urls} link referensi tampil`);
+      if (ref.has && r.tab === 'materi' && ref.inline && !ref.baca) fail(`${cur}: "Baca juga" tidak muncul di bawah bagian materi`);
+    }
     if (r.tab === 'quiz') {
       const btn = page.locator('#appMain [onclick^="answerQuiz"]').first();
       if (await btn.count()) { await btn.click(); if (!(await page.evaluate(() => Object.keys(S.prog.quiz).length))) fail(`${cur}: jawaban kuis tidak tersimpan`); }

@@ -8,13 +8,17 @@ const SUMBER = path.resolve(process.cwd(), '../sumber');
 const require = createRequire(path.join(SUMBER, 'build.js'));
 const B = require('./build.js');
 
-import { validateLibrary } from './validate.mjs';
-const problems = validateLibrary(B.lib);
+// Referensi & bacaan lanjut (sumber/referensi.js) digabung ke salinan data, sehingga format sumber/ dan offline.html tetap sama
+const REFS = require('./referensi.js');
+const lib = B.lib.map(c => Object.assign({}, c, { meetings: c.meetings.map(m => (REFS[`${c.id}/${m.id}`] ? Object.assign({}, m, { referensi: REFS[`${c.id}/${m.id}`] }) : m)) }));
+
+import { validateLibrary, validateReferensiKeys } from './validate.mjs';
+const problems = [...validateReferensiKeys(B.lib, REFS), ...validateLibrary(lib)];
 if (problems.length) {
   throw new Error(`Data materi tidak valid (${problems.length} masalah):\n  - ` + problems.slice(0, 30).join('\n  - ') + (problems.length > 30 ? `\n  … dan ${problems.length - 30} lagi` : ''));
 }
 
-export const library = B.lib;
+export const library = lib;
 export const prompt = B.prompt;
 export const renderOffline = B.render;
 export const semester = 'Semester 1';
@@ -45,7 +49,7 @@ function summary(m) {
   if (quiz.length) tabs.push('quiz');
   return { tabs, ni: countInteractive(m), fc, ans: quiz.map(q => { const a = Number(q.ans); return a >= 0 && a < q.opts.length ? a : 0; }) };
 }
-const HEAVY = new Set(['materi', 'cheatsheet', 'simulator', 'flashcards', 'quiz', 'ringkasan']);
+const HEAVY = new Set(['materi', 'cheatsheet', 'simulator', 'flashcards', 'quiz', 'ringkasan', 'referensi']);
 const light = m => {
   const o = {};
   Object.entries(m).forEach(([k, v]) => { if (!HEAVY.has(k)) o[k] = v; });

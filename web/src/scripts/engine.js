@@ -1001,6 +1001,28 @@ function confirmDelete(cid, mid) {
     <button onclick="deleteImported('${esc(cid)}','${esc(mid)}');closeModal();showToast('Materi dihapus.');route()" class="px-4 py-2 rounded-xl text-sm font-bold bg-rose-600 text-white hover:bg-rose-700">Hapus</button></div>`, 'max-w-md');
 }
 
+// ---------- Referensi & bacaan lanjut ----------
+const REF_LANG = { ID: '🇮🇩 Indonesia', EN: '🇬🇧 Inggris', AR: '📖 Arab + terjemahan' };
+// Hanya link https yang ditampilkan (materi impor bisa berisi apa saja)
+const refList = m => (Array.isArray(m.referensi) ? m.referensi : []).filter(r => r && r.judul && (r.url == null || /^https:\/\//i.test(String(r.url))));
+function defTitles(def) {
+  const t = [];
+  const walk = b => { if (!b || typeof b !== 'object') return; if (typeof b.title === 'string') t.push(b.title); if (b.type === 'row') (b.blocks || []).forEach(walk); if (b.type === 'tabs') (b.tabs || []).forEach(x => (x.blocks || []).forEach(walk)); };
+  walk(def); return t;
+}
+function refsHTML(refs) {
+  return `<div id="blk-ref" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 min-w-0">
+    <span class="inline-block text-[11px] font-bold uppercase tracking-wider text-indigo-600">Bacaan lanjut</span>
+    <h3 class="text-lg sm:text-xl font-extrabold text-slate-900 leading-snug">📚 Referensi</h3>
+    <p class="text-sm text-slate-600 mb-4">Kalau ada bagian yang belum jelas, sumber-sumber ini menjelaskannya dengan cara lain. Link terbuka di tab baru.</p>
+    <ul class="grid sm:grid-cols-2 gap-2.5">${refs.map(r => `<li class="p-3 rounded-xl border border-slate-200 bg-slate-50 ${r.url ? 'hover:border-indigo-300 hover:bg-indigo-50/60' : ''} transition">
+      ${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener" class="font-bold text-indigo-700 hover:underline break-words">${esc(r.judul)} ↗</a>` : `<span class="font-bold text-slate-800">📕 ${esc(r.judul)}</span>`}
+      <div class="mt-0.5 text-[11px] font-semibold text-slate-500">${esc(r.sumber)}${REF_LANG[r.bahasa] ? ' • ' + REF_LANG[r.bahasa] : ''}</div>
+      ${r.ket ? `<p class="mt-1 text-xs text-slate-600 leading-relaxed">${esc(r.ket)}</p>` : ''}
+    </li>`).join('')}</ul>
+  </div>`;
+}
+
 // ---------- Halaman pertemuan ----------
 function renderMeeting(fresh) {
   const m = S.meeting;
@@ -1015,11 +1037,22 @@ function renderMeeting(fresh) {
       </div>` : '';
     const ids = S.blockIds[S.tab];
     const tocItems = ids.map(n => { const d = BLOCKS[n].def; const t = d.title || d.label || d.heading; return t ? { n, t: String(t).replace(/<[^>]+>/g, '').replace(/`/g, '') } : null; }).filter(Boolean);
+    // 📚 Referensi: di akhir tab Materi (atau Ringkasan bila tidak ada Materi) + "Baca juga" di bawah bagian yang cocok
+    const refs = refList(m), refTab = (m.materi || []).length ? 'materi' : 'cheatsheet';
+    const showRefs = refs.length && S.tab === refTab;
+    // Setiap referensi hanya ditempel di bagian pertama yang cocok
+    const at = new Map();
+    if (showRefs && S.tab === 'materi') refs.forEach(r => { if (!r.bagian) return; const n = ids.find(n => defTitles(BLOCKS[n].def).some(t => t.includes(r.bagian))); if (n) at.set(n, (at.get(n) || []).concat(r)); });
+    const inline = n => {
+      const hit = at.get(n) || [];
+      return hit.length ? `<div class="-mt-2 px-3 sm:px-4 text-xs text-slate-600 flex flex-wrap items-baseline gap-x-2 gap-y-1"><span class="font-bold text-slate-500">📚 Baca juga:</span>${hit.map(r => r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener" class="font-semibold text-indigo-700 hover:underline">${esc(r.judul)} <span class="text-slate-400 font-normal">(${esc(r.sumber)})</span></a>` : `<span class="italic">${esc(r.judul)}</span>`).join('<span class="text-slate-300">•</span>')}</div>` : '';
+    };
+    if (showRefs && tocItems.length >= 4) tocItems.push({ n: 'ref', t: '📚 Referensi' });
     const toc = tocItems.length >= 4 ? `<div class="p-3 rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Lompat ke bagian (${tocItems.length})</div>
         <div class="flex gap-1.5 overflow-x-auto pb-0.5">${tocItems.map((x, k) => `<button onclick="scrollToBlk('${x.n}')" class="shrink-0 max-w-[15rem] truncate px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700" title="${esc(x.t)}">${k + 1}. ${esc(x.t)}</button>`).join('')}</div>
       </div>` : '';
-    main.innerHTML = `<section class="space-y-5">${hero}${toc}${ids.map(blockHTML).join('')}</section>`;
+    main.innerHTML = `<section class="space-y-5">${hero}${toc}${ids.map(n => blockHTML(n) + inline(n)).join('')}${showRefs ? refsHTML(refs) : ''}</section>`;
   } else if (S.tab === 'flashcard') renderFlashcards();
   else renderQuiz();
 }
