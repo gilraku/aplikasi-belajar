@@ -84,6 +84,8 @@ const LAB_5K = {
     const warn = [];
     if (!s.on.koreksi) warn.push(d.warnKoreksi || 'Data masih mengandung kesalahan dan ikut terhitung.');
     if (!s.on.kondensasi) warn.push('Tabel masih memuat kolom yang tidak dibutuhkan.');
+    if (!s.on.kalkulasi) warn.push('Nilai akhir belum dihitung. Nyalakan <strong>Kalkulasi</strong>.');
+    else if (!s.on.kategorisasi) warn.push('Nilai akhir belum dikelompokkan. Nyalakan <strong>Kategorisasi</strong>.');
     if (!ctx) warn.push('Belum jelas laporan ini untuk apa. Pilih tujuannya di <strong>Kontekstualisasi</strong>.');
 
     const steps = LAB_5K_STEPS.map(([k, label]) => k === 'konteks'

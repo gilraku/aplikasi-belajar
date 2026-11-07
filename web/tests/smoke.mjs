@@ -227,6 +227,11 @@ try {
   if (!(await page.locator('#appMain').getByText('DESCRIBE buku;', { exact: true }).count())) fail('blok cara P7 tidak berpindah ke tab DESCRIBE');
 
   await visit('dasar-sistem-informasi', 'p2', 'simulator');
+  for (const b of ['Kondensasi', 'Koreksi', 'Kontekstualisasi', 'Evaluasi kelas']) {
+    await page.locator('#appMain').getByRole('button', { name: b, exact: true }).click();
+  }
+  if (await page.locator('#appMain').getByText('✓ Kelima K sudah diterapkan').count()) fail('lab-5k DSI P2 menyatakan lengkap padahal Kalkulasi & Kategorisasi belum menyala');
+  await page.locator('#appMain').getByRole('button', { name: '↺ Kembali ke data mentah' }).click();
   for (const b of ['Kondensasi', 'Koreksi', 'Kalkulasi', 'Kategorisasi', 'Kontekstualisasi', 'Evaluasi kelas']) {
     await page.locator('#appMain').getByRole('button', { name: b, exact: true }).click();
   }
