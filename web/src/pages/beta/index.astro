@@ -1,0 +1,10 @@
+---
+// Alamat lama versi uji (/beta/) → alihkan ke alamat utama, termasuk #/ halaman yang sedang dibuka.
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+---
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pindah ke alamat utama</title>
+<script is:inline define:vars={{ base }}>location.replace(base + location.hash);</script>
+<meta http-equiv="refresh" content={`0; url=${base}`}>
+</head><body><p>Aplikasi sudah pindah ke <a href={base}>alamat utama</a>.</p></body></html>
