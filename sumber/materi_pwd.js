@@ -598,6 +598,49 @@ for (let i = 0; i < daftar.length; i++) {
   console.log(i + 1, daftar[i]);
 }
 daftar.forEach(n => console.log(n.toUpperCase()));`, "", "if-else dan for"),
+    A("Fungsi dan Array Secukupnya", `<p>➕ Modul tidak membahas keduanya secara khusus, padahal hampir semua kode di P6–P8 memakainya: setiap ${c("addEventListener")} menerima <strong>fungsi</strong>, dan data mahasiswa di P7–P8 disimpan dalam <strong>array</strong>.</p>
+<p><strong>Fungsi</strong> adalah sekumpulan perintah yang diberi nama dan bisa dipanggil berulang kali. Nilai yang dikirim saat memanggil disebut <strong>argumen</strong>; nama penampungnya di dalam fungsi disebut <strong>parameter</strong>. ${c("return")} mengembalikan hasil ke pemanggil dan langsung menghentikan fungsi. Fungsi tanpa ${c("return")} menghasilkan ${c("undefined")}.</p>
+<p>Ada tiga cara menulis fungsi yang akan sering kamu temui:</p>
+<ul><li>${c("function sapa(nama) { … }")}: deklarasi biasa, bisa dipanggil dengan ${c('sapa("Ani")')}.</li>
+<li>${c("const sapa = (nama) => { … }")}: <em>arrow function</em>, bentuk singkat yang sama fungsinya. Kalau isinya hanya satu ekspresi, kurung kurawal dan ${c("return")} boleh dihilangkan: ${c("(a, b) => a + b")}.</li>
+<li>${c("tombol.addEventListener(\"click\", function () { … })")}: fungsi <em>tanpa nama</em> yang diberikan ke browser. Browser yang memanggilnya nanti, saat tombol diklik. Karena itu yang ditulis ${c("simpan")}, bukan ${c("simpan()")}: kalau pakai kurung, fungsinya langsung jalan saat halaman dimuat.</li></ul>
+<p><strong>Array</strong> adalah daftar nilai berurutan dalam ${c("[ ]")}. Indeks dimulai dari 0, jadi elemen terakhir ada di ${c("arr[arr.length - 1]")}. Method yang dipakai di P7–P8: ${c("push()")} menambah di akhir, ${c("splice(i, 1)")} menghapus elemen ke-i, ${c("forEach()")} menjalankan fungsi untuk setiap elemen, ${c("map()")} membuat array baru dari hasil fungsi, dan ${c("join(\"\")")} menyambung isi array menjadi satu string. Data tabel biasanya berupa <strong>array berisi object</strong>: satu object = satu baris.</p>`, "Bagian 4 • ➕ Tambahan"),
+    code("fungsi-array.js", `// 1. Fungsi dengan parameter dan return
+function hitungRata(a, b, c) {
+  return (a + b + c) / 3;
+}
+const rata = hitungRata(80, 90, 70);   // argumen: 80, 90, 70
+console.log(rata);                     // 80
+
+// 2. Arrow function: isi satu ekspresi, return otomatis
+const lulus = nilai => nilai >= 60;
+console.log(lulus(rata));              // true
+
+// 3. Array berisi object (satu object = satu baris tabel)
+const mahasiswa = [
+  { nim: "2401", nama: "Ani" },
+  { nim: "2402", nama: "Budi" }
+];
+mahasiswa.push({ nim: "2403", nama: "Citra" }); // tambah di akhir
+mahasiswa.splice(0, 1);                         // hapus indeks 0 (Ani)
+console.log(mahasiswa.length);                  // 2
+
+// 4. forEach: jalankan sesuatu untuk setiap elemen
+mahasiswa.forEach((m, i) => console.log(i + 1, m.nama));
+
+// 5. map + join: ubah array menjadi baris-baris HTML
+const barisHTML = mahasiswa
+  .map(m => \`<tr><td>\${m.nim}</td><td>\${m.nama}</td></tr>\`)
+  .join("");
+// tbody.innerHTML = barisHTML;  (pola yang dipakai di P7–P8)`, "Pola nomor 5 adalah inti tabel CRUD di P7–P8: data disimpan di array, lalu tabel digambar ulang dari array setiap kali data berubah.", "Fungsi dan Array dalam Satu Contoh"),
+    ex("Latihan Interaktif • ➕ Tambahan", "Fungsi dan Array: Apa Hasilnya?", ["Kode", "Hasil"], ["undefined", "3", "2", "\"Budi\"", "langsung jalan saat halaman dimuat", "jalan saat tombol diklik"], [
+      ["const a = [\"Ani\", \"Budi\", \"Citra\"]; a[1]", "\"Budi\""],
+      ["const a = [\"Ani\", \"Budi\", \"Citra\"]; a.length", "3"],
+      ["const a = [5, 6, 7]; a.splice(0, 1); a.length", "2"],
+      ["function f(x) { x * 2; } f(4)", "undefined", "✓ Tanpa return, hasil fungsi selalu undefined."],
+      ["btn.addEventListener(\"click\", simpan)", "jalan saat tombol diklik"],
+      ["btn.addEventListener(\"click\", simpan())", "langsung jalan saat halaman dimuat", "✓ simpan() memanggil fungsinya saat itu juga. Yang diberikan ke listener hanyalah hasilnya."]
+    ]),
     eventFlow,
     code("event.html", `<input id="nim" placeholder="NIM">
 <button id="cek">Cek</button>
