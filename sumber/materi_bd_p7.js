@@ -42,6 +42,38 @@ const alur = diagram({
   ]
 });
 
+// ---------- Cara klik di phpMyAdmin (tangkapan layar asli, web/public/materi/basis-data/p7/) ----------
+const IMG7 = "materi/basis-data/p7/";
+const klik = {
+  type: "steps", label: "Cara Klik di phpMyAdmin", title: "Membuat Tabel buku Tanpa Mengetik SQL",
+  desc: "Hasilnya sama persis dengan CREATE TABLE buku di atas. Klik tiap langkah.",
+  note: "phpMyAdmin di laptop dosen berbahasa Inggris. Padanannya: Nama tabel = Table name, Jumlah kolom = Number of columns, Buat = Create, Jenis = Type, Panjang/Nilai = Length/Values, Tak Ternilai = Null, Indeks = Index, Simpan = Save, Pratinjau SQL = Preview SQL.",
+  items: [
+    { title: "Pilih (atau buat) basis data perpustakaan", how: "Klik <code>perpustakaan</code> di daftar kiri. Kalau belum ada, buat dulu lewat menu <strong>Basis data</strong> seperti di P6.", ok: "judul di atas bertuliskan <strong>Database: perpustakaan</strong>." },
+    { title: "Isi nama tabel dan jumlah kolom", how: "Di kotak <strong>Create new table</strong>, isi Nama tabel <code>buku</code> dan jumlah kolom <code>5</code>, lalu klik <strong>Buat</strong>.", img: { src: IMG7 + "nama-tabel.webp", alt: "Kotak Create new table: nama tabel buku, jumlah kolom 5" } },
+    { title: "Isi nama, jenis, dan panjang tiap kolom", how: "Satu baris formulir = satu kolom tabel. Isi sesuai skema: <code>id_buku</code> CHAR 5, <code>judul</code> VARCHAR 80, <code>pengarang</code> VARCHAR 50, <code>tahun</code> YEAR, <code>stok</code> INT. Kotak <strong>Tak Ternilai</strong> (Null) dibiarkan kosong supaya kolom menjadi NOT NULL.", img: { src: IMG7 + "formulir.webp", alt: "Formulir struktur tabel buku berisi lima kolom" } },
+    { title: "Jadikan id_buku kunci primer", how: "Pada baris <code>id_buku</code>, kolom <strong>Indeks</strong>, pilih <strong>PRIMARY</strong>. Akan muncul kotak <em>Tambahkan indeks</em>; cukup klik <strong>Kirim</strong>.", ok: "di bawah pilihan Indeks muncul tulisan PRIMARY.", img: { src: IMG7 + "indeks.webp", alt: "Kotak dialog Tambahkan indeks dengan pilihan PRIMARY untuk id_buku" } },
+    { title: "Klik Pratinjau SQL untuk melihat perintahnya", how: "Tombol <strong>Pratinjau SQL</strong> menunjukkan perintah yang akan dijalankan phpMyAdmin. Isinya sama dengan CREATE TABLE buku yang ditulis manual.", img: { src: IMG7 + "pratinjau-sql.webp", alt: "Pratinjau SQL: CREATE TABLE perpustakaan.buku dengan PRIMARY KEY id_buku" } },
+    { title: "Klik Simpan, lalu cek tab Struktur", how: "Tutup pratinjau, lalu klik <strong>Simpan</strong>.", ok: "<code>buku</code> muncul di bawah perpustakaan di daftar kiri, dan di tab <strong>Struktur</strong> ada ikon kunci di <code>id_buku</code>. Sama seperti hasil DESCRIBE buku.", img: { src: IMG7 + "hasil-struktur.webp", alt: "Tab Struktur tabel buku dengan ikon kunci pada id_buku" } }
+  ]
+};
+const formulir = {
+  type: "shot", label: "Kenali Formulirnya", title: "Kolom Formulir = Potongan CREATE TABLE",
+  desc: "Klik nomor kuning untuk melihat bagian SQL yang dibuat oleh tiap kolom formulir.",
+  src: IMG7 + "formulir.webp", w: 2250, h: 840, url: "localhost:8888/phpMyAdmin",
+  alt: "Formulir struktur tabel buku di phpMyAdmin",
+  caption: "Tangkapan layar phpMyAdmin 5.2 asli. Nama dalam kurung adalah label versi bahasa Inggris.",
+  parts: [
+    { id: "nama", n: 1, x: 24.5, y: 20.7, box: [16.5, 23, 9.7, 54], label: "Nama", title: "Nama (Name) → nama kolom", text: "<code>id_buku</code>, <code>judul</code>, … Aturannya sama dengan SQL: huruf kecil dan garis bawah, tanpa spasi." },
+    { id: "jenis", n: 2, x: 34.5, y: 20.7, box: [26.5, 23, 9.7, 54], label: "Jenis", title: "Jenis (Type) → tipe data", text: "CHAR, VARCHAR, YEAR, INT. Sama dengan tipe yang ditulis di CREATE TABLE." },
+    { id: "panjang", n: 3, x: 44.8, y: 20.7, box: [36.6, 23, 9.9, 54], label: "Panjang/Nilai", title: "Panjang/Nilai (Length/Values) → angka dalam kurung", text: "<code>5</code> menjadi <code>CHAR(5)</code>, <code>80</code> menjadi <code>VARCHAR(80)</code>. Untuk YEAR dan INT boleh dikosongkan." },
+    { id: "bawaan", n: 4, x: 54.6, y: 20.7, box: [46.7, 23, 9.6, 54], label: "Bawaan", title: "Bawaan (Default) → DEFAULT", text: "Nilai otomatis bila kolom tidak diisi. Biarkan <em>Tidak ada</em> (None) untuk tabel buku." },
+    { id: "null", n: 5, x: 75.6, y: 20.7, box: [76.6, 23, 3.7, 54], label: "Tak Ternilai", title: "Tak Ternilai (Null) → NOT NULL atau boleh kosong", text: "Kotak <strong>tidak dicentang</strong> = <code>NOT NULL</code> (wajib diisi). Dicentang = kolom boleh kosong (NULL)." },
+    { id: "indeks", n: 6, x: 84, y: 20.7, box: [80.4, 23, 9.6, 54], label: "Indeks", title: "Indeks (Index) → PRIMARY KEY", text: "Pilih <strong>PRIMARY</strong> pada <code>id_buku</code>. phpMyAdmin menuliskannya sebagai <code>PRIMARY KEY (id_buku)</code>." },
+    { id: "ai", n: 7, x: 92.4, y: 31, box: [90.2, 23, 2.6, 54], label: "A_I", title: "A_I → AUTO_INCREMENT", text: "Nomor naik otomatis (1, 2, 3, …) untuk kolom INT. Tidak dipakai di tabel buku karena id_buku berupa kode CHAR seperti B0001." }
+  ]
+};
+
 module.exports = [
   A("DDL: Perintah untuk Membuat Rangka", `<p>Perintah SQL dikelompokkan menurut tugasnya (lihat P4: DDL, DML, DCL, TCL). <strong>DDL</strong> mengurus rangka basis data: <strong>CREATE</strong> membuat, <strong>ALTER</strong> mengubah (Bab 8), <strong>DROP</strong> menghapus. DDL tidak menyentuh isi data.</p>
 <p>Ibarat tukang lemari: memotong papan, menentukan jumlah laci, dan besar kotak isian kartu. Setelah lemari jadi, tukang selesai; mengisi kartu adalah tugas petugas (DML).</p>`, "Bagian 1"),
@@ -55,6 +87,8 @@ module.exports = [
     ["id_rak (R01)", "CHAR(3)"], ["nama_rak (maks 30 huruf)", "VARCHAR(30)"], ["daya_tampung", "INT"], ["tahun_terbit", "YEAR"], ["tgl_pinjam", "DATE"]
   ]),
   alur,
+  klik,
+  formulir,
   { type: "code", label: "Contoh Kode", title: "Hasil DESCRIBE buku", file: "describe.txt", code: `+-----------+-------------+------+-----+---------+-------+
 | Field     | Type        | Null | Key | Default | Extra |
 +-----------+-------------+------+-----+---------+-------+
