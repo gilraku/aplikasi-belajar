@@ -1,4 +1,5 @@
 // Algoritma dan Pemrograman — Pertemuan 5: Percabangan switch-case
+const LAB = require("./lab_alp.js");
 const Q = (q, opts, ans, exp) => ({ q, opts, ans, exp });
 const ex = (label, title, headers, opts, rows) => ({ type: "exercise", label, title, headers, rows: rows.map(([c, a]) => ({ cells: [c], fields: [{ options: opts, answer: a }], ok: "✓" })) });
 module.exports = {
@@ -28,16 +29,10 @@ module.exports = {
       modes: [{ label: "Ingat", target: "row", row: 2, title: "switch (nama) tidak bisa", text: "<code>switch</code> tidak menerima string atau float. Untuk teks gunakan if-else-if." }] }
   ],
   simulator: [
-    { type: "terminal", label: "Permainan Interaktif 1 • Efek break", title: "Coba dengan dan tanpa break", desc: "Kode dasar: <code>switch (x) { case 1: cout &lt;&lt; \"Satu \"; case 2: cout &lt;&lt; \"Dua \"; break; case 3: cout &lt;&lt; \"Tiga \"; default: cout &lt;&lt; \"Lainnya\"; }</code><br>Perhatikan: case 1 dan case 3 <strong>tidak punya break</strong>.", shell: "x =", header: "Simulasi fall-through",
-      scenarios: [
-        { label: "1. x = 2", pill: "normal", ok: true, cmd: "2", res: "Dua", exp: "Masuk case 2, bertemu break, keluar." },
-        { label: "2. x = 1", pill: "fall-through", ok: false, cmd: "1", res: "Satu Dua", exp: "case 1 tidak punya break, jadi jatuh ke case 2 dan berhenti di break milik case 2." },
-        { label: "3. x = 3", pill: "fall-through", ok: false, cmd: "3", res: "Tiga Lainnya", exp: "case 3 tanpa break jatuh ke default." },
-        { label: "4. x = 9", pill: "default", ok: true, cmd: "9", res: "Lainnya", exp: "Tidak ada case 9, default dijalankan." }
-      ] },
-    ex("Permainan Interaktif 2 • Boleh Jadi Label case?", "Sah atau Ditolak Compiler?", ["Label / ekspresi", "Penilaian"], ["Sah", "Ditolak"], [
+    { type: "trace-lab", label: "Lab Algoritma • Telusuri switch", title: "Efek break, Langkah demi Langkah", desc: "Kode yang sama dengan empat nilai x. case 1 dan case 3 sengaja tidak punya <code>break</code>. Tebak dulu, lalu ikuti ke mana eksekusi berjalan.", tip: "Ini penelusuran yang sudah disiapkan, bukan compiler C++ sungguhan.", cases: LAB.P5 },
+    ex("Permainan Interaktif 1 • Boleh Jadi Label case?", "Sah atau Ditolak Compiler?", ["Label / ekspresi", "Penilaian"], ["Sah", "Ditolak"], [
       ["case 5:", "Sah"], ["case 'A':", "Sah"], ["case 2.5:", "Ditolak"], ["case \"Senin\":", "Ditolak"], ["case x:  (x variabel biasa)", "Ditolak"], ["case 1 + 2:", "Sah"], ["switch (nilai) dengan float nilai", "Ditolak"], ["Dua label case 3: dalam satu switch", "Ditolak"]]),
-    ex("Permainan Interaktif 3 • Pilih Struktur", "if atau switch?", ["Kasus", "Paling tepat"], ["if", "switch"], [
+    ex("Permainan Interaktif 2 • Pilih Struktur", "if atau switch?", ["Kasus", "Paling tepat"], ["if", "switch"], [
       ["Menu kalkulator: 1 tambah, 2 kurang, 3 kali, 4 bagi", "switch"], ["Nilai ≥ 80 dapat A", "if"], ["Kode hari 1–7 menjadi nama hari", "switch"], ["Suhu di atas 37.5 dianggap demam", "if"], ["Huruf golongan darah A/B/O → keterangan", "switch"], ["Umur ≥ 17 dan punya KTP", "if"]])
   ],
   flashcards: [

@@ -190,7 +190,7 @@ module.exports = fix({
       type: "playground",
       label: "Praktik 1 • Aktivitas Modul 5",
       title: "Editor Live: Form Pendaftaran Responsif",
-      desc: "Klik tombol <strong>📱 360</strong> dan <strong>📟 768</strong> di atas pratinjau untuk melihat tampilan HP & tablet. Lalu kerjakan modifikasi modul.",
+      desc: "Klik tombol <strong>📱 360</strong> dan <strong>📟 768</strong> di atas pratinjau untuk melihat tampilan HP & tablet, atau <strong>geser lebarnya</strong> pelan-pelan melewati 600/601px dan 1024/1025px untuk melihat media query berganti tepat di breakpoint modul. Lalu kerjakan modifikasi modul.",
       file: "responsive-form.html",
       devices: true,
       starter: STARTER,

@@ -1,4 +1,5 @@
 // Algoritma dan Pemrograman — Pertemuan 4: Percabangan if, if-else, else-if
+const LAB = require("./lab_alp.js");
 const Q = (q, opts, ans, exp) => ({ q, opts, ans, exp });
 const ex = (label, title, headers, opts, rows) => ({ type: "exercise", label, title, headers, rows: rows.map(([c, a]) => ({ cells: [c], fields: [{ options: opts, answer: a }], ok: "✓" })) });
 module.exports = {
@@ -20,6 +21,7 @@ module.exports = {
       rows: [["<code>if (x = 5)</code>", "<code>if (x == 5)</code>", "= mengisi nilai, selalu true"], ["<code>if (x &gt; 0);</code>", "<code>if (x &gt; 0)</code>", "Titik koma membuat if kosong; blok di bawahnya selalu jalan"], ["<code>If</code> / <code>Else</code>", "<code>if</code> / <code>else</code>", "Case sensitive (ada di slide jawaban)"], ["<code>if (60 &lt;= n &lt;= 79)</code>", "<code>if (n &gt;= 60 &amp;&amp; n &lt;= 79)</code>", "Bentuk matematika tidak berlaku"], ["<code>else (x &lt; 0)</code>", "<code>else if (x &lt; 0)</code>", "else tidak punya kondisi"]] }
   ],
   simulator: [
+    { type: "trace-lab", label: "Lab Algoritma • Telusuri Percabangan", title: "Ikuti Jalur if, else-if, dan Nested if", desc: "Tebak dulu, lalu tekan <strong>Langkah Berikutnya</strong>. Perhatikan kondisi mana yang benar-benar dicek dan cabang mana yang dilewati.", tip: "Ini penelusuran yang sudah disiapkan, bukan compiler C++ sungguhan.", cases: LAB.P4 },
     ex("Permainan Interaktif 1 • Jalur Mana?", "Kode: if (g >= 80) A; else if (g >= 60) B; else C;", ["Nilai g", "Hasil"], ["A", "B", "C"], [
       ["95", "A"], ["80", "A"], ["79", "B"], ["60", "B"], ["59", "C"], ["0", "C"], ["100", "A"]]),
     { type: "terminal", label: "Permainan Interaktif 2 • Simulator Kelulusan", title: "Program dari Latihan di Kelas", desc: "<code>if (a &gt; 60) cout &lt;&lt; \"Lulus\";</code> dicoba dengan berbagai masukan.", shell: "$", header: "./lulus",

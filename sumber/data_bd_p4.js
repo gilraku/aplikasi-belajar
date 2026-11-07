@@ -1,5 +1,6 @@
 // Basis Data — Pertemuan 4: Dari ERD ke Tabel + SQL DML (slide) + CPMK 1 (bank soal P1–P4)
 const T = (head, rows) => { const w = head.map((h, i) => Math.max(h.length, ...rows.map(r => String(r[i]).length))); const line = "+" + w.map(n => "-".repeat(n + 2)).join("+") + "+"; const fmt = r => "| " + r.map((c, i) => String(c).padEnd(w[i])).join(" | ") + " |"; return [line, fmt(head), line, ...rows.map(fmt), line, rows.length + (rows.length === 1 ? " row" : " rows") + " in set"].join("\n"); };
+const SEED = "CREATE DATABASE kampus; USE kampus; CREATE TABLE mahasiswa (nim CHAR(7) NOT NULL, nama VARCHAR(50) NOT NULL, jurusan VARCHAR(30), angkatan YEAR, ipk DECIMAL(3,2), PRIMARY KEY (nim)); INSERT INTO mahasiswa VALUES ('2301001','Andi Pratama','Sistem Informasi',2023,3.45), ('2301002','Budi Santoso','Sistem Informasi',2023,3.10), ('2301003','Citra Dewi','Teknik Informatika',2023,3.78), ('2201004','Dian Permata','Sistem Informasi',2022,3.25);";
 module.exports = {
   id: "p4", nomor: 4, judul: "Dari ERD ke Tabel, SQL DML & CPMK 1", ujian: "CPMK 1",
   hero: {
@@ -49,6 +50,23 @@ module.exports = {
       defaultNote: "Urutan klausa yang benar: SELECT … FROM … WHERE … ORDER BY … LIMIT …;" }
   ],
   simulator: [
+    { type: "sql-lab", profile: "p4", label: "Lab Basis Data • SQL DML", title: "Ketik Sendiri Perintah DML pada Tabel mahasiswa",
+      desc: "Tabel <code>mahasiswa</code> dari slide sudah terisi 4 baris di basis data <code>kampus</code>. Muat contoh, ubah sedikit (misalnya nilai WHERE-nya), lalu jalankan. Kalau datanya berantakan, tekan <strong>Kembalikan data awal</strong>.",
+      tip: "Ini simulasi di browser yang mendukung SELECT (WHERE, AND/OR, LIKE, ORDER BY, LIMIT, DISTINCT, COUNT(*)), INSERT, UPDATE, DELETE, TRUNCATE, serta START TRANSACTION, COMMIT, dan ROLLBACK. Kunci tamu belum didukung.",
+      seed: SEED,
+      examples: [
+        { label: "Semua data", sql: "SELECT * FROM mahasiswa;" },
+        { label: "Nama & IPK jurusan SI", sql: "SELECT nama, ipk FROM mahasiswa WHERE jurusan = 'Sistem Informasi';" },
+        { label: "Tiga IPK tertinggi", sql: "SELECT nama, ipk FROM mahasiswa ORDER BY ipk DESC LIMIT 3;" },
+        { label: "AND", sql: "SELECT nama, ipk FROM mahasiswa WHERE ipk >= 3.50 AND angkatan = 2023;" },
+        { label: "LIKE 'A%'", sql: "SELECT * FROM mahasiswa WHERE nama LIKE 'A%';" },
+        { label: "DISTINCT", sql: "SELECT DISTINCT jurusan FROM mahasiswa;" },
+        { label: "INSERT", sql: "INSERT INTO mahasiswa (nim, nama, jurusan, angkatan, ipk)\nVALUES ('2301005', 'Eka Saputra', 'Sistem Informasi', 2023, 3.60);" },
+        { label: "UPDATE dengan WHERE", sql: "UPDATE mahasiswa SET ipk = 3.35 WHERE nim = '2301002';" },
+        { label: "UPDATE tanpa WHERE", sql: "UPDATE mahasiswa SET ipk = 3.70;\nSELECT nama, ipk FROM mahasiswa;" },
+        { label: "DELETE lalu ROLLBACK", sql: "START TRANSACTION;\nDELETE FROM mahasiswa WHERE angkatan = 2022;\nSELECT COUNT(*) FROM mahasiswa;\nROLLBACK;\nSELECT COUNT(*) FROM mahasiswa;" },
+        { label: "nim kembar", sql: "INSERT INTO mahasiswa VALUES ('2301001', 'Eko', 'Sistem Informasi', 2023, 3.00);" }
+      ] },
     { type: "exercise", label: "Permainan Interaktif 1 • Latihan Tingkat 1 Modul", title: "Aturan Transformasi Nomor Berapa?", headers: ["Relasi", "Aturan"],
       rows: [["Satu penerbit menerbitkan banyak buku; satu buku diterbitkan satu penerbit", "Aturan 3 (1:N) → 2 tabel", "✓ id_penerbit dititipkan ke tabel buku."], ["Satu anggota memiliki satu kartu; satu kartu dimiliki satu anggota", "Aturan 2 (1:1) → 2 tabel", "✓ Titipkan salah satu kunci ke tabel lain."], ["Satu buku ditulis banyak pengarang; satu pengarang menulis banyak buku", "Aturan 4 (M:N) → 3 tabel", "✓ Perlu tabel penghubung, misalnya buku_pengarang."], ["Satu rak menampung banyak buku; satu buku di satu rak", "Aturan 3 (1:N) → 2 tabel", "✓ id_rak dititipkan ke tabel buku."]]
         .map(([c, a, ok]) => ({ cells: [c], fields: [{ options: ["Aturan 2 (1:1) → 2 tabel", "Aturan 3 (1:N) → 2 tabel", "Aturan 4 (M:N) → 3 tabel"], answer: a }], ok })) },
