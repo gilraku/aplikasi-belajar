@@ -542,7 +542,7 @@ const LAB_BEDAH = {
     }
     const msg = st.msg ? `<p class="mt-3 text-sm font-bold ${st.msg.ok ? 'text-emerald-800' : 'text-amber-800'}" aria-live="polite">${rich(st.msg.text)}</p>` : '';
     const pola = ch.map(x => x.f).join('-');
-    const dasar = ch.filter(x => x.f !== 'K').map(x => x.f).join('-') + (ch.some(x => x.f === 'K') ? '-K' : '');
+    const dasar = ['S', 'P', 'O', 'Pel', 'K'].filter(f => ch.some(x => x.f === f)).join('-'); // pola dasar selalu urutan S-P-O-Pel-K, juga untuk kalimat inversi
     const done = fase === 'done' ? `<div class="mt-3 rounded-xl border-[1.5px] border-ink bg-emerald-50 p-3 sm:p-4 space-y-1.5">
         <div class="font-display text-lg font-extrabold text-emerald-800">✓ Selesai dibedah</div>
         <p class="text-sm">Urutan di kalimat: <strong class="font-mono">${esc(pola)}</strong>. Pola dasarnya: <strong class="font-mono">${esc(dasar)}</strong>.</p>
