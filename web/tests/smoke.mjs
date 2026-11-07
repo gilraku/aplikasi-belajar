@@ -204,6 +204,23 @@ try {
   await click('Konfirmasi hapus');
   if (!(await labStatus()).includes('Empty set')) fail('DROP TABLE tetap harus berlaku setelah ROLLBACK');
 
+  cur = 'Lab Algoritma: telusuri loop';
+  await visit('algoritma-pemrograman', 'p7', 'simulator');
+  {
+    const lab = page.locator('#appMain [id^="blk-"]', { has: page.locator('.trc-code') }).first();
+    await lab.getByRole('button', { name: /n = 0/ }).click();
+    await lab.locator('[data-act="next"]').click();
+    if (!(await lab.getByText('Tebak dulu').count())) fail('pertanyaan "Tebak dulu" tidak muncul sebelum langkah pertama');
+    await lab.locator('[data-act="answer"]').nth(1).click();
+    for (let i = 0; i < 20 && !(await lab.getByText('Selesai ✓').count()); i++) {
+      if (await lab.locator('[data-act="answer"]').count()) await lab.locator('[data-act="answer"]').first().click();
+      else await lab.locator('[data-act="next"]').click();
+    }
+    const outs = await lab.locator('[role=status]').allInnerTexts();
+    if (outs[0]?.trim() !== 'FIRE!' || outs[1]?.trim() !== '0, FIRE!') fail(`output while/do-while n = 0 salah: ${JSON.stringify(outs)}`);
+    if (!(await lab.getByText('Tebakanmu tepat').count())) fail('hasil tebakan awal tidak dibuka di akhir');
+  }
+
   cur = 'Web P7–P8: perilaku dan penyimpanan draf';
   for (const [meeting, labs] of [['p7', [4, 6]], ['p8', [13]]]) {
     await visit(web, meeting, 'simulator');

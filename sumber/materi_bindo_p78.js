@@ -35,17 +35,18 @@ const P7 = [
   tip("➕ Sebelum mengirim", "Baca tulisanmu keras-keras. Kalimat yang membuatmu tersandung biasanya kalimat tidak efektif. Periksa juga ejaan dari P2 (kapital, koma) dan kata baku dari P3. Simpan sebagai <strong>PDF</strong>, lalu unggah ke folder <strong>TUGAS 1</strong> di Pertemuan 7.")
 ];
 
-const STEP = [["p1", "P1|Sejarah & ragam", "sky"], ["p2", "P2|Ejaan", "amber"], ["p3", "P3|Kata & diksi", "emerald"], ["p5", "P5|Kalimat efektif", "violet"], ["p6", "P6|Majemuk & perluasan", "rose"], ["p7", "P7|Argumentasi", "slate"]];
+const STEP = [["p1", "P1|Sejarah & ragam", "sky"], ["p2", "P2|Ejaan", "amber"], ["p3", "P3|Kata & diksi", "emerald"], ["p4", "P4|Kata lanjutan", "emerald"], ["p5", "P5|Kalimat efektif", "violet"], ["p6", "P6|Kalimat majemuk", "rose"], ["p7", "P7|Argumentasi", "slate"]];
 const peta = diagram({
   label: "Diagram Interaktif", title: "Dari Huruf ke Teks: Urutan Materi UTS", desc: "Satuan bahasa makin besar dari kiri ke kanan. Klik setiap pertemuan.", minw: 660,
   svg: svg(820, 170,
-    STEP.map(([p, t, tone], i) => box(10 + i * 135, 40, 118, 70, t, tone, p, { size: 12 }) + (i < 5 ? arrow(128 + i * 135, 75, 143 + i * 135, 75) : "")).join("") +
+    STEP.map(([p, t, tone], i) => box(10 + i * 115, 40, 102, 70, t, tone, p, { size: 11 }) + (i < STEP.length - 1 ? arrow(112 + i * 115, 75, 123 + i * 115, 75) : "")).join("") +
     text(410, 140, "bahasa → huruf & tanda baca → kata → kalimat → kalimat majemuk → teks", { size: 12, color: "#475569" })
   ),
   parts: [
     { id: "p1", label: "P1", title: "Bahasa sebagai identitas", text: "Asal-usul Melayu, Sumpah Pemuda, UUD 1945 Pasal 36, fungsi dan ragam bahasa." },
     { id: "p2", label: "P2", title: "Huruf & tanda baca", text: "EYD V: kapital, miring/tebal, tanda baca, singkatan, angka." },
     { id: "p3", label: "P3", title: "Kata", text: "Serapan, imbuhan, peluluhan, dan diksi." },
+    { id: "p4", label: "P4", title: "Kata (lanjutan)", text: "Kata ulang, gabungan kata, pemendekan, ragam baku, relasi makna, kata berpasangan. Disusun mandiri, bukan dari modul LMS." },
     { id: "p5", label: "P5", title: "Kalimat", text: "Fungsi S-P-O-Pel-K, jenis kalimat, 7 syarat kalimat efektif." },
     { id: "p6", label: "P6", title: "Kalimat majemuk", text: "Transitif/intransitif, KMS/KMB, perluasan subjek, objek, keterangan." },
     { id: "p7", label: "P7", title: "Teks", text: "Semua materi dipakai sekaligus saat menulis teks argumentasi." }
@@ -53,7 +54,7 @@ const peta = diagram({
 });
 
 const P8 = [
-  A("Cara Memakai Halaman Ini", `<p>UTS Bahasa Indonesia mencakup P1, P2, P3, P5, P6, dan P7 (P4 tidak ada materi). Urutan belajar yang disarankan: lihat peta di bawah, baca Cheat Sheet (jebakan baku dan pasangan istilah), kerjakan Simulator, lalu ulangi Kuis sampai skor penuh. Soal yang masih salah: buka lagi Materi Lengkap pertemuannya (label [P..] di setiap soal).</p>`, "Panduan"),
+  A("Cara Memakai Halaman Ini", `<p>UTS Bahasa Indonesia mencakup P1 sampai P7. P4 disusun mandiri karena LMS tidak menyediakan modulnya. Urutan belajar yang disarankan: lihat peta di bawah, baca Cheat Sheet (jebakan baku dan pasangan istilah), kerjakan Simulator, lalu ulangi Kuis sampai skor penuh. Soal yang masih salah: buka lagi Materi Lengkap pertemuannya (label [P..] di setiap soal).</p>`, "Panduan"),
   peta,
   tip("Hari H", "Baca kata kunci soal: <strong>benar, baku, efektif, KECUALI, BUKAN</strong>. Untuk soal kalimat efektif, cek berurutan: ada subjek? kata mubazir? kata baku? logis? sejajar?", "warn")
 ];

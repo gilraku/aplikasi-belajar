@@ -73,6 +73,14 @@ module.exports = {
     R('Kata serapan dalam bahasa Indonesia', 'https://id.wikipedia.org/wiki/Kata_serapan_dalam_bahasa_Indonesia', WIKI_ID, 'ID', 'Asal-usul dan contoh kata serapan.', 'Kata Serapan'),
     R('EYD Edisi V', 'https://ejaan.kemdikbud.go.id/', 'Badan Bahasa', 'ID', 'Bagian penulisan kata dan unsur serapan.', 'Imbuhan'),
   ],
+  'bahasa-indonesia/p4': [
+    R('EYD Edisi V', 'https://ejaan.kemdikbud.go.id/', 'Badan Bahasa', 'ID', 'Bagian penulisan kata: bentuk ulang dan gabungan kata (pisah, tanda hubung, serangkai).', 'Pemajemukan'),
+    R('KBBI Daring', 'https://kbbi.kemdikbud.go.id/', 'Badan Bahasa', 'ID', 'Cek bentuk baku dan makna kata (label “bentuk tidak baku dari”, “cak”).', 'Ragam Baku'),
+    R('Tata Bahasa Baku Bahasa Indonesia (Alwi dkk.)', null, 'Badan Bahasa / Balai Pustaka', 'ID', 'Ragam baku: fungsi, ciri, dan situasi pemakaiannya.'),
+    R('Morfologi Bahasa Indonesia (Abdul Chaer)', null, 'Rineka Cipta', 'ID', 'Bentuk dan makna kata ulang, gabungan kata.', 'Reduplikasi'),
+    R('Pembentukan Kata dalam Bahasa Indonesia (Harimurti Kridalaksana)', null, 'Gramedia', 'ID', 'Jenis-jenis pemendekan (abreviasi).', 'Pemendekan'),
+    R('Diksi dan Gaya Bahasa (Gorys Keraf)', null, 'Gramedia', 'ID', 'Relasi makna, kata ilmiah dan populer, ketepatan pilihan kata.', 'Relasi Makna'),
+  ],
   'bahasa-indonesia/p5': [
     R('Kalimat efektif', 'https://id.wikipedia.org/wiki/Kalimat_efektif', WIKI_ID, 'ID', 'Ciri-ciri kalimat efektif.', 'Kalimat Efektif'),
     R('KBBI Daring', 'https://kbbi.kemdikbud.go.id/', 'Badan Bahasa', 'ID', 'Untuk mengecek kata mubazir dan bentuk baku.', 'Kata Mubazir'),
