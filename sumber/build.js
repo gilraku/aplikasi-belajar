@@ -29,10 +29,15 @@ Object.entries(MAT).forEach(([cid,mm])=>{const c=lib.find(x=>x.id===cid);Object.
 const T=require('./tambahan.js');
 Object.entries(T).forEach(([key,add])=>{const [cid,mid]=key.split('/');const c=lib.find(x=>x.id===cid);const m=c&&c.meetings.find(x=>x.id===mid);if(!m)throw new Error('tambahan: '+key+' tidak ditemukan');
   m.cheatsheet.push(...(add.cheatsheet||[]));m.flashcards.push(...(add.flashcards||[]));});
-const prompt=fs.readFileSync('prompt.txt','utf8');
+const path=require('path'),P=f=>path.join(__dirname,f);
+const prompt=fs.readFileSync(P('prompt.txt'),'utf8');
 const enc=o=>JSON.stringify(o).replace(/</g,'\\u003c');
-let h=fs.readFileSync('engine.html','utf8');
-h=h.replace('__TWCSS__',()=>fs.readFileSync('tw.css','utf8')).replace('__LIBRARY__',()=>enc(lib)).replace('__PROMPT__',()=>enc(prompt)).replace('__CONFIG__',()=>enc({semester:'Semester 1'}));
+// Aplikasi satu file (dipakai index.html sekarang, dan "offline.html" di versi Astro)
+const render=()=>fs.readFileSync(P('engine.html'),'utf8').replace('__TWCSS__',()=>fs.readFileSync(P('tw.css'),'utf8')).replace('__LIBRARY__',()=>enc(lib)).replace('__PROMPT__',()=>enc(prompt)).replace('__CONFIG__',()=>enc({semester:'Semester 1'}));
+module.exports={lib,prompt,render};
+if(require.main===module){
+const h=render();
 fs.writeFileSync('out/aplikasi_belajar_semester_1.html',h);
 fs.writeFileSync('out/materi_basis_data_pertemuan_2.json',JSON.stringify(lib[0],null,2));
 console.log(h.length);
+}
