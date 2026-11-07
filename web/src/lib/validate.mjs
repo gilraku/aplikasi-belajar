@@ -9,7 +9,7 @@ const IMG = /^materi\/[a-z0-9/_-]+\.(webp|png|jpg)$/;
 const imgOk = src => IMG.test(String(src)) && fs.existsSync(path.resolve(process.cwd(), 'public', String(src)));
 
 // Jenis blok yang dikenali mesin (objek R di src/scripts/engine.js)
-export const BLOCK_TYPES = ['text', 'article', 'ayat', 'code', 'playground', 'callout', 'cards', 'list', 'flow', 'row', 'tabs', 'choices', 'table', 'diagram', 'steps', 'shot', 'symbols', 'cara', 'reveal', 'say', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'lab-5k', 'lab-imbuhan', 'lab-kalimat', 'lab-kalimat-en', 'lab-jam', 'lab-rute', 'exercise'];
+export const BLOCK_TYPES = ['text', 'article', 'ayat', 'code', 'playground', 'callout', 'cards', 'list', 'flow', 'row', 'tabs', 'choices', 'table', 'diagram', 'steps', 'shot', 'symbols', 'cara', 'reveal', 'say', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'lab-5k', 'lab-imbuhan', 'lab-kalimat', 'lab-kalimat-en', 'lab-jam', 'lab-rute', 'lab-bedah', 'exercise'];
 
 const str = z.string().trim().min(1, 'tidak boleh kosong');
 const optValue = o => (o && typeof o === 'object' ? o.value : o);
@@ -65,6 +65,14 @@ const Block = z.lazy(() => z.looseObject({
     ctx.addIssue({ code: 'custom', path: ['verbs'], message: 'lab-kalimat-en butuh verbs[] atau nouns[]' });
   if (b.type === 'lab-jam' && (typeof b.start !== 'number' || !Array.isArray(b.presets) || !b.presets.length))
     ctx.addIssue({ code: 'custom', path: ['presets'], message: 'lab-jam butuh start (angka) dan presets[]' });
+  if (b.type === 'lab-bedah') {
+    if (!Array.isArray(b.items) || !b.items.length) ctx.addIssue({ code: 'custom', path: ['items'], message: 'lab-bedah butuh minimal 1 kalimat di items[]' });
+    else b.items.forEach((it, ii) => {
+      const ch = it && it.chunks;
+      if (!Array.isArray(ch) || ch.filter(x => x.f === 'P').length !== 1 || ch.filter(x => x.f === 'S').length !== 1 || !ch.every(x => typeof x.t === 'string' && ['S', 'P', 'O', 'Pel', 'K'].includes(x.f) && (x.f !== 'K' || ['waktu', 'tempat', 'cara', 'alat', 'tujuan', 'sebab', 'penyerta'].includes(x.k))))
+        ctx.addIssue({ code: 'custom', path: ['items', ii], message: 'setiap item lab-bedah butuh chunks[] {t, f} dengan tepat satu S dan satu P; K wajib punya k (jenis)' });
+    });
+  }
   if (b.type === 'lab-rute' && !(typeof b.start === 'number' && typeof b.money === 'number' && typeof b.due === 'number' && Array.isArray(b.routes) && b.routes.length && b.routes.every(r => r && typeof r.label === 'string' && typeof r.cost === 'number' && typeof r.mins === 'number' && typeof r.say === 'string')))
     ctx.addIssue({ code: 'custom', path: ['routes'], message: 'lab-rute butuh start, money, due, dan routes[] { label, cost, mins, say }' });
 }));

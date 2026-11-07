@@ -417,7 +417,7 @@ const defaultTab = m => { const t = availableTabs(m); return t.length ? t[0].id 
 // =====================================================================
 //  BLOK MATERI — setiap jenis blok punya fungsi render & aksi
 // =====================================================================
-const INTERACTIVE = new Set(['say', 'diagram', 'steps', 'shot', 'symbols', 'cara', 'table', 'choices', 'reveal', 'tabs', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'lab-5k', 'lab-imbuhan', 'lab-kalimat', 'lab-kalimat-en', 'lab-jam', 'lab-rute', 'exercise', 'playground']);
+const INTERACTIVE = new Set(['say', 'diagram', 'steps', 'shot', 'symbols', 'cara', 'table', 'choices', 'reveal', 'tabs', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'lab-5k', 'lab-imbuhan', 'lab-kalimat', 'lab-kalimat-en', 'lab-jam', 'lab-rute', 'lab-bedah', 'exercise', 'playground']);
 function countInteractive(m) {
   let n = 0;
   const walk = list => (list || []).forEach(b => {

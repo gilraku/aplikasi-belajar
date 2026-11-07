@@ -473,4 +473,116 @@ const LAB_ROUTE = {
   on: { pick(d, s, i) { s.pick = +i; s.tried[+i] = true; } }
 };
 
-const LABS = { 'lab-5k': LAB_5K, 'lab-imbuhan': LAB_IMBUHAN, 'lab-kalimat': LAB_KALIMAT, 'lab-kalimat-en': LAB_SENTENCE, 'lab-jam': LAB_CLOCK, 'lab-rute': LAB_ROUTE };
+// ---------------------------------------------------------------------
+//  Bahasa Indonesia P5: bedah kalimat S-P-O-Pel-K (4 langkah tutor)
+// ---------------------------------------------------------------------
+const BEDAH_F = {
+  S: { name: 'Subjek', cls: 'bg-sky-100 text-sky-900 border-sky-300' },
+  P: { name: 'Predikat', cls: 'bg-emerald-100 text-emerald-900 border-emerald-300' },
+  O: { name: 'Objek', cls: 'bg-amber-100 text-amber-900 border-amber-300' },
+  Pel: { name: 'Pelengkap', cls: 'bg-violet-100 text-violet-900 border-violet-300' },
+  K: { name: 'Keterangan', cls: 'bg-slate-200 text-slate-800 border-slate-300' }
+};
+const BEDAH_K = ['waktu', 'tempat', 'cara', 'alat', 'tujuan', 'sebab', 'penyerta'];
+const bedahSt = (s, c) => s.st[c] = s.st[c] || { lab: {}, kj: {}, sel: null, msg: null, test: null };
+const bedahFase = (it, st) => {
+  const ch = it.chunks || [], iP = ch.findIndex(x => x.f === 'P'), iS = ch.findIndex(x => x.f === 'S');
+  if (st.lab[iP] !== 'P') return 'P';
+  if (st.lab[iS] !== 'S') return 'S';
+  return ch.every((x, i) => st.lab[i] === x.f && (x.f !== 'K' || st.kj[i] === x.k)) ? 'done' : 'rest';
+};
+const bedahTanpa = (it, i) => {
+  const t = (it.chunks || []).filter((_, j) => j !== i).map(x => x.t).join(' ').replace(/,\s*$/, '').replace(/^[,\s]+/, '').replace(/\s+([,.])/g, '$1').replace(/,(\s*[.])/, '$1');
+  const u = t.charAt(0).toUpperCase() + t.slice(1); return /[.!?]$/.test(u) ? u : u + '.';
+};
+function bedahUji(it, i, kind) {
+  const x = it.chunks[i], core = x.t.replace(/[,.]$/, '');
+  if (kind === 'hapus') return x.f === 'K' ? { ok: true, text: `“${bedahTanpa(it, i)}” Kalimat tetap utuh. Bagian ini juga bisa dipindah ke depan atau ke belakang.` }
+    : { ok: false, text: x.hapus || `“${bedahTanpa(it, i)}” Maknanya jadi menggantung atau berubah, jadi bagian ini tidak bebas dihapus.` };
+  const v = x[kind];
+  if (v) return { ok: !v.startsWith('*'), text: v };
+  if (x.f === 'K') return { ok: false, text: kind === 'pasif' ? `“${core}” tidak bisa dijadikan subjek kalimat pasif.` : `“${core}” tidak bisa diganti dengan -nya.` };
+  return { ok: false, text: 'Uji ini tidak berlaku untuk bagian ini.' };
+}
+const LAB_BEDAH = {
+  init: () => ({ c: 0, st: {}, showNote: false }),
+  render(d, s, n) {
+    const items = d.items || [], it = items[s.c]; if (!it) return '';
+    const st = bedahSt(s, s.c), ch = it.chunks || [], fase = bedahFase(it, st);
+    const P = ch.find(x => x.f === 'P');
+    const tabs = items.length > 1 ? `<div class="flex flex-wrap gap-2 mb-3" role="group" aria-label="Pilih kalimat">${items.map((x, i) => labBtn(n, 'pick', i, `${s.st[i] && bedahFase(x, s.st[i]) === 'done' ? '✓ ' : ''}${i + 1}`, i === s.c, 'min-w-[2.5rem]')).join('')}</div>` : '';
+    const steps = [['P', '1. Cari predikat'], ['S', '2. Cari subjek'], ['rest', '3. Uji unsur setelah P · 4. Cari keterangan']];
+    const order = ['P', 'S', 'rest', 'done'];
+    const ladder = `<ol class="flex flex-wrap gap-1.5 mb-3 text-xs font-bold">${steps.map(([k, l]) => {
+      const done = order.indexOf(fase) > order.indexOf(k), on = fase === k;
+      return `<li class="px-2.5 py-1 rounded-full border ${on ? 'border-ink bg-indigo-100 text-ink' : done ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-slate-200 text-slate-500'}">${done ? '✓ ' : ''}${l}</li>`;
+    }).join('')}</ol>`;
+    const ask = fase === 'P' ? 'Klik bagian yang menjadi <strong>predikat</strong>. Tanyakan: sedang apa? bagaimana keadaannya? adalah apa?'
+      : fase === 'S' ? `Klik <strong>subjek</strong>. Tanyakan: siapa atau apa yang <em>${esc(P.t.replace(/[,.]$/, ''))}</em>?`
+      : fase === 'rest' ? 'Klik setiap bagian yang masih abu-abu. Pakai tombol uji, lalu tentukan: objek, pelengkap, atau keterangan.'
+      : '';
+    const chips = ch.map((x, i) => {
+      const f = st.lab[i], good = f === x.f && (x.f !== 'K' || st.kj[i] === x.k);
+      const cls = f ? BEDAH_F[f].cls : i === st.sel ? 'bg-indigo-100 border-ink' : 'bg-white border-slate-300 hover:border-ink';
+      const tag = f ? `<span class="block text-[11px] font-bold uppercase tracking-wide opacity-80">${f}${f === 'K' && st.kj[i] ? ' · ' + st.kj[i] : ''}${f === 'K' && !good ? ' · ?' : ''}</span>` : '<span class="block text-[11px] text-slate-400">?</span>';
+      return `<button ${act(n, 'sel', i)} aria-pressed="${i === st.sel}" class="px-2.5 py-1.5 rounded-lg border-[1.5px] text-left transition ${cls} ${i === st.sel ? 'ring-2 ring-ink' : ''}"><span class="block text-sm sm:text-base font-semibold">${esc(x.t)}</span>${tag}</button>`;
+    }).join('');
+    let panel = '';
+    if (fase === 'rest' && st.sel != null && !(st.lab[st.sel] === ch[st.sel].f && (ch[st.sel].f !== 'K' || st.kj[st.sel] === ch[st.sel].k))) {
+      const x = ch[st.sel], tb = (k, l) => labBtn(n, 'uji', k, l, st.test && st.test.k === k);
+      const r = st.test ? bedahUji(it, st.sel, st.test.k) : null;
+      const fb = (k) => labBtn(n, 'tandai', k, BEDAH_F[k].name, st.lab[st.sel] === k);
+      const kj = st.lab[st.sel] === 'K' && x.f === 'K' ? `<div class="space-y-1.5">${labCap('Jenis keterangan')}<div class="flex flex-wrap gap-1.5">${BEDAH_K.map(k => labBtn(n, 'jenis', k, k, st.kj[st.sel] === k)).join('')}</div></div>` : '';
+      panel = `<div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-3">
+        <div class="text-sm"><span class="text-xs font-bold text-slate-500">Bagian yang diuji:</span> <strong>${esc(x.t.replace(/[,.]$/, ''))}</strong></div>
+        <div class="space-y-1.5">${labCap('Uji dulu')}<div class="flex flex-wrap gap-1.5">${tb('pasif', 'Uji pasif')}${tb('nya', 'Uji -nya')}${tb('hapus', 'Uji hapus/pindah')}</div>
+          ${r ? `<p class="text-sm ${r.ok ? 'text-emerald-800' : 'text-rose-700'}">${r.ok ? '✓' : '✗'} ${rich(r.text)}</p>` : ''}</div>
+        <div class="space-y-1.5">${labCap('Lalu tentukan')}<div class="flex flex-wrap gap-1.5">${fb('O')}${fb('Pel')}${fb('K')}</div></div>${kj}
+      </div>`;
+    }
+    const msg = st.msg ? `<p class="mt-3 text-sm font-bold ${st.msg.ok ? 'text-emerald-800' : 'text-amber-800'}" aria-live="polite">${rich(st.msg.text)}</p>` : '';
+    const pola = ch.map(x => x.f).join('-');
+    const dasar = ch.filter(x => x.f !== 'K').map(x => x.f).join('-') + (ch.some(x => x.f === 'K') ? '-K' : '');
+    const done = fase === 'done' ? `<div class="mt-3 rounded-xl border-[1.5px] border-ink bg-emerald-50 p-3 sm:p-4 space-y-1.5">
+        <div class="font-display text-lg font-extrabold text-emerald-800">✓ Selesai dibedah</div>
+        <p class="text-sm">Urutan di kalimat: <strong class="font-mono">${esc(pola)}</strong>. Pola dasarnya: <strong class="font-mono">${esc(dasar)}</strong>.</p>
+        ${it.note ? `<p class="text-sm text-slate-700 rich">${rich(it.note)}</p>` : ''}</div>` : '';
+    return `${tabs}${ladder}
+      ${ask ? `<p class="text-sm text-slate-700 mb-2">${ask}</p>` : ''}
+      <div class="flex flex-wrap gap-2 rounded-xl border border-slate-200 p-3">${chips}</div>${msg}${panel}${done}
+      ${it.src ? `<p class="mt-2 text-xs text-slate-500">${esc(it.src)}</p>` : ''}
+      <div class="mt-3 flex gap-2"><button ${act(n, 'reset')} class="px-3 py-2 rounded-lg text-xs sm:text-sm font-bold bg-slate-100 text-slate-700 hover:bg-indigo-100">↺ Ulang kalimat ini</button>
+        ${s.c < items.length - 1 && fase === 'done' ? `<button ${act(n, 'pick', s.c + 1)} class="px-3 py-2 rounded-lg text-xs sm:text-sm font-bold bg-ink text-white">Kalimat berikutnya →</button>` : ''}</div>`;
+  },
+  on: {
+    pick(d, s, i) { s.c = +i; },
+    reset(d, s) { s.st[s.c] = null; },
+    sel(d, s, i) {
+      const it = d.items[s.c], st = bedahSt(s, s.c), x = it.chunks[+i], fase = bedahFase(it, st); i = +i;
+      st.test = null;
+      if (fase === 'P' || fase === 'S') {
+        if (x.f === fase) { st.lab[i] = fase; st.sel = null; st.msg = { ok: true, text: `✓ <strong>${esc(x.t.replace(/[,.]$/, ''))}</strong> = ${BEDAH_F[fase].name.toLowerCase()}. ${x.why || ''}` }; }
+        else st.msg = { ok: false, text: x.no || (fase === 'P' ? `<em>${esc(x.t.replace(/[,.]$/, ''))}</em> bukan aksi atau keadaan yang diterangkan. Cari kata yang menjawab “sedang apa?” atau “bagaimana?”.` : x.f === 'K' ? `<em>${esc(x.t.replace(/[,.]$/, ''))}</em> keterangan, karena bisa dipindah atau dihapus. Siapa/apa yang melakukan predikat?` : `Tanyakan lagi: siapa atau apa yang ${esc(it.chunks.find(c => c.f === 'P').t.replace(/[,.]$/, ''))}?`) };
+        return;
+      }
+      if (fase === 'done' || st.lab[i] === 'S' || st.lab[i] === 'P') return;
+      st.sel = st.sel === i ? null : i; st.msg = null;
+    },
+    uji(d, s, k) { const st = bedahSt(s, s.c); st.test = { k }; },
+    tandai(d, s, f) {
+      const it = d.items[s.c], st = bedahSt(s, s.c), i = st.sel; if (i == null) return; const x = it.chunks[i];
+      if (f !== x.f) { st.msg = { ok: false, text: x.no2 || `Belum tepat. ${f === 'O' ? 'Objek harus lolos uji pasif dan uji -nya.' : f === 'Pel' ? 'Pelengkap tidak lolos uji pasif, tetapi juga tidak bebas dihapus atau dipindah.' : 'Keterangan bebas dihapus atau dipindah tanpa merusak kalimat.'} Coba tombol uji dulu.` }; return; }
+      st.lab[i] = f;
+      if (f === 'K') { st.msg = { ok: true, text: '✓ Keterangan. Sekarang pilih jenisnya.' }; return; }
+      st.msg = { ok: true, text: `✓ <strong>${esc(x.t.replace(/[,.]$/, ''))}</strong> = ${BEDAH_F[f].name.toLowerCase()}. ${x.why || ''}` }; st.sel = null; st.test = null;
+    },
+    jenis(d, s, k) {
+      const it = d.items[s.c], st = bedahSt(s, s.c), i = st.sel; if (i == null) return; const x = it.chunks[i];
+      st.kj[i] = k;
+      if (k === x.k) { st.msg = { ok: true, text: `✓ Keterangan ${k}. ${x.why || ''}` }; st.sel = null; st.test = null; }
+      else st.msg = { ok: false, text: `Bukan keterangan ${k}. Lihat penandanya: ${esc(x.t.replace(/[,.]$/, ''))}.` };
+    }
+  }
+};
+
+const LABS = { 'lab-5k': LAB_5K, 'lab-imbuhan': LAB_IMBUHAN, 'lab-kalimat': LAB_KALIMAT, 'lab-kalimat-en': LAB_SENTENCE, 'lab-jam': LAB_CLOCK, 'lab-rute': LAB_ROUTE, 'lab-bedah': LAB_BEDAH };
