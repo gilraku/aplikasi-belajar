@@ -1,6 +1,7 @@
 // Membaca materi dari ../sumber persis seperti build.js (format data tidak berubah),
 // lalu memecahnya: indeks ringan untuk beranda + satu file JSON per pertemuan.
 import { createRequire } from 'node:module';
+import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
@@ -20,12 +21,20 @@ if (problems.length) {
 
 export const library = lib;
 export const prompt = B.prompt;
-export const renderOffline = B.render;
+// offline.html berdiri sendiri: gambar materi (web/public/materi/…) disisipkan sebagai data URI
+const IMG_REF = /"(materi\/[a-z0-9/_-]+\.(webp|png|jpg))"/g;
+const MIME = { webp: 'image/webp', png: 'image/png', jpg: 'image/jpeg' };
+export function inlineImages(library) {
+  const json = JSON.stringify(library).replace(IMG_REF, (m, src, ext) =>
+    JSON.stringify(`data:${MIME[ext]};base64,` + fs.readFileSync(path.resolve(process.cwd(), 'public', src)).toString('base64')));
+  return JSON.parse(json);
+}
+export const renderOffline = o => B.render(Object.assign({}, o, { library: inlineImages(o.library) }));
 export const semester = 'Semester 1';
 
 // Sama dengan aturan di mesin (availableTabs & countInteractive), supaya % kesiapan di beranda tetap benar
 const arr = x => (Array.isArray(x) ? x : []);
-const INTERACTIVE = new Set(['say', 'diagram', 'table', 'choices', 'reveal', 'tabs', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'exercise', 'playground']);
+const INTERACTIVE = new Set(['say', 'diagram', 'steps', 'shot', 'table', 'choices', 'reveal', 'tabs', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'exercise', 'playground']);
 function countInteractive(m) {
   let n = 0;
   const walk = list => arr(list).forEach(b => {
