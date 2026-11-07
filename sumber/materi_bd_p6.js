@@ -1,5 +1,5 @@
 // Materi Lengkap Basis Data P6: Instalasi MAMP dan Mengenal phpMyAdmin
-const { C, box, arrow, path, svg, text, diagram } = require("./svg.js");
+const { box, arrow, path, svg, text, diagram } = require("./svg.js");
 const A = (title, html, label) => ({ type: "article", label, title, html });
 const tip = (heading, html, tone) => ({ type: "callout", tone: tone || "tip", heading, html });
 const rv = (label, title, items) => ({ type: "reveal", label, title, items });
@@ -22,26 +22,38 @@ const jalur = diagram({
   ]
 });
 
-const layar = diagram({
-  label: "Diagram Interaktif", title: "Lima Bagian Halaman Depan phpMyAdmin (Gambar 2 Modul)", desc: "Tiruan sederhana. Klik setiap nomor/bagian.", minw: 660,
-  svg: svg(820, 340,
-    `<rect x="10" y="10" width="800" height="320" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>` +
-    `<g data-part="logo">` + box(20, 20, 180, 44, "phpMyAdmin  ①", "violet", null, { size: 14 }) + "</g>" +
-    `<g data-part="list">` + `<rect x="20" y="74" width="180" height="246" fill="#fff" stroke="#94a3b8"/>` + text(110, 92, "② Daftar basis data", { size: 12, color: "#334155" }) +
-      ["Baru", "information_schema", "mysql", "perpustakaan", "performance_schema", "sys"].map((n, i) => text(36, 120 + i * 30, n, { anchor: "start", size: 12, color: n === "perpustakaan" ? "#047857" : n === "Baru" ? "#2563eb" : "#64748b" })).join("") + "</g>" +
-    `<g data-part="menu">` + `<rect x="210" y="20" width="590" height="44" fill="#e2e8f0" stroke="#94a3b8"/>` + text(505, 42, "③ Basis data • SQL • Status • Akun pengguna • Ekspor • Impor • Pengaturan • Lainnya", { size: 12, color: "#334155" }) + "</g>" +
-    `<g data-part="umum">` + box(220, 84, 300, 110, "④ Pengaturan umum|Server connection collation:|utf8mb4_unicode_ci • Tema", "sky", null, { size: 12, r: 4 }) + "</g>" +
-    `<g data-part="server">` + box(535, 84, 265, 236, "⑤ Server basis data|Server: localhost|Jenis server: MariaDB|Versi server: 10.11…|Pengguna: root@localhost|Karakter: utf8mb4||Server web: PHP 8.4", "emerald", null, { size: 12, r: 4 }) + "</g>" +
-    text(370, 250, "Judul di atas kotak SQL menunjukkan|basis data yang sedang terpilih", { size: 12, color: "#64748b" })
-  ),
+// Tangkapan layar asli phpMyAdmin 5.2 (bahasa Indonesia), berkas di web/public/materi/basis-data/p6/
+const IMG = "materi/basis-data/p6/";
+const layar = {
+  type: "shot", label: "Kenali Layarnya", title: "Lima Bagian Halaman Depan phpMyAdmin (Gambar 2 Modul)",
+  desc: "Tampilan asli phpMyAdmin. Klik nomor kuning untuk melihat fungsi tiap bagian.",
+  src: IMG + "depan.webp", w: 1800, h: 900, url: "localhost:8888/phpMyAdmin",
+  alt: "Halaman depan phpMyAdmin: daftar basis data di kiri, menu di atas, Pengaturan umum dan Server basis data di kanan",
+  caption: "Tangkapan layar phpMyAdmin 5.2 asli pada server lokal dengan porta seperti MAMP. Angka versi di laptopmu bisa sedikit berbeda, letak bagiannya sama.",
   parts: [
-    { id: "logo", label: "① Logo", title: "Logo phpMyAdmin", text: "Diklik untuk kembali ke halaman depan." },
-    { id: "list", label: "② Daftar", title: "Daftar basis data", text: "Semua basis data di server. Empat milik sistem (information_schema, mysql, performance_schema, sys) jangan diubah/dihapus. Klik perpustakaan sebelum menjalankan perintah untuknya." },
-    { id: "menu", label: "③ Menu", title: "Baris menu", text: "Menu berubah sesuai tempatmu: di halaman depan berisi Basis data, SQL, Status…; setelah memilih basis data muncul Struktur, SQL, Operasi, dll." },
-    { id: "umum", label: "④ Pengaturan", title: "Pengaturan umum", text: "Penyortiran koneksi dan bahasa/tema tampilan." },
-    { id: "server", label: "⑤ Server", title: "Keterangan server", text: "Jenis & versi DBMS, pengguna yang masuk (root@localhost), kumpulan karakter, dan versi PHP. Dipakai menjawab Latihan Tingkat 1 modul." }
+    { id: "logo", n: 1, x: 18.8, y: 3, box: [2.5, 0, 15.5, 5.5], label: "Logo", title: "Logo phpMyAdmin", text: "Diklik untuk kembali ke halaman depan." },
+    { id: "list", n: 2, x: 15, y: 21, box: [0, 19, 20, 23], label: "Daftar", title: "Daftar basis data", text: "Semua basis data di server. Empat milik sistem (information_schema, mysql, performance_schema, sys) jangan diubah/dihapus. Klik perpustakaan sebelum menjalankan perintah untuknya." },
+    { id: "menu", n: 3, x: 96.8, y: 6.9, box: [20.3, 3.9, 79.4, 6.1], label: "Menu", title: "Baris menu", text: "Menu berubah sesuai tempatmu: di halaman depan berisi Basis data, SQL, Status…; setelah memilih basis data muncul Struktur, SQL, Operasi, dll." },
+    { id: "umum", n: 4, x: 63.9, y: 17, box: [21.6, 14, 44, 21.6], label: "Pengaturan", title: "Pengaturan umum", text: "Penyortiran koneksi (Server connection collation) dan, di bawahnya, tema tampilan." },
+    { id: "server", n: 5, x: 96.7, y: 17, box: [67.6, 14, 30.8, 42.2], label: "Server", title: "Keterangan server", text: "Jenis & versi DBMS, pengguna yang masuk (root@localhost), dan kumpulan karakter. Versi PHP ada di kotak Server web di bawahnya. Dipakai menjawab Latihan Tingkat 1 modul." }
   ]
-});
+};
+
+const langkah = {
+  type: "steps", label: "Praktik Terpandu", title: "Delapan Langkah Modul",
+  desc: "Klik tiap langkah untuk melihat caranya. Tandai yang sudah selesai.",
+  note: "Langkah 1–3 tidak diberi gambar karena tampilan MAMP berbeda per OS dan versi. Gambar langkah 5–7 adalah phpMyAdmin asli.",
+  items: [
+    { title: "Unduh MAMP sesuai OS", tag: "Windows / macOS", how: "Unduh dari situs resmi <strong>mamp.info</strong>, pilih versi untuk Windows atau macOS.", ok: "berkas pemasang (.exe di Windows, .pkg di macOS) sudah terunduh." },
+    { title: "Pasang dengan pilihan bawaan", how: "Jalankan berkas pemasang dan ikuti petunjuknya tanpa mengubah pilihan bawaan.", ok: "MAMP muncul di daftar aplikasi." },
+    { title: "Start Servers", tag: "tampilan beda tiap laptop", how: "Buka MAMP lalu klik <strong>Start</strong> (di beberapa versi tertulis <strong>Start Servers</strong>).", ok: "status <strong>Apache</strong> dan <strong>MySQL</strong> aktif (tanda hijau).", fail: "biasanya porta sedang dipakai aplikasi lain, misalnya XAMPP yang masih berjalan. Matikan aplikasi itu, atau ganti porta di Preferences/Settings." },
+    { title: "Buka WebStart → phpMyAdmin, kenali 5 bagiannya", how: "Klik <strong>WebStart</strong>, lalu buka <strong>phpMyAdmin</strong> dari halaman tersebut. Cocokkan dengan gambar <em>Lima Bagian Halaman Depan phpMyAdmin</em> di atas.", ok: "halaman phpMyAdmin terbuka dan daftar basis data tampil di kiri.", fail: "kalau muncul <code>#1045 Access denied</code>, masuk dengan pengguna <code>root</code> dan sandi <code>root</code>." },
+    { title: "Buat basis data perpustakaan lewat menu", how: "Klik menu <strong>Basis data</strong>, ketik <code>perpustakaan</code> di kolom <strong>Buat basis data</strong>, lalu klik <strong>Buat</strong>.", img: { src: IMG + "buat.webp", alt: "Tab Basis data phpMyAdmin dengan nama perpustakaan diketik di kolom Buat basis data" } },
+    { title: "Pastikan muncul di kiri", how: "Setelah klik Buat, phpMyAdmin langsung membuka basis data baru itu.", ok: "<code>perpustakaan</code> ada di daftar kiri dan bagian atas bertuliskan <strong>Database: perpustakaan</strong>. Pesan “Tidak ada tabel” itu wajar karena tabelnya belum dibuat.", img: { src: IMG + "buat-hasil.webp", alt: "phpMyAdmin setelah membuat perpustakaan: nama muncul di daftar kiri" } },
+    { title: "Jalankan SHOW DATABASES; di tab SQL", how: "Klik tab <strong>SQL</strong>, ketik perintah berikut, lalu klik <strong>Kirim</strong>.", code: "SHOW DATABASES;", ok: "muncul tabel hasil berisi <code>perpustakaan</code> bersama empat basis data sistem.", img: { src: IMG + "sql-hasil.webp", alt: "Hasil SHOW DATABASES di phpMyAdmin: information_schema, mysql, performance_schema, perpustakaan, sys" } },
+    { title: "Catat alamat, porta, dan nama pengguna", how: "Catat alamat (<code>localhost</code>), porta Apache dan MySQL (bawaan MAMP <code>8888</code> dan <code>8889</code>, cek di Preferences/Settings), serta nama pengguna (<code>root</code>, terlihat di bagian ⑤). Catatan ini dipakai lagi di pertemuan berikutnya." }
+  ]
+};
 
 module.exports = [
   A("Mengapa Perlu Server di Komputer Sendiri?", `<p>Lima pertemuan pertama dikerjakan di atas kertas. Mulai sekarang rancangan dipindahkan ke komputer, dan untuk itu diperlukan DBMS yang benar-benar berjalan.</p>
@@ -52,7 +64,7 @@ module.exports = [
 <p>Pada MAMP Windows dan macOS, konfigurasi bawaan memakai Apache <code>8888</code> dan MySQL <code>8889</code>. <code>80</code> dan <code>3306</code> adalah preset lain. Jalankan server, klik <strong>WebStart</strong>, lalu buka <strong>phpMyAdmin</strong> dari halaman tersebut. Periksa porta aktif di Preferences/Settings.</p>
 <p>➕ Alternatif MAMP yang banyak dipakai di Windows: <strong>XAMPP</strong> atau <strong>Laragon</strong>. Isinya serupa (Apache, MySQL/MariaDB, PHP, phpMyAdmin). Dua layanan bentrok jika dijalankan bersamaan pada porta yang sama.</p>`, "Bagian 2"),
   layar,
-  { type: "flow", label: "Praktik Terpandu", title: "Delapan Langkah Modul", items: ["Unduh MAMP sesuai OS", "Pasang (pilihan bawaan)", "Start Servers → cek status layanan", "Buka WebStart → phpMyAdmin dan kenali 5 bagian", "Buat perpustakaan lewat menu", "Pastikan muncul di kiri", "SHOW DATABASES; di tab SQL", "Catat alamat, porta, dan nama pengguna"], highlight: 2, note: "Langkah 1–3 di modul diisi tangkapan layar masing-masing karena tampilan MAMP berbeda per OS dan versi." },
+  langkah,
   { type: "code", label: "Contoh Kode", title: "Perintah Pertemuan Ini", file: "p6.sql", code: `CREATE DATABASE perpustakaan;
 SHOW DATABASES;
 

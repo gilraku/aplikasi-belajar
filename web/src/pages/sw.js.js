@@ -12,9 +12,12 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 export async function GET() {
   const { hash } = await engine();
   const css = fs.readFileSync(path.resolve(process.cwd(), 'src/styles/global.css'), 'utf8');
-  const version = crypto.createHash('sha1').update([hash, dataVersion, css, fs.readFileSync(path.resolve(process.cwd(), 'tailwind.config.cjs'), 'utf8')].join('|')).digest('hex').slice(0, 10);
   const data = library.flatMap(c => c.meetings.map(m => `${base}data/${encodeURIComponent(c.id)}/${encodeURIComponent(m.id)}.json?v=${dataVersion}`));
-  const precache = [base, `${base}app-${hash}.js`, `${base}manifest.webmanifest`, `${base}icons/icon-192.png`, ...data];
+  // Gambar materi (web/public/materi/**) ikut disimpan supaya tetap tampil saat offline
+  const pub = path.resolve(process.cwd(), 'public');
+  const images = fs.existsSync(path.join(pub, 'materi')) ? fs.readdirSync(path.join(pub, 'materi'), { recursive: true }).filter(f => /\.(webp|png|jpg)$/.test(f)).map(f => `${base}materi/${f.split(path.sep).join('/')}`) : [];
+  const precache = [base, `${base}app-${hash}.js`, `${base}manifest.webmanifest`, `${base}icons/icon-192.png`, ...data, ...images];
+  const version = crypto.createHash('sha1').update([hash, dataVersion, css, images.join(','), fs.readFileSync(path.resolve(process.cwd(), 'tailwind.config.cjs'), 'utf8')].join('|')).digest('hex').slice(0, 10);
   const code = `// Dibuat otomatis oleh web/src/pages/sw.js.js
 const VERSION = ${JSON.stringify(version)};
 const BASE = ${JSON.stringify(base)};

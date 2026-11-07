@@ -407,7 +407,7 @@ const defaultTab = m => { const t = availableTabs(m); return t.length ? t[0].id 
 // =====================================================================
 //  BLOK MATERI — setiap jenis blok punya fungsi render & aksi
 // =====================================================================
-const INTERACTIVE = new Set(['say', 'diagram', 'table', 'choices', 'reveal', 'tabs', 'detective', 'terminal', 'sql-lab', 'exercise', 'playground']);
+const INTERACTIVE = new Set(['say', 'diagram', 'steps', 'shot', 'table', 'choices', 'reveal', 'tabs', 'detective', 'terminal', 'sql-lab', 'exercise', 'playground']);
 function countInteractive(m) {
   let n = 0;
   const walk = list => (list || []).forEach(b => {
@@ -597,6 +597,66 @@ ${cpp ? `<p class="text-xs text-slate-500">💡 C++ tidak bisa dijalankan di apl
     render: d => `<div class="p-4 rounded-xl bg-slate-900 text-white flex flex-wrap items-center justify-center gap-2 sm:gap-3 on-dark">${(d.items || []).map((it, i) =>
       `${i ? `<span class="text-slate-400 font-bold">${esc(d.arrow || '→')}</span>` : ''}<span class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold font-mono ${i === d.highlight ? 'bg-indigo-500 text-white' : 'bg-white/10'} rich">${rich(it)}</span>`).join('')}</div>
       ${d.note ? `<p class="mt-2 text-xs text-slate-500 rich">${rich(d.note)}</p>` : ''}`
+  },
+
+  // Langkah bernomor: klik untuk membuka cara, tanda berhasil, solusi bila gagal, dan gambar (opsional)
+  steps: {
+    init: () => ({ open: 0, done: {} }),
+    render: (d, s, n) => {
+      const items = d.items || [], nd = items.filter((_, i) => s.done[i]).length;
+      const num = (i, on) => `<span class="w-8 h-8 shrink-0 rounded-full flex items-center justify-center font-display font-extrabold text-sm border-[1.5px] ${on ? 'bg-[#ffe14d] border-ink text-ink' : 'bg-white border-ink text-ink'}">${on ? '✓' : i + 1}</span>`;
+      return `${items.length > 1 ? `<div class="flex items-center gap-3 mb-3 text-xs sm:text-sm"><div class="flex-1 h-2 rounded-full bg-[#ecebe4] overflow-hidden"><div class="h-full bg-[#ffe14d] transition-all" style="width:${Math.round(nd / items.length * 100)}%"></div></div><span class="font-bold text-ink shrink-0">${nd} / ${items.length} selesai</span></div>` : ''}
+      <ol class="space-y-2">${items.map((it, i) => {
+        const open = s.open === i, done = !!s.done[i];
+        const head = `<span class="flex-1 min-w-0 font-bold text-sm sm:text-[15px] ${done && !open ? 'text-slate-500 line-through decoration-slate-400' : 'text-ink'} rich">${rich(it.title)}</span>${it.tag ? `<span class="hidden sm:inline shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-md border border-slate-300 text-slate-500 rich">${rich(it.tag)}</span>` : ''}`;
+        if (!open) return `<li><button ${act(n, 'open', i)} class="w-full flex gap-3 items-center p-3 rounded-xl text-left transition ${done ? 'bg-[#f7f6f0]' : 'border border-slate-200 hover:border-ink'}">${num(i, done)}${head}</button></li>`;
+        const img = it.img ? `<figure class="mt-1"><a href="${esc(it.img.src)}" target="_blank" rel="noopener" class="block rounded-lg overflow-hidden border border-slate-300"><img src="${esc(it.img.src)}" alt="${esc(it.img.alt || '')}" loading="lazy" class="block w-full h-auto bg-slate-100" onerror="this.closest('figure').hidden=true"></a>${it.img.caption ? `<figcaption class="mt-1 text-xs text-slate-500 rich">${rich(it.img.caption)}</figcaption>` : ''}</figure>` : '';
+        return `<li class="rounded-xl border-2 border-ink p-3 sm:p-4">
+          <button ${act(n, 'open', i)} class="w-full flex gap-3 items-center text-left">${num(i, done)}${head}</button>
+          <div class="sm:pl-11 mt-3 space-y-2.5 text-sm sm:text-[15px] leading-relaxed">
+            ${it.tag ? `<p class="sm:hidden text-[11px] font-bold text-slate-500 rich">${rich(it.tag)}</p>` : ''}
+            ${it.how ? `<div class="rich">${rich(it.how)}</div>` : ''}
+            ${it.code ? `<div class="font-mono text-xs sm:text-sm p-2.5 rounded-lg bg-slate-950 text-slate-100 overflow-x-auto">${esc(it.code)}</div>` : ''}
+            ${img}
+            ${it.ok ? `<p class="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm"><b>✓ Berhasil kalau</b> <span class="rich">${rich(it.ok)}</span></p>` : ''}
+            ${it.fail ? `<p class="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-sm"><b>Kalau gagal:</b> <span class="rich">${rich(it.fail)}</span></p>` : ''}
+            <button ${act(n, 'done', i)} class="px-3 py-1.5 rounded-lg text-sm font-bold ${done ? 'bg-slate-100 text-slate-700' : 'bg-ink text-white'}">${done ? 'Tandai belum' : i < items.length - 1 ? `Sudah, lanjut ke langkah ${i + 2} →` : 'Sudah, selesai ✓'}</button>
+          </div></li>`;
+      }).join('')}</ol>
+      ${d.note ? `<p class="mt-3 text-xs text-slate-500 rich">${rich(d.note)}</p>` : ''}`;
+    },
+    on: {
+      open(d, s, arg) { s.open = s.open === +arg ? -1 : +arg; },
+      done(d, s, arg) {
+        const i = +arg;
+        if (s.done[i]) { delete s.done[i]; return; }
+        s.done[i] = true;
+        const next = (d.items || []).findIndex((_, k) => k > i && !s.done[k]);
+        s.open = next;
+      }
+    }
+  },
+
+  // Tangkapan layar asli dengan penanda bernomor yang bisa diklik (posisi dalam persen)
+  shot: {
+    init: () => ({ sel: null }),
+    render: (d, s, n) => {
+      const parts = d.parts || [], cur = parts.find(p => p.id === s.sel);
+      const pct = v => `${Math.max(0, Math.min(100, Number(v) || 0))}%`;
+      return `<div class="rounded-xl overflow-hidden border-2 border-ink bg-white">
+          ${d.url ? `<div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#ecebe4] border-b-2 border-ink"><span class="w-2 h-2 rounded-full bg-slate-400"></span><span class="w-2 h-2 rounded-full bg-slate-400"></span><span class="ml-1 min-w-0 truncate font-mono text-[11px] sm:text-xs bg-white rounded-md px-2 py-0.5 border border-slate-300">${esc(d.url)}</span></div>` : ''}
+          <div class="relative">
+            <img src="${esc(d.src)}" alt="${esc(d.alt || '')}" loading="lazy" class="block w-full h-auto bg-slate-100" ${d.w && d.h ? `width="${+d.w}" height="${+d.h}"` : ''} onerror="this.replaceWith(Object.assign(document.createElement('p'),{className:'p-6 text-sm text-slate-500',textContent:'Gambar tidak bisa dimuat (butuh internet).'}))">
+            ${cur && cur.box ? `<div class="absolute pointer-events-none rounded-sm" style="left:${pct(cur.box[0])};top:${pct(cur.box[1])};width:${pct(cur.box[2])};height:${pct(cur.box[3])};outline:3px solid #ffe14d;outline-offset:-3px;box-shadow:inset 0 0 0 9999px rgba(255,225,77,.18)"></div>` : ''}
+            ${parts.map((p, i) => `<button ${act(n, 'pick', p.id)} aria-label="${esc(p.label || p.title)}" class="absolute -translate-x-1/2 -translate-y-1/2 w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-ink font-display font-extrabold text-[11px] sm:text-sm flex items-center justify-center shadow-[2px_2px_0_#17202a] transition ${s.sel === p.id ? 'bg-ink text-[#ffe14d]' : 'bg-[#ffe14d] text-ink hover:scale-110'}" style="left:${pct(p.x)};top:${pct(p.y)}">${esc(p.n || i + 1)}</button>`).join('')}
+          </div>
+        </div>
+        <div class="mt-1.5 flex justify-between gap-2 text-[11px] text-slate-500"><span class="sm:hidden">Ketuk nomor kuning atau tombol di bawah.</span><a href="${esc(d.src)}" target="_blank" rel="noopener" class="ml-auto font-bold text-indigo-700 hover:underline shrink-0">🔍 Perbesar gambar</a></div>
+        ${parts.length ? `<div class="mt-2 flex flex-wrap gap-1.5">${parts.map((p, i) => `<button ${act(n, 'pick', p.id)} class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition ${s.sel === p.id ? 'bg-ink text-[#ffe14d]' : 'bg-slate-100 text-slate-700 hover:bg-indigo-50'} rich">${esc(p.n || i + 1)} · ${rich(p.label || p.title)}</button>`).join('')}</div>
+        <div class="mt-3 p-3 sm:p-4 rounded-xl text-sm leading-relaxed ${cur ? 'border-2 border-ink bg-[#fffbe0]' : 'border border-dashed border-slate-300 bg-white'}">${cur ? `<div class="font-display font-extrabold text-base text-ink mb-1 rich">${esc(cur.n || parts.indexOf(cur) + 1)} · ${rich(cur.title)}</div><div class="text-slate-800 rich">${rich(cur.text)}</div>` : `<span class="text-slate-500">${rich(d.hint || '👆 Klik nomor kuning (atau tombol di atas) untuk melihat fungsi bagian itu.')}</span>`}</div>` : ''}
+        ${d.caption ? `<p class="mt-2 text-xs text-slate-500 rich">${rich(d.caption)}</p>` : ''}`;
+    },
+    on: { pick(d, s, arg) { s.sel = arg; } }
   },
 
   row: {
