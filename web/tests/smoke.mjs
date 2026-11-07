@@ -8,7 +8,7 @@ import { chromium } from 'playwright';
 
 const DIST = path.resolve(process.cwd(), 'dist');
 const BASE = '/aplikasi-belajar/';
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml' };
 
 if (!fs.existsSync(path.join(DIST, 'index.html'))) { console.error('dist/ belum ada. Jalankan "npm run build" dulu.'); process.exit(1); }
 const server = http.createServer((req, res) => {
@@ -25,7 +25,7 @@ const URL0 = `http://127.0.0.1:${server.address().port}${BASE}`;
 
 const fails = [];
 const fail = m => { fails.push(m); console.log('  ✗ ' + m); };
-const browser = await chromium.launch();
+const browser = await chromium.launch(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {}) // PW_CHROMIUM: pakai browser lain bila versinya tidak cocok;
 try {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort()); // font tidak penting untuk tes
@@ -47,6 +47,14 @@ try {
     if (st.c !== r.c || st.m !== r.m || st.tab !== r.tab) fail(`${cur}: terbuka halaman yang salah (${st.c}/${st.m}/${st.tab})`);
     else if (/Materi gagal dimuat/.test(st.text)) fail(`${cur}: data pertemuan gagal dimuat`);
     else if (st.text.trim().length < 40) fail(`${cur}: isi halaman kosong`);
+    if (r.tab === 'materi' || r.tab === 'cheatsheet') {
+      const ref = await page.evaluate(() => { const m = S.meeting, want = (m.referensi || []).length && S.tab === ((m.materi || []).length ? 'materi' : 'cheatsheet');
+        const box = $('blk-ref'); return { want: !!want, has: !!box, links: box ? box.querySelectorAll('a[href^="https://"][target="_blank"][rel~="noopener"]').length : 0, urls: (m.referensi || []).filter(x => x.url).length, inline: (m.referensi || []).filter(x => x.bagian).length, baca: [...document.querySelectorAll('#appMain span')].filter(e => e.textContent === '📚 Baca juga:').length }; });
+      if (ref.want && !ref.has) fail(`${cur}: bagian Referensi tidak tampil`);
+      if (!ref.want && ref.has) fail(`${cur}: bagian Referensi tampil di tab yang salah`);
+      if (ref.has && ref.links !== ref.urls) fail(`${cur}: ${ref.links} dari ${ref.urls} link referensi tampil`);
+      if (ref.has && r.tab === 'materi' && ref.inline && !ref.baca) fail(`${cur}: "Baca juga" tidak muncul di bawah bagian materi`);
+    }
     if (r.tab === 'quiz') {
       const btn = page.locator('#appMain [onclick^="answerQuiz"]').first();
       if (await btn.count()) { await btn.click(); if (!(await page.evaluate(() => Object.keys(S.prog.quiz).length))) fail(`${cur}: jawaban kuis tidak tersimpan`); }
@@ -86,6 +94,28 @@ try {
   cur = 'beta';
   await p2.goto(URL0 + 'beta/#' + routes[0].h.slice(1));
   await p2.waitForURL(u => !u.pathname.includes('/beta'), { timeout: 5000 }).catch(() => fail('/beta/ tidak dialihkan ke alamat utama'));
+  cur = 'PWA offline';
+  const man = await p2.evaluate(async b => { const r = await fetch(b + 'manifest.webmanifest'); const j = await r.json(); return { ok: r.ok, icons: j.icons.length, start: j.start_url }; }, BASE);
+  if (!man.ok || man.icons < 2 || man.start !== BASE) fail('manifest PWA tidak valid');
+  const octx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await octx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
+  const op = await octx.newPage(); op.on('pageerror', e => fail(`PWA offline: error JS: ${e.message}`));
+  await op.goto(URL0);
+  const swOk = await op.evaluate(async () => { const reg = await Promise.race([navigator.serviceWorker.ready, new Promise(r => setTimeout(() => r(null), 20000))]); return !!(reg && reg.active); });
+  if (!swOk) fail('service worker tidak aktif');
+  else {
+    await octx.setOffline(true);
+    const last = routes.filter(r => r.tab === 'materi').pop();
+    await op.goto(URL0 + last.h).catch(e => fail('halaman utama tidak terbuka saat offline: ' + e.message));
+    await op.waitForFunction(() => typeof S !== 'undefined' && S.meeting && !document.querySelector('#appMain .animate-spin'), null, { timeout: 15000 }).catch(() => fail('materi tidak terbuka saat offline'));
+    const txt = await op.evaluate(() => $('appMain').innerText).catch(() => '');
+    if (/Materi gagal dimuat/.test(txt) || txt.trim().length < 40) fail('materi kosong/gagal saat offline');
+    if ((await op.evaluate(() => getComputedStyle(document.body).backgroundColor)) !== 'rgb(248, 250, 252)') fail('CSS tidak tersimpan untuk offline');
+    console.log('  PWA: service worker aktif, materi & CSS terbuka saat offline');
+    await octx.setOffline(false);
+  }
+  await octx.close();
+
   console.log(`Selesai: ${routes.length} tab, ${fails.length} masalah.`);
 } finally {
   await browser.close();

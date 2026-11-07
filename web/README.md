@@ -26,13 +26,25 @@ npm run dev        # server lokal di http://localhost:4321/aplikasi-belajar/
 
 Untuk menerbitkan materi baru cukup push perubahan `sumber/` ke `main`.
 
+Kalau versi Playwright tidak cocok dengan browser yang terpasang, jalankan tes dengan `PW_CHROMIUM=/path/ke/chrome npm test`.
+
+## Referensi & bacaan lanjut
+
+`sumber/referensi.js` berisi link bacaan per pertemuan (kunci `"<id-matkul>/<id-pertemuan>"`). Tampil sebagai bagian **📚 Referensi** di akhir tab Materi, dan sebagai **📚 Baca juga** di bawah bagian yang judulnya memuat teks `bagian`. Build gagal kalau url bukan `https://`, `bagian` tidak cocok dengan judul mana pun, atau kuncinya salah ketik. Workflow `.github/workflows/cek-link.yml` (lychee) mengecek semua link setiap Senin dan setiap kali file itu diubah.
+
+## Pasang sebagai aplikasi (PWA)
+
+- `src/pages/manifest.webmanifest.js` + ikon di `public/icons/` (`icon.svg` adalah sumbernya).
+- `src/pages/sw.js.js` membuat service worker yang menyimpan halaman, mesin, CSS, dan **semua** data pertemuan (±2,3 MB, ±550 KB terkompresi), jadi aplikasi bisa dibuka tanpa internet. Halaman utama diambil dari jaringan dulu (materi terbaru), sisanya dari simpanan. Versi service worker ikut berubah setiap mesin/data/CSS berubah, dan cache lama dibuang otomatis.
+- Tombol **Pasang Aplikasi** ada di menu Bagikan / Unduh (Android/Chrome/Edge); di iPhone ada petunjuk "Tambah ke Layar Utama".
+
 ## Pengaman sebelum terbit
 
 Workflow `.github/workflows/astro-pages.yml` (di setiap PR dan push ke `main`):
 
 1. `npm audit --audit-level=high`: gagal kalau ada paket dengan kerentanan tingkat tinggi.
-2. `npm run build`: sekaligus **validasi data** (`src/lib/validate.mjs`, Zod). Contoh pesan: `AIK › P4 › quiz[4].ans: ans = 7, padahal opsinya hanya 4`. Dicek: kunci jawaban di dalam jumlah opsi, `optExp` sepanjang `opts`, opsi kembar, flashcard kosong, jenis blok dikenal, jawaban latihan ada di pilihannya, id pertemuan/matkul unik.
-3. `npm test` (`tests/smoke.mjs`, Playwright): membuka semua tab semua pertemuan, menjawab kuis, mengecek Back browser, progres tersimpan, dan pengalihan `/beta/`.
+2. `npm run build`: sekaligus **validasi data** (`src/lib/validate.mjs`, Zod). Contoh pesan: `AIK › P4 › quiz[4].ans: ans = 7, padahal opsinya hanya 4`. Dicek: referensi (`https://`, `bagian` cocok), kunci jawaban di dalam jumlah opsi, `optExp` sepanjang `opts`, opsi kembar, flashcard kosong, jenis blok dikenal, jawaban latihan ada di pilihannya, id pertemuan/matkul unik.
+3. `npm test` (`tests/smoke.mjs`, Playwright): membuka semua tab semua pertemuan, menjawab kuis, mengecek Back browser, progres tersimpan, referensi tampil, aplikasi terbuka saat offline (service worker), dan pengalihan `/beta/`.
 
 Kalau salah satu gagal, situs **tidak** diterbitkan (versi sebelumnya tetap tayang). Dependabot (`.github/dependabot.yml`) membuka PR otomatis untuk update paket.
 

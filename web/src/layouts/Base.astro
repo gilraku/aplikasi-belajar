@@ -2,6 +2,7 @@
 import '../styles/global.css';
 interface Props { title?: string }
 const { title = 'Aplikasi Belajar Interaktif' } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 ---
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth">
@@ -9,6 +10,12 @@ const { title = 'Aplikasi Belajar Interaktif' } = Astro.props;
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{title}</title>
+<meta name="theme-color" content="#4f46e5">
+<link rel="manifest" href={`${base}manifest.webmanifest`}>
+<link rel="icon" href={`${base}icons/icon.svg`} type="image/svg+xml">
+<link rel="apple-touch-icon" href={`${base}icons/apple-touch-icon.png`}>
+<meta name="apple-mobile-web-app-title" content="Belajar">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
