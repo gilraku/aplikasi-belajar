@@ -142,10 +142,47 @@ const ruangBaca = diagram({
   ]
 });
 
+// ---------- Tabel simbol ERD (Chen + Crow's Foot), simbol digambar SVG ----------
+const SK = 'stroke="#17202a" stroke-width="2"';
+const sym = (body) => `<svg viewBox="0 0 96 48" xmlns="http://www.w3.org/2000/svg" role="img">${body}</svg>`;
+const st = (x, y, t, ex) => `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#17202a"${ex || ""}>${t}</text>`;
+const cfBar = x => `<line x1="${x}" y1="14" x2="${x}" y2="34" ${SK}/>`;
+const cfO = x => `<circle cx="${x}" cy="24" r="6" fill="#fff" ${SK}/>`;
+const cfFoot = `<line x1="72" y1="24" x2="90" y2="12" ${SK}/><line x1="72" y1="24" x2="90" y2="36" ${SK}/>`;
+const cf = parts => sym(`<line x1="6" y1="24" x2="90" y2="24" ${SK}/>` + parts);
+const simbolERD = {
+  type: "symbols", label: "Tabel Simbol", title: "Simbol-simbol ERD", desc: "Semua simbol yang dipakai di modul dan slide, dalam satu tabel.",
+  groups: [
+    { label: "Notasi Chen (modul)", headers: ["Simbol", "Nama", "Artinya", "Contoh", "Nanti jadi"], tagLast: true, monoCol: true,
+      note: "<strong>Perhatikan:</strong> modul P3 memakai elips putus-putus untuk atribut milik relasi (tgl_pinjam). Slide gabungan dan buku memakainya untuk atribut turunan. Ikuti modul saat mengerjakan tugas modul.",
+      rows: [
+        { svg: sym(`<rect x="8" y="10" width="80" height="28" fill="#fff" ${SK}/>` + st(48, 24, "Buku")), name: "Entitas", shape: "Persegi panjang", cells: ["Benda atau orang yang datanya disimpan. Ditulis kata benda tunggal.", "Buku, Anggota", "tabel"] },
+        { svg: sym(`<rect x="6" y="8" width="84" height="32" fill="#fff" ${SK}/><rect x="11" y="13" width="74" height="22" fill="none" ${SK}/>` + st(48, 24, "Cicilan")), name: "Entitas lemah", shape: "Persegi panjang ganda", cells: ["Tidak bisa berdiri sendiri, bergantung pada entitas lain.", "Cicilan milik Pinjaman", "tabel dengan kunci gabungan"] },
+        { svg: sym(`<ellipse cx="48" cy="24" rx="40" ry="15" fill="#fff" ${SK}/>` + st(48, 24, "judul")), name: "Atribut", shape: "Elips", cells: ["Keterangan milik entitas.", "judul, pengarang", "kolom"] },
+        { svg: sym(`<ellipse cx="48" cy="24" rx="40" ry="15" fill="#fff" ${SK}/>` + st(48, 24, "id_buku", ' text-decoration="underline"')), name: "Atribut kunci", shape: "Elips, nama bergaris bawah", cells: ["Pembeda tiap baris. Satu per entitas.", "id_buku", "kunci primer"] },
+        { svg: sym(`<ellipse cx="48" cy="24" rx="42" ry="17" fill="#fff" ${SK}/><ellipse cx="48" cy="24" rx="36" ry="12" fill="none" ${SK}/>` + st(48, 24, "no_hp")), name: "Atribut multi-value", shape: "Elips ganda", cells: ["Bisa berisi lebih dari satu nilai.", "no_hp", "tabel tersendiri"] },
+        { svg: sym(`<ellipse cx="48" cy="24" rx="40" ry="15" fill="#fff" ${SK} stroke-dasharray="5 4"/>` + st(48, 24, "umur")), name: "Atribut turunan", shape: "Elips putus-putus", cells: ["Dihitung dari atribut lain, tidak perlu disimpan.", "umur dari tgl_lahir", "tidak disimpan"] },
+        { svg: sym(`<line x1="48" y1="32" x2="20" y2="44" ${SK}/><line x1="48" y1="32" x2="76" y2="44" ${SK}/><ellipse cx="48" cy="18" rx="36" ry="13" fill="#fff" ${SK}/>` + st(48, 18, "alamat")), name: "Atribut komposit", shape: "Elips bercabang ke elips lain", cells: ["Bisa dipecah menjadi beberapa bagian.", "alamat → kota, provinsi", "beberapa kolom"] },
+        { svg: sym(`<polygon points="48,6 88,24 48,42 8,24" fill="#fff" ${SK}/>` + st(48, 24, "pinjam")), name: "Relasi", shape: "Belah ketupat", cells: ["Hubungan antarentitas. Ditulis kata kerja.", "dipinjam, melayani", "kunci tamu / tabel penghubung"] },
+        { svg: sym(`<polygon points="48,3 92,24 48,45 4,24" fill="#fff" ${SK}/><polygon points="48,10 78,24 48,38 18,24" fill="none" ${SK}/>` + st(48, 24, "punya")), name: "Relasi pengidentifikasi", shape: "Belah ketupat ganda", cells: ["Menghubungkan entitas lemah dengan pemiliknya.", "Pinjaman punya Cicilan", ""] },
+        { svg: sym(`<line x1="6" y1="30" x2="90" y2="30" ${SK}/>` + st(16, 18, "1") + st(80, 18, "N")), name: "Garis + kardinalitas", shape: "Garis dengan 1, N, atau M", cells: ["Menghubungkan simbol. Angka di ujung garis menunjukkan berapa banyak yang boleh terhubung.", "1 : N, M : N", ""] }
+      ] },
+    { label: "Crow’s Foot / Martin (slide)", headers: ["Simbol", "Nama", "Artinya"],
+      note: "Pada notasi ini relasi digambar sebagai garis saja (tanpa belah ketupat), dan simbol di ujung garis menggantikan tulisan 1, N, M.",
+      rows: [
+        { svg: cf(cfBar(74) + cfBar(82)), name: "Tepat satu", shape: "Dua garis tegak", cells: ["Harus ada, dan hanya satu."] },
+        { svg: cf(cfO(68) + cfBar(82)), name: "Nol atau satu", shape: "Lingkaran + garis tegak", cells: ["Boleh tidak ada, paling banyak satu."] },
+        { svg: cf(cfBar(66) + cfFoot), name: "Satu atau banyak", shape: "Garis tegak + kaki gagak", cells: ["Minimal satu, boleh banyak."] },
+        { svg: cf(cfO(58) + cfFoot), name: "Nol atau banyak", shape: "Lingkaran + kaki gagak", cells: ["Boleh tidak ada, boleh banyak."] }
+      ] }
+  ]
+};
+
 module.exports = [
   A("Mengapa Perlu Dirancang Lebih Dulu", `<p>Bab 2 membahas satu tabel. Basis data sesungguhnya berisi <strong>banyak tabel yang saling berhubungan</strong>. Jika tabel dibuat langsung tanpa rencana, kesalahan baru ketahuan setelah data menumpuk, dan memperbaikinya mahal.</p>
 <p><strong>ERD (Entity Relationship Diagram)</strong> adalah gambar rancangan basis data yang memperlihatkan benda apa yang datanya disimpan, keterangan yang melekat padanya, dan bagaimana benda-benda itu berhubungan. Slide gabungan menambahkan: model E-R memandang dunia nyata sebagai kumpulan <strong>objek dasar (entitas)</strong> dan <strong>relasi</strong> antarobjek, termasuk kelompok <em>object-based logical model</em> (semantic model).</p>
 <p>Empat komponen konseptualnya: <strong>entitas, atribut, relationship, dan batasan</strong> (domain nilai atribut dan batasan kardinalitas).</p>`, "Bagian 1"),
+  simbolERD,
   { type: "table", label: "Tabel Interaktif", title: "Istilah Kunci P3", headers: ["Istilah", "Arti"],
     rows: [["Entitas", "Objek di dunia nyata yang dapat dibedakan: orang, benda, tempat, kejadian"], ["Himpunan entitas", "Kumpulan entitas sejenis (semua mahasiswa)"], ["Entitas konkret / abstrak", "Konkret: mahasiswa, buku. Abstrak: pinjaman, jadwal, nilai"], ["Atribut", "Karakteristik entitas: identifier (key) atau descriptor"], ["Domain", "Batas nilai yang diperbolehkan bagi atribut"], ["Relasi", "Hubungan antar entitas (kata kerja)"], ["Kardinalitas", "Banyaknya baris yang boleh terhubung"], ["Derajat relasi", "Banyaknya himpunan entitas yang terlibat"]],
     modes: [{ label: "Entitas vs himpunan entitas", target: "row", row: 1, title: "Individu vs rumpun", text: "Entitas = satu individu (mahasiswa bernama Gilang). Himpunan entitas = rumpunnya (semua mahasiswa). Di ERD yang digambar adalah himpunan entitas; di tabel, satu entitas = satu baris." }] },

@@ -407,7 +407,7 @@ const defaultTab = m => { const t = availableTabs(m); return t.length ? t[0].id 
 // =====================================================================
 //  BLOK MATERI — setiap jenis blok punya fungsi render & aksi
 // =====================================================================
-const INTERACTIVE = new Set(['say', 'diagram', 'steps', 'shot', 'table', 'choices', 'reveal', 'tabs', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'exercise', 'playground']);
+const INTERACTIVE = new Set(['say', 'diagram', 'steps', 'shot', 'symbols', 'table', 'choices', 'reveal', 'tabs', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'exercise', 'playground']);
 function countInteractive(m) {
   let n = 0;
   const walk = list => (list || []).forEach(b => {
@@ -635,6 +635,25 @@ ${cpp ? `<p class="text-xs text-slate-500">💡 C++ tidak bisa dijalankan di apl
         s.open = next;
       }
     }
+  },
+
+  // Tabel simbol bergambar (SVG dari sumber/), bisa dibagi beberapa tab. Di HP tampil sebagai kartu.
+  symbols: {
+    init: () => ({ tab: 0 }),
+    render: (d, s, n) => {
+      const groups = d.groups || [], g = groups[s.tab] || groups[0] || {};
+      const heads = g.headers || [], rows = g.rows || [], tagLast = !!g.tagLast;
+      const cell = (r, k) => { const v = (r.cells || [])[k]; return tagLast && k === heads.length - 3 ? (v ? `<span class="inline-block px-2 py-0.5 rounded-md bg-[#fff1a8] text-[12px] font-bold text-ink rich">${rich(v)}</span>` : '') : `<span class="rich">${rich(v || '')}</span>`; };
+      const ic = r => `<span class="sym inline-block w-[96px] shrink-0">${r.svg || ''}</span>`;
+      const tabs = groups.length > 1 ? `<div class="grid gap-1 p-1 bg-slate-100 rounded-xl mb-3" style="grid-template-columns:repeat(${groups.length},minmax(0,1fr))">${groups.map((x, i) =>
+        `<button ${act(n, 'tab', i)} class="py-2 px-2 rounded-lg text-xs font-bold transition ${i === s.tab ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'} rich">${rich(x.label)}</button>`).join('')}</div>` : '';
+      const table = `<div class="hidden sm:block overflow-x-auto rounded-xl border border-slate-200"><table class="w-full text-left text-sm">
+        <thead><tr class="bg-slate-800 text-white">${heads.map(h => `<th class="p-2.5 font-bold whitespace-nowrap rich">${rich(h)}</th>`).join('')}</tr></thead>
+        <tbody class="divide-y divide-slate-200">${rows.map(r => `<tr><td class="p-2.5 w-[116px]">${ic(r)}</td><td class="p-2.5"><span class="block font-bold text-ink rich">${rich(r.name)}</span>${r.shape ? `<span class="block text-xs text-slate-500 rich">${rich(r.shape)}</span>` : ''}</td>${heads.slice(2).map((_, k) => `<td class="p-2.5 ${k === 1 && g.monoCol ? 'font-mono text-[12px]' : ''}">${cell(r, k)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+      const cards = `<div class="sm:hidden space-y-2">${rows.map(r => `<div class="p-3 rounded-xl border border-slate-200 flex gap-3 items-start">${ic(r)}<div class="min-w-0 text-sm space-y-1"><div><span class="font-bold text-ink rich">${rich(r.name)}</span>${r.shape ? ` <span class="text-xs text-slate-500 rich">· ${rich(r.shape)}</span>` : ''}</div>${heads.slice(2).map((h, k) => (r.cells || [])[k] ? `<div>${k ? `<span class="text-xs font-bold text-slate-500">${esc(h)}: </span>` : ''}${cell(r, k)}</div>` : '').join('')}</div></div>`).join('')}</div>`;
+      return tabs + table + cards + (g.note ? `<p class="mt-3 text-xs sm:text-sm p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 rich">${rich(g.note)}</p>` : '');
+    },
+    on: { tab(d, s, arg) { s.tab = +arg; } }
   },
 
   // Tangkapan layar asli dengan penanda bernomor yang bisa diklik (posisi dalam persen)
