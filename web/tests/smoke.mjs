@@ -6,8 +6,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
 
-const DIST = path.resolve(process.cwd(), 'dist');
-const BASE = '/aplikasi-belajar/';
+const DIST = path.resolve(process.cwd(), process.env.ASTRO_OUT || 'dist');
+// Harus sama dengan base saat build: /aplikasi-belajar/ (GitHub Pages) atau / (Vercel, ASTRO_BASE=/).
+const BASE = (process.env.ASTRO_BASE || (process.env.VERCEL ? '/' : '/aplikasi-belajar/')).replace(/\/?$/, '/');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml' };
 
 if (!fs.existsSync(path.join(DIST, 'index.html'))) { console.error('dist/ belum ada. Jalankan "npm run build" dulu.'); process.exit(1); }
