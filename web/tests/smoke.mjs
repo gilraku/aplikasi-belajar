@@ -223,7 +223,7 @@ try {
 
   cur = 'Blok cara & Lab Tahap 3 (DSI, BIndo, BIng)';
   await visit(basis, 'p7', 'materi');
-  await page.locator('#appMain').getByRole('button', { name: 'DESCRIBE', exact: true }).click();
+  await page.locator('#appMain button[data-act="tab"]').filter({ hasText: /^DESCRIBE$/ }).click();
   if (!(await page.locator('#appMain').getByText('DESCRIBE buku;', { exact: true }).count())) fail('blok cara P7 tidak berpindah ke tab DESCRIBE');
 
   await visit('dasar-sistem-informasi', 'p2', 'simulator');
@@ -244,6 +244,20 @@ try {
   await page.locator('#appMain').getByRole('button', { name: 'supaya', exact: true }).click();
   await page.locator('#appMain').getByRole('button', { name: 'Hapus kata ini', exact: true }).click();
   if (!(await page.locator('#appMain').getByText('✓ Sudah efektif.').count())) fail('lab-kalimat BIndo P5 tidak menerima kalimat efektif');
+
+  {
+    const chip = t => page.locator('#appMain button').filter({ hasText: t }).first();
+    const btn = t => page.locator('#appMain').getByRole('button', { name: t, exact: true });
+    await chip('Ayah').click();
+    if (!(await page.locator('#appMain').getByText('bukan aksi atau keadaan').count())) fail('lab-bedah BIndo P5 tidak menolak subjek sebagai predikat');
+    await chip('membelikan').click(); await chip('Ayah').click();
+    await chip('adik').click(); await btn('Uji pasif').click();
+    if (!(await page.locator('#appMain').getByText('Adik dibelikan sepeda baru oleh Ayah.').count())) fail('lab-bedah BIndo P5 tidak menampilkan hasil uji pasif');
+    await btn('Objek').click();
+    await chip('sepeda baru').click(); await btn('Pelengkap').click();
+    for (const [t, k] of [['Kemarin sore', 'waktu'], ['di toko dekat rumah', 'tempat']]) { await chip(t).click(); await btn('Keterangan').click(); await btn(k).click(); }
+    if (!(await page.locator('#appMain').getByText('K-S-P-O-Pel-K').count())) fail('lab-bedah BIndo P5 tidak menyelesaikan bedah kalimat');
+  }
 
   await visit('bahasa-inggris', 'p3', 'simulator');
   await page.locator('#appMain').getByRole('button', { name: 'She', exact: true }).click();
