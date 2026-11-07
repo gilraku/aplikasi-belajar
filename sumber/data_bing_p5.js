@@ -1,4 +1,5 @@
 // Bahasa Inggris — Pertemuan 5: New Cutting Edge Elementary, Module 4 "Loves and hates"
+const LAB3 = require("./lab_tahap3.js");
 const Q = (q, opts, ans, exp) => ({ q, opts, ans, exp });
 const ex = (label, title, headers, opts, rows, preview) => ({ type: "exercise", label, title, preview, headers, rows: rows.map(([c, a, h]) => ({ cells: [c], fields: [{ options: opts, answer: a }], ok: "✓ " + (h || "Benar!") })) });
 const free = (label, title, preview, rows) => ({ type: "exercise", label, title, preview, headers: ["Soal", "Jawaban"], rows: rows.map(([c, a, ok]) => ({ cells: [c], fields: [{ answer: a, placeholder: "ketik jawaban" }], ok: "✓ " + (ok || "Benar!") })) });
@@ -43,6 +44,7 @@ module.exports = {
     ] }
   ],
   simulator: [
+    LAB3.EN_P5,
     free("Permainan Interaktif 1 • Bentuk he/she", "Tulis Bentuk he/she Kata Kerja", "Contoh: know → knows.", [
       ["study", "studies"], ["listen", "listens"], ["watch", "watches"], ["do", "does"], ["hate", "hates"], ["go", "goes"], ["work", "works"], ["have", "has"], ["fly", "flies"], ["play", "plays"], ["miss", "misses"], ["carry", "carries"]
     ]),

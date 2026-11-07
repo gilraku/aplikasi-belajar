@@ -1,4 +1,5 @@
 // Bahasa Indonesia — Pertemuan 3: Pembentukan Kata dan Pemilihan Kata (Diksi)
+const LAB3 = require("./lab_tahap3.js");
 const BAKU = ["Baku", "Tidak baku"];
 module.exports = {
   id: "p3",
@@ -141,6 +142,7 @@ module.exports = {
     }
   ],
   simulator: [
+    LAB3.BINDO_IMBUHAN,
     {
       type: "terminal",
       label: "Simulasi 1 • Mesin Pembentuk Kata",

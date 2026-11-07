@@ -1,4 +1,5 @@
 // Bahasa Indonesia — Pertemuan 5: Penulisan Kalimat Efektif (Bab 5 modul)
+const LAB3 = require("./lab_tahap3.js");
 // Kunci latihan soal adalah analisis sendiri (modul tidak menyertakan kunci).
 const POLA = ["S P", "S P O", "S P Pel", "S P K", "S P O Pel", "S P O K"];
 const TEE = ["Efektif", "Tidak efektif"];
@@ -50,6 +51,7 @@ module.exports = {
     { type: "callout", tone: "warn", heading: "⚠️ Catatan koreksi modul", html: "<ol><li>Contoh kesepadanan <em>Ahmad (S) pulang (P) bekerja (O)</em>: <strong>pulang</strong> adalah verba intransitif sehingga tidak punya objek. Lebih tepat <em>Ahmad pulang ke daerah asalnya</em> (S-P-K).</li><li>Bagian kalimat pasif tertulis “Kalimat <em>aktif</em> ada tiga macam”; maksudnya kalimat <strong>pasif</strong>.</li><li>Ketegasan (c) repetisi: contoh modul diberi label “Tidak efektif/Efektif”, padahal repetisi justru salah satu cara menegaskan. Dalam konteks ketegasan, <em>Cerita itu begitu menarik, cerita itu sangat mengharukan</em> adalah contoh repetisi yang disengaja.</li><li>Ringkasan menyebut S-P-O sebagai komponen wajib, padahal objek hanya wajib bila predikatnya verba transitif. Yang selalu wajib: <strong>S dan P</strong>.</li><li>Contoh inversi <em>Kami kirimkan hadiah itu kemarin</em> sebenarnya kalimat pasif persona. Contoh inversi yang lebih jelas: <em>Datanglah ia ke rumahku.</em> (P mendahului S).</li></ol>" }
   ],
   simulator: [
+    LAB3.BINDO_KALIMAT,
     { type: "exercise", label: "Permainan Interaktif 1 • Tentukan Pola", title: "Pola Kalimat Apa?", headers: ["Kalimat", "Pola"],
       rows: [["Andi bermain bola.", "S P Pel"], ["Nisa mengirimi ibunya uang.", "S P O Pel"], ["Nenek menceritakan hal itu.", "S P O"], ["Kecelakaan itu terjadi pekan lalu.", "S P K"], ["Pak Raden memasukkan uang ke bank.", "S P O K"], ["Adikku tinggi.", "S P"]]
         .map(([c, a]) => ({ cells: [c], fields: [{ options: POLA, answer: a }], ok: "✓" })) },

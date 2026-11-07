@@ -6,7 +6,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { transform } from 'esbuild';
 
-const SCRIPTS = ['sql-lab.js', 'trace-lab.js', 'playground-assessment.js', 'engine.js'].map(file => path.resolve(process.cwd(), 'src/scripts', file));
+const SCRIPTS = ['sql-lab.js', 'trace-lab.js', 'labs.js', 'playground-assessment.js', 'engine.js'].map(file => path.resolve(process.cwd(), 'src/scripts', file));
 let cache = null;
 export async function engine() {
   const raw = "'use strict';\n" + SCRIPTS.map(file => fs.readFileSync(file, 'utf8')).join('\n');

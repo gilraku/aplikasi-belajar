@@ -1,4 +1,5 @@
 // Bahasa Inggris — Pertemuan 3: New Cutting Edge Elementary, Module 3 "Everyday life"
+const LAB3 = require("./lab_tahap3.js");
 const Q = (q, opts, ans, exp) => ({ q, opts, ans, exp });
 const ex = (label, title, headers, opts, rows, preview) => ({ type: "exercise", label, title, preview, headers, rows: rows.map(([c, a, h]) => ({ cells: [c], fields: [{ options: opts, answer: a }], ok: "✓ " + (h || "Benar!") })) });
 const free = (label, title, preview, rows) => ({ type: "exercise", label, title, preview, headers: ["Soal", "Jawaban"], rows: rows.map(([c, a, ok]) => ({ cells: [c], fields: [{ answer: a, placeholder: "ketik jawaban" }], ok: "✓ " + (ok || "Benar!") })) });
@@ -43,6 +44,8 @@ module.exports = {
     ] }
   ],
   simulator: [
+    LAB3.EN_P3,
+    LAB3.EN_JAM,
     ex("Permainan Interaktif 1 • Me, too atau Me, neither?", "Setuju dengan Temanmu", ["Kalimat teman", "Responsmu (sama)"], ["Me, too.", "Me, neither."], [
       ["I'm a student.", "Me, too."], ["I don't have breakfast.", "Me, neither."], ["I'm not married.", "Me, neither."], ["I get up very early.", "Me, too."], ["I don't eat meat.", "Me, neither."], ["I live with my parents.", "Me, too."]
     ]),

@@ -1,4 +1,5 @@
 // Bahasa Inggris — Pertemuan 2: New Cutting Edge Elementary, Module 1 "People and places"
+const LAB3 = require("./lab_tahap3.js");
 const Q = (q, opts, ans, exp) => ({ q, opts, ans, exp });
 const ex = (label, title, headers, opts, rows, preview) => ({ type: "exercise", label, title, preview, headers, rows: rows.map(([c, a, h]) => ({ cells: [c], fields: [{ options: opts, answer: a }], ok: "✓ " + (h || "Benar!") })) });
 const free = (label, title, preview, rows) => ({ type: "exercise", label, title, preview, headers: ["Soal", "Jawaban"], rows: rows.map(([c, a, ok]) => ({ cells: [c], fields: [{ answer: a, placeholder: "ketik jawaban" }], ok: "✓ " + (ok || "Benar!") })) });
@@ -43,6 +44,7 @@ module.exports = {
     ] }
   ],
   simulator: [
+    LAB3.EN_P2,
     ex("Permainan Interaktif 1 • am / is / are", "Pilih Bentuk to be yang Tepat", ["Kalimat", "to be"], ["am", "is", "are"], [
       ["I ___ from Milan.", "am"], ["Carla ___ from Italy.", "is"], ["Ben and Emily ___ English.", "are"], ["You ___ a student.", "are"],
       ["My teacher ___ from Scotland.", "is"], ["We ___ on holiday.", "are"], ["It ___ a fantastic city.", "is"], ["Toshi and Mariko ___ friends.", "are"]

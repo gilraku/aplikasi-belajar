@@ -1,4 +1,5 @@
 // Bahasa Inggris — Pertemuan 6: New Cutting Edge Elementary, Module 5 "Getting from A to B"
+const LAB3 = require("./lab_tahap3.js");
 const Q = (q, opts, ans, exp) => ({ q, opts, ans, exp });
 const ex = (label, title, headers, opts, rows, preview) => ({ type: "exercise", label, title, preview, headers, rows: rows.map(([c, a, h]) => ({ cells: [c], fields: [{ options: opts, answer: a }], ok: "✓ " + (h || "Benar!") })) });
 module.exports = {
@@ -47,12 +48,7 @@ module.exports = {
     ex("Permainan Interaktif 3 • Istilah Bandara", "Cocokkan Istilah dengan Artinya", ["Istilah", "Arti"], ["changing from one plane to another", "show your ticket and passport at a desk", "getting on (a plane)", "is late", "final call", "go to"], [
       ["in transit", "changing from one plane to another"], ["check in", "show your ticket and passport at a desk"], ["boarding", "getting on (a plane)"], ["is delayed", "is late"], ["last call", "final call"], ["proceed to", "go to"]
     ]),
-    { type: "terminal", label: "Simulasi 4 • Rute ke JFK Airport", title: "Karen punya $25, sekarang 15.10, harus tiba 16.30", shell: "=", header: "Pilih rute", scenarios: [
-      { label: "1. Taxi", code: "±1 jam, $35 + tip", ok: false, pill: "TIDAK BISA", cmd: "taxi: $35 + tip 15–20%", res: "Uang tidak cukup ($25)", exp: "She <strong>can't</strong> take a taxi because she's only got $25." },
-      { label: "2. Subway A + bus", code: "±90 menit, $2", ok: false, pill: "TERLAMBAT", cmd: "15.10 + 90 menit", res: "tiba ±16.40", exp: "Murah, tetapi lewat dari 16.30." },
-      { label: "3. Jalan + subway + AirTrain", code: "20 + 60 + 12 menit, $7", ok: false, pill: "TERLAMBAT", cmd: "15.10 + 92 menit", res: "tiba ±16.42", exp: "Uang cukup ($2 + $5) tetapi tidak sempat." },
-      { label: "4. Subway + Airport Express bus", code: "5 + ±60 menit, $15", ok: true, pill: "BISA", cmd: "subway 5 menit ($2) → bus 15.20 (±1 jam, $13)", res: "tiba ±16.20, biaya $15", exp: "She <strong>can</strong> take a bus at twenty past three. Bus berangkat tiap 20 menit (15.00, 15.20, 15.40…)." }
-    ] },
+    LAB3.EN_RUTE,
     { type: "reveal", label: "Latihan 5 • Real Life", title: "Susun Percakapan di Loket Tiket (urutan modul)", cols: 2, items: [
       { prompt: "1. Florence", answer: "A ticket to Paris, please … the six o'clock train.", reason: "Pembeli memulai." },
       { prompt: "2. Clerk", answer: "Single or return?", reason: "single = sekali jalan, return = pulang-pergi." },
