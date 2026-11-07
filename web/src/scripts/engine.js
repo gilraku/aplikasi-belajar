@@ -803,10 +803,57 @@ function programLine() {
   const lines = [...new Set(LIB.map(c => [c.prodi, c.kampus].filter(Boolean).join(' • ')).filter(Boolean))];
   return lines.length === 1 ? lines[0] : '';
 }
+// ---------- Dropdown Sinau (pengganti <select> bawaan browser) ----------
+// items: [{ value, label (teks untuk tombol), html (isi baris di daftar), group? }]
+function courseItems() {
+  return LIB.map(x => { const pct = Math.round(x.meetings.reduce((a, m) => a + storedReadiness(x, m), 0) / Math.max(1, x.meetings.length));
+    return { value: x.id, label: x.nama, swatch: courseHL(x),
+      html: `<span class="dd-sw" style="background:${courseHL(x)}"></span><span class="min-w-0 flex-1"><span class="block font-bold text-ink truncate">${esc(x.nama)}</span><span class="block text-[11px] text-slate-500">${x.meetings.length} pertemuan${x.dosen ? ' • ' + esc(x.dosen.split(',')[0]) : ''}</span></span><span class="dd-pct ${pct ? '' : 'text-slate-400'}">${pct ? pct + '%' : 'belum'}</span>` }; });
+}
+function meetingItems(c) {
+  const multi = new Set(c.meetings.map(m => babakOf(m.nomor))).size > 1;
+  return c.meetings.map(x => { const pct = storedReadiness(c, x), mk = examMark(x);
+    return { value: x.id, label: `P${x.nomor} · ${x.judul}`, group: multi ? (BABAK.find(b => b.id === babakOf(x.nomor)) || {}).label : '',
+      html: `<span class="dd-p"><span class="stabilo" style="--hl:${courseHL(c)}">P${esc(x.nomor)}</span></span><span class="min-w-0 flex-1 font-semibold text-ink leading-snug">${esc(x.judul)}</span>${mk ? `<span class="dd-mark">${esc(mk)}</span>` : ''}<span class="dd-pct ${pct ? '' : 'text-slate-400'}">${pct ? pct + '%' : ''}</span>` }; });
+}
+const DD = {};
+function ddHtml(id, placeholder, items, selected, cls) {
+  DD[id] = items;
+  const cur = items.find(i => i.value === selected);
+  let lastGroup = null;
+  const rows = items.map((it, i) => {
+    const head = it.group && it.group !== lastGroup ? `<li role="presentation" class="dd-group">${esc(it.group)}</li>` : '';
+    lastGroup = it.group;
+    return `${head}<li role="option" id="${id}-o${i}" data-i="${i}" tabindex="-1" aria-selected="${it.value === selected}" class="dd-opt">${it.html}${it.value === selected ? '<span class="dd-check" aria-hidden="true">✓</span>' : ''}</li>`;
+  }).join('');
+  return `<div class="dd relative flex-1 min-w-0 md:flex-none ${cls || ''}" data-dd="${id}">
+    <button type="button" id="${id}" class="dd-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="${id}-list" aria-label="${esc(placeholder)}">
+      ${cur && cur.swatch ? `<span class="dd-sw" style="background:${cur.swatch}"></span>` : ''}
+      <span class="min-w-0 flex-1 truncate text-left ${cur ? 'text-ink' : 'text-slate-500'}">${esc(cur ? cur.label : placeholder)}</span>
+      <svg class="dd-caret" viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <ul id="${id}-list" role="listbox" aria-label="${esc(placeholder)}" class="dd-list" hidden>${rows}</ul></div>`;
+}
+function ddClose(root, focusBtn) { if (!root) return; const l = root.querySelector('.dd-list'), b = root.querySelector('.dd-btn'); if (l.hidden) return; l.hidden = true; b.setAttribute('aria-expanded', 'false'); if (focusBtn) b.focus(); }
+function ddWire(id, onPick) {
+  const btn = $(id); if (!btn) return;
+  const root = btn.closest('.dd'), list = root.querySelector('.dd-list'), opts = () => [...list.querySelectorAll('.dd-opt')];
+  const open = () => { document.querySelectorAll('.dd').forEach(d => d !== root && ddClose(d)); list.hidden = false; btn.setAttribute('aria-expanded', 'true');
+    const sel = list.querySelector('[aria-selected="true"]') || opts()[0]; if (sel) { sel.focus(); sel.scrollIntoView({ block: 'nearest' }); } };
+  const pick = el => { const it = DD[id][+el.dataset.i]; ddClose(root); if (it) onPick(it.value); };
+  btn.onclick = () => list.hidden ? open() : ddClose(root);
+  btn.onkeydown = e => { if (['ArrowDown', 'ArrowUp'].includes(e.key)) { e.preventDefault(); open(); } };
+  list.onclick = e => { const o = e.target.closest('.dd-opt'); if (o) pick(o); };
+  list.onkeydown = e => { const all = opts(), i = all.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); const n = all[Math.max(0, Math.min(all.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1)))]; if (n) n.focus(); }
+    else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); const n = e.key === 'Home' ? all[0] : all[all.length - 1]; if (n) n.focus(); }
+    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (all[i]) pick(all[i]); }
+    else if (e.key === 'Escape') { e.preventDefault(); ddClose(root, true); }
+    else if (e.key === 'Tab') ddClose(root); };
+}
+document.addEventListener('click', e => { document.querySelectorAll('.dd').forEach(d => { if (!d.contains(e.target)) ddClose(d); }); });
 function renderHeader() {
   const c = S.course, m = S.meeting;
-  const courseOpts = LIB.map(x => `<option value="${esc(x.id)}" ${c && x.id === c.id ? 'selected' : ''}>${esc((x.kode ? x.kode + ' • ' : '') + x.nama)}</option>`).join('');
-  const meetOpts = c ? c.meetings.map(x => `<option value="${esc(x.id)}" ${m && x.id === m.id ? 'selected' : ''}>Pertemuan ${esc(x.nomor)}: ${esc(x.judul)}</option>`).join('') : '';
   const tabs = m ? availableTabs(m) : [];
   $('appHeader').innerHTML = `<div class="max-w-6xl mx-auto px-4 py-2.5 space-y-2.5">
     <div class="flex items-center gap-2.5 min-w-0">
@@ -821,8 +868,8 @@ function renderHeader() {
       <button onclick="openShareModal()" title="Bagikan / Unduh" aria-label="Bagikan / Unduh" class="shrink-0 h-10 px-3 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 flex items-center gap-1.5">${svg('share', 'w-4 h-4')}<span class="hidden sm:inline">Bagikan / Unduh</span></button>
     </div>
     <div class="hdr-collapse flex flex-wrap md:flex-nowrap items-center gap-2">
-      ${LIB.length ? `<select id="selCourse" aria-label="Pilih mata kuliah" class="flex-1 min-w-0 md:flex-none md:w-56 p-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold"><option value="">Pilih mata kuliah</option>${courseOpts}</select>` : ''}
-      ${c ? `<select id="selMeeting" aria-label="Pilih pertemuan" class="flex-1 min-w-0 md:flex-none md:w-80 p-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold"><option value="">Pilih pertemuan</option>${meetOpts}</select>` : ''}
+      ${LIB.length ? ddHtml('selCourse', 'Pilih mata kuliah', courseItems(), c ? c.id : '', 'md:w-72') : ''}
+      ${c ? ddHtml('selMeeting', 'Pilih pertemuan', meetingItems(c), m ? m.id : '', 'md:w-[26rem]') : ''}
       ${m ? `<div class="hidden md:block md:w-48 md:ml-auto"><div class="flex justify-between text-[11px] font-bold text-slate-500 mb-1"><span>Kesiapan ${esc(m.ujian)}</span><span id="readinessLabel" class="text-indigo-700">0%</span></div><div class="h-1.5 rounded-full bg-slate-200 overflow-hidden"><div id="readinessBar" class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-500" style="width:0%"></div></div></div>` : ''}
     </div>
     ${tabs.length ? `<div class="relative -mx-4 sm:mx-0"><nav id="tabNav" class="flex gap-1.5 overflow-x-auto pb-0.5 px-4 sm:px-0 scroll-px-4" aria-label="Menu Utama">${tabs.map(t =>
@@ -831,8 +878,8 @@ function renderHeader() {
   </div>`;
   const nav = $('tabNav'), at = nav && nav.querySelector('[aria-current="page"]');
   if (at && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = at.offsetLeft - (nav.clientWidth - at.offsetWidth) / 2;
-  const sc = $('selCourse'); if (sc) sc.onchange = () => { const nc = findCourse(sc.value); if (!nc) return go('#/'); go(nc.meetings.length === 1 ? routeFor(nc, nc.meetings[0]) : '#/c/' + encodeURIComponent(nc.id)); };
-  const sm = $('selMeeting'); if (sm) sm.onchange = () => { const nm = findMeeting(c, sm.value); go(nm ? routeFor(c, nm) : '#/c/' + encodeURIComponent(c.id)); };
+  ddWire('selCourse', v => { const nc = findCourse(v); if (!nc) return go('#/'); go(nc.meetings.length === 1 ? routeFor(nc, nc.meetings[0]) : '#/c/' + encodeURIComponent(nc.id)); });
+  ddWire('selMeeting', v => { const nm = findMeeting(c, v); go(nm ? routeFor(c, nm) : '#/c/' + encodeURIComponent(c.id)); });
 }
 function renderNext() {
   const box = $('appNext'); if (!box) return;
@@ -858,7 +905,7 @@ function renderFooter() {
   const c = S.course, m = S.meeting;
   $('appFooter').innerHTML = `<div class="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-slate-500">
     <div>${m ? `<strong class="text-slate-700">${esc(c.nama)}${c.kode ? ' (' + esc(c.kode) + ')' : ''}, Pertemuan ${esc(m.nomor)}: ${esc(m.judul)}</strong><br>${esc([c.prodi, c.kampus].filter(Boolean).join(' • '))}${c.dosen ? ' • Dosen: ' + esc(c.dosen) : ''}`
-      : `<span class="wordmark text-base">sinau</span><br><span class="inline-block mt-1">Sinau (Jawa): belajar. Materi dimuat per pertemuan supaya halaman lebih ringan.</span>`}</div>
+      : `<span class="wordmark text-base">sinau</span>`}</div>
     <button onclick="openShareModal()" class="self-start sm:self-auto px-3 py-2 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700">Bagikan / Unduh HTML</button>
   </div>`;
 }
@@ -1004,7 +1051,7 @@ function renderHome(only) {
     const cols = (c, f) => utsN.map(n => f(c, n)).join('') + (uasN.length ? '<td class="peta-sep" aria-hidden="true"></td>' + uasN.map(n => f(c, n)).join('') : '');
     peta = `<section class="space-y-2" aria-label="Peta belajar">
       <div class="flex flex-wrap items-end justify-between gap-2"><h2 class="text-xl font-extrabold text-ink">Peta belajar</h2>
-        <p class="text-xs text-slate-500">Angka = % siap. Kotak bergaris tebal = pertemuan ujian, CPMK, atau tugas. Klik kotak untuk masuk, atau nama matkul untuk daftar pertemuannya.</p></div>
+</div>
       <div class="-mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-auto"><table class="peta w-full ${uasN.length ? 'min-w-[880px]' : 'min-w-[600px]'}">
         <colgroup><col class="w-[7rem] sm:w-[9.5rem]">${utsN.map(() => '<col>').join('')}${uasN.length ? '<col style="width:8px">' + uasN.map(() => '<col>').join('') : ''}</colgroup>
         <thead>${uasN.length ? `<tr><th></th><th colspan="${utsN.length}" class="peta-babak">Menuju UTS</th><th></th><th colspan="${uasN.length}" class="peta-babak">Menuju UAS</th></tr>` : ''}
