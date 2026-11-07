@@ -3,14 +3,14 @@
 // lalu jejaknya (nilai variabel, hasil kondisi, keluaran) dibekukan menjadi data saat build.
 //
 // Bentuk satu langkah: { l: nomor baris (0-based, -1 = selesai), p: potongan kode yang distabilo,
-//   v: nilai variabel, ch: variabel yang baru berubah, c: { t: teks kondisi, r: true/false }, o: keluaran, x: catatan, tag }
+//   pl: 1 bila potongan dicari dari kanan (mis. titik koma terakhir), v: nilai variabel, ch: variabel yang baru berubah, c: { t: teks kondisi, r: true/false }, o: keluaran, x: catatan, tag }
 // Tag dipakai untuk menaruh pertanyaan "Tebak dulu": start, cond-first, cond-last, step-first, body-first, do, break, end.
 
 function run(def) {
   const v = { ...(def.vars || {}) };
   const steps = [];
   let out = '', checks = 0, trues = 0, rounds = 0, broke = false;
-  const push = (s, note, extra = {}) => steps.push({ l: s.line, p: s.part || null, v: { ...v }, o: out, x: note, ...extra });
+  const push = (s, note, extra = {}) => steps.push({ l: s.line, p: s.part || null, ...(s.lastPart ? { pl: 1 } : {}), v: { ...v }, o: out, x: note, ...extra });
   const exec = stmts => {
     for (const s of stmts || []) {
       if (s.if) {
@@ -123,7 +123,7 @@ const P6 = lab([
         { line: 1, part: 'i = 0', run: () => ({ set: { i: 0 } }), note: 'Inisialisasi: i = 0.' }
       ],
       cond: { line: 1, part: 'i < 3', text: v => `${v.i} < 3`, test: v => v.i < 3 },
-      body: [{ line: 1, part: ';', note: 'Badan loop adalah <code>;</code> itu sendiri: pernyataan kosong. Tidak ada yang dicetak.' }],
+      body: [{ line: 1, part: ';', lastPart: true, note: 'Badan loop adalah <code>;</code> itu sendiri: pernyataan kosong. Tidak ada yang dicetak.' }],
       step: { line: 1, part: 'i++', run: v => { v.i++; } },
       after: [{ line: 3, part: 'cout << i << " ";', run: v => out(v.i + ' '), note: v => `Blok { } ini bukan bagian loop. Ia dijalankan sekali setelah loop selesai, saat i sudah ${v.i}.` }]
     }],
