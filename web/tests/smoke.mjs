@@ -221,6 +221,49 @@ try {
     if (!(await lab.getByText('Tebakanmu tepat').count())) fail('hasil tebakan awal tidak dibuka di akhir');
   }
 
+  cur = 'Blok cara & Lab Tahap 3 (DSI, BIndo, BIng)';
+  await visit(basis, 'p7', 'materi');
+  await page.locator('#appMain').getByRole('button', { name: 'DESCRIBE', exact: true }).click();
+  if (!(await page.locator('#appMain').getByText('DESCRIBE buku;', { exact: true }).count())) fail('blok cara P7 tidak berpindah ke tab DESCRIBE');
+
+  await visit('dasar-sistem-informasi', 'p2', 'simulator');
+  for (const b of ['Kondensasi', 'Koreksi', 'Kalkulasi', 'Kategorisasi', 'Kontekstualisasi', 'Evaluasi kelas']) {
+    await page.locator('#appMain').getByRole('button', { name: b, exact: true }).click();
+  }
+  if (!(await page.locator('#appMain').getByText('✓ Kelima K sudah diterapkan').count())) fail('lab-5k DSI P2 belum mencapai status lengkap');
+
+  await visit('bahasa-indonesia', 'p3', 'simulator');
+  await page.locator('#appMain input[data-key="word"]').fill('buat');
+  if (!(await page.locator('#appMain').getByText('membuatkan').count())) fail('lab-imbuhan salah membentuk kata dasar berderet vokal "buat"');
+  await page.locator('#appMain').getByRole('button', { name: 'bom', exact: true }).click();
+  if (!(await page.locator('#appMain').getByText('mengebomkan').count())) fail('lab-imbuhan salah membentuk kata satu suku kata "bom"');
+
+  await visit('bahasa-indonesia', 'p5', 'simulator');
+  await page.locator('#appMain').getByRole('button', { name: 'tamu-tamu', exact: true }).click();
+  await page.locator('#appMain').getByRole('button', { name: 'Ganti: tamu', exact: true }).click();
+  await page.locator('#appMain').getByRole('button', { name: 'supaya', exact: true }).click();
+  await page.locator('#appMain').getByRole('button', { name: 'Hapus kata ini', exact: true }).click();
+  if (!(await page.locator('#appMain').getByText('✓ Sudah efektif.').count())) fail('lab-kalimat BIndo P5 tidak menerima kalimat efektif');
+
+  await visit('bahasa-inggris', 'p3', 'simulator');
+  await page.locator('#appMain').getByRole('button', { name: 'She', exact: true }).click();
+  await page.locator('#appMain').getByRole('button', { name: 'study English', exact: true }).click();
+  await page.locator('#appMain').getByRole('button', { name: 'Positif', exact: true }).click();
+  if (!(await page.locator('#appMain').getByText('She studies English.').count())) fail('lab-kalimat-en BIng P3 salah membentuk kalimat positif orang ketiga');
+  await page.locator('#appMain').getByRole('button', { name: '+ 5', exact: true }).click();
+  if (!(await page.locator('#appMain').getByText("It's quarter to nine.").count())) fail('lab-jam BIng P3 tidak memperbarui waktu');
+
+  await visit('bahasa-inggris', 'p6', 'simulator');
+  for (const r of ['🚕 Taxi', '🚇 Subway A + bus', '🚶 Walk + subway + AirTrain', '🚌 Subway + Airport Express bus']) {
+    await page.locator('#appMain').getByRole('button', { name: r }).click();
+  }
+  if (!(await page.locator('#appMain').getByText("Rangkuman can / can't").count())) fail('lab-rute BIng P6 tidak membuka rangkuman setelah semua rute dicoba');
+
+  await visit('bahasa-inggris', 'p7', 'simulator');
+  await page.locator('#appMain').getByRole('button', { name: 'cups of coffee (wadah)', exact: true }).click();
+  await page.locator('#appMain').getByRole('button', { name: 'How much / many', exact: true }).click();
+  if (!(await page.locator('#appMain').getByText('How many cups of coffee are there?').count())) fail('lab-kalimat-en BIng P7 tidak membentuk pertanyaan How many');
+
   cur = 'Web P7–P8: perilaku dan penyimpanan draf';
   for (const [meeting, labs] of [['p7', [4, 6]], ['p8', [13]]]) {
     await visit(web, meeting, 'simulator');

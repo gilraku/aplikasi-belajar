@@ -1,5 +1,5 @@
 // Isi lab interaktif tahap 3 (mesinnya di web/src/scripts/labs.js).
-// DSI P2 (5K), Bahasa Indonesia P3 (imbuhan) & P5 (kalimat efektif), Bahasa Inggris P2/P3/P5 (kalimat), P3 (jam), P6 (rute Karen).
+// DSI P2 (5K), Bahasa Indonesia P3 (imbuhan) & P5–P6 (kalimat efektif), Bahasa Inggris P2/P3/P5/P7 (kalimat), P3 (jam), P6 (rute Karen).
 
 const DSI_5K = {
   type: "lab-5k", label: "Lab DSI • Data Jadi Informasi", title: "Data Mentah Jadi Informasi dengan 5K",
@@ -49,7 +49,7 @@ const BINDO_IMBUHAN = {
   try: ["konsumsi", "telaah", "sukses", "pelihara", "kritik", "transfer", "sponsor", "baca", "tulis", "ambil", "bom", "protes", "punya"],
   special: [
     { word: "protes", affix: "peN-", res: "pemrotes", note: "Bentuk khusus yang disebut materi: <em>pemrotes</em>. Huruf p hilang walau diikuti r, padahal dengan meN- tetap <em>memprotes</em>." },
-    { word: "punya", affix: "meN-…-i", res: "mempunyai", note: "<em>mempunyai</em> adalah pengecualian yang sudah baku: huruf p tidak luluh." }
+    { word: "punya", pre: "me", res: "mempunyai", note: "<em>mempunyai</em> adalah pengecualian yang sudah baku (meN- + punya + -i): huruf p tidak luluh." }
   ],
   rules: [
     { id: "vokal", awal: "vokal (a, i, u, e, o)", jadi: "meng- / peng-", contoh: "mengambil, pengamat" },
@@ -127,6 +127,60 @@ const BINDO_KALIMAT = {
   ]
 };
 
+const BINDO_KALIMAT_P6 = {
+  type: "lab-kalimat", label: "Lab Bahasa • Bengkel Kalimat Lanjutan", title: "Bengkel Transitif, Anak Kalimat, dan Tanda Koma",
+  desc: "Klik bagian yang bermasalah untuk mengganti kata atau mengatur tanda koma sesuai kaidah kalimat aktif transitif/intransitif dan kalimat majemuk bertingkat.",
+  items: [
+    {
+      tokens: ["Seluruh", "karyawan", "sedang", "mendiskusikan", "tentang", "kenaikan", "tunjangan."],
+      alt: { 3: ["berdiskusi"] }, syarat: "Transitif vs Intransitif",
+      why: "Predikat transitif (<em>mendiskusikan</em>) langsung diikuti objek tanpa kata depan <em>tentang</em>; predikat intransitif (<em>berdiskusi</em>) diikuti <em>tentang</em>.",
+      accept: [
+        { text: "Seluruh karyawan sedang mendiskusikan kenaikan tunjangan.", why: "Transitif: <em>mendiskusikan</em> (P) langsung diikuti objek <em>kenaikan tunjangan</em> (O) tanpa <em>tentang</em>." },
+        { text: "Seluruh karyawan sedang berdiskusi tentang kenaikan tunjangan.", why: "Intransitif: <em>berdiskusi</em> (P) diikuti keterangan/pelengkap berpreposisi <em>tentang kenaikan tunjangan</em>." }
+      ],
+      hints: [
+        { has: "mendiskusikan tentang", msg: "<em>mendiskusikan</em> sudah transitif, jadi tidak boleh diikuti <em>tentang</em>. Hapus <em>tentang</em> atau ganti predikatnya menjadi <em>berdiskusi</em>." },
+        { has: "berdiskusi kenaikan", msg: "<em>berdiskusi</em> adalah kata kerja intransitif, sehingga membutuhkan kata depan <em>tentang</em>." }
+      ]
+    },
+    {
+      tokens: ["Walaupun", "sedang", "sakit", "Arman", "tetap", "datang", "ke", "kampus."],
+      alt: { 2: ["sakit,"] }, syarat: "Anak Kalimat di Depan",
+      why: "Anak kalimat yang mendahului induk kalimat dipisahkan dengan tanda koma.",
+      accept: [
+        { text: "Walaupun sedang sakit, Arman tetap datang ke kampus.", why: "Anak kalimat <em>Walaupun sedang sakit</em> mendahului induk kalimat, sehingga wajib diberi tanda koma." }
+      ],
+      hints: [
+        { has: "walaupun sedang sakit arman", msg: "Anak kalimat berada di depan induk kalimat. Klik kata terakhir anak kalimat (<em>sakit</em>) untuk menambahkan tanda koma." }
+      ]
+    },
+    {
+      tokens: ["Arman", "tetap", "datang,", "walaupun", "sedang", "sakit."],
+      alt: { 2: ["datang"] }, syarat: "Induk Kalimat di Depan",
+      why: "Jika induk kalimat mendahului anak kalimat, tanda koma tidak dipakai sebelum konjungsi bertingkat.",
+      accept: [
+        { text: "Arman tetap datang walaupun sedang sakit.", why: "Induk kalimat berada di depan dan anak kalimat di belakang, jadi tidak dipisahkan tanda koma." }
+      ],
+      hints: [
+        { has: "datang, walaupun", msg: "Anak kalimat berada di belakang induk kalimat. Klik <em>datang,</em> dan ganti menjadi tanpa koma." }
+      ]
+    },
+    {
+      tokens: ["Mobil", "akan", "diperbaiki", "itu", "harus", "diambil", "sekarang."],
+      alt: { 1: ["yang akan"] }, syarat: "KMB Perluasan Subjek",
+      why: "Klausa perluasan subjek dihubungkan dengan konjungsi <em>yang</em> agar tidak ada dua predikat bertabrakan.",
+      accept: [
+        { text: "Mobil yang akan diperbaiki itu harus diambil sekarang.", why: "<em>Mobil yang akan diperbaiki itu</em> menjadi subjek perluasan (S), dan <em>harus diambil</em> predikat utama (P)." },
+        { text: "Mobil yang akan diperbaiki harus diambil sekarang.", why: "<em>Mobil yang akan diperbaiki</em> menjadi subjek perluasan (S), dan <em>harus diambil</em> predikat utama (P)." }
+      ],
+      hints: [
+        { has: "mobil akan diperbaiki", msg: "Ada dua predikat bertabrakan tanpa penghubung. Klik <em>akan</em> dan ganti menjadi <em>yang akan</em> untuk memperluas subjek." }
+      ]
+    }
+  ]
+};
+
 const EN_P2 = {
   type: "lab-kalimat-en", label: "Lab Bahasa Inggris • Perakit Kalimat", title: "Ganti Subjek, Lihat am/is/are Berubah",
   desc: "Pilih subjek, keterangan, dan bentuk kalimat. Bagian yang ikut berubah ditandai, termasuk a/an yang hilang saat subjeknya jamak.",
@@ -160,6 +214,21 @@ const EN_P5 = {
   start: { sub: "She", vb: 1, form: "q" }
 };
 
+const EN_P7 = {
+  type: "lab-kalimat-en", label: "Lab Bahasa Inggris • Countable & Uncountable", title: "There is/are, some/any, dan How much/many",
+  desc: "Pilih kata benda dan bentuk kalimatnya. Perhatikan bagaimana jenis benda (countable tunggal, countable jamak, atau uncountable) menentukan is/are, a/some/any, dan How much/How many.",
+  nouns: [
+    { label: "a banana (1 benda)", kind: "sg", sg: "a banana", pl: "bananas", bare: "banana" },
+    { label: "eggs (jamak)", kind: "pl", pl: "eggs", pos: "eight eggs" },
+    { label: "strawberries (jamak)", kind: "pl", pl: "strawberries", pos: "some strawberries" },
+    { label: "milk (uncountable)", kind: "unc", w: "milk" },
+    { label: "butter (uncountable)", kind: "unc", w: "butter" },
+    { label: "bread (uncountable)", kind: "unc", w: "bread", note: "Jebakan: <em>bread</em> uncountable (bukan <em>a bread / breads</em>). Yang countable: <em>a bread roll</em>." },
+    { label: "cups of coffee (wadah)", kind: "pl", pl: "cups of coffee", pos: "two cups of coffee", note: "<em>coffee</em> uncountable, tetapi wadahnya (<em>cups</em>) countable jamak." }
+  ],
+  start: { vb: 3, form: "pos" }
+};
+
 const EN_JAM = {
   type: "lab-jam", label: "Lab Bahasa Inggris • Jam Interaktif", title: "Jam Interaktif: past dan to",
   desc: "Seret jarum menit (titik kuning), atau pakai tombol ±1 dan ±5 menit. Lihat cara mengucapkan jamnya dan dengarkan pelafalannya.",
@@ -185,4 +254,4 @@ const EN_RUTE = {
   wrap: "<p>She <strong>can't</strong> take a taxi because she's only got $25.</p><p>She <strong>can</strong> take the subway, but she <strong>can't</strong> get there by half past four.</p><p>She <strong>can</strong> take the Airport Express bus at twenty past three.</p><p><em>can</em> sama untuk semua subjek dan selalu diikuti kata kerja bentuk dasar: <em>can take</em>, bukan <em>can to take</em> atau <em>can takes</em>.</p>"
 };
 
-module.exports = { DSI_5K, BINDO_IMBUHAN, BINDO_KALIMAT, EN_P2, EN_P3, EN_P5, EN_JAM, EN_RUTE };
+module.exports = { DSI_5K, BINDO_IMBUHAN, BINDO_KALIMAT, BINDO_KALIMAT_P6, EN_P2, EN_P3, EN_P5, EN_P7, EN_JAM, EN_RUTE };

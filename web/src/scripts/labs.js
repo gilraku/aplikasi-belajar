@@ -116,7 +116,7 @@ const LAB_5K = {
 //  Bahasa Indonesia P3: perakit imbuhan meN- / peN-
 // ---------------------------------------------------------------------
 const VOK = /[aiueo]/;
-function sukuKata(w) { return (w.replace(/ai|au|oi|ei/g, 'A').match(/[aiueoA]+/g) || []).length; }
+function sukuKata(w) { return (w.match(/[aiueo]/g) || []).length; }
 // Mengembalikan { base: 'me'|'pe', alo, sisa, luluh, gugus, satu, rule, salah }
 function bentukMeN(w, base) {
   const c = w[0], c2 = w[1] || '';
@@ -135,6 +135,7 @@ function bentukMeN(w, base) {
   if ('cdjz'.includes(c)) return r('n', w, 'cdj');
   return r('ng', w, 'lain');
 }
+const matchSpec = (d, w, af) => (d.special || []).find(x => x.word === w && (!x.affix || x.affix === af.label) && (!x.pre || x.pre === af.pre));
 const LAB_IMBUHAN = {
   init: d => ({ values: { word: d.start || 'sukses' }, af: d.startAffix || 0 }),
   live(d, s) {
@@ -142,7 +143,7 @@ const LAB_IMBUHAN = {
     const w = String(s.values.word || '').trim().toLowerCase();
     if (!w) return `<p class="text-sm text-slate-500">Ketik kata dasar dulu, misalnya <em>sapu</em> atau <em>kritik</em>.</p>`;
     if (!/^[a-z]{2,}$/.test(w)) return `<p class="text-sm text-rose-700 font-bold">Pakai satu kata dasar, huruf saja (tanpa spasi, angka, atau tanda hubung).</p>`;
-    const k = (d.special || []).find(x => x.word === w && x.affix === af.label);
+    const k = matchSpec(d, w, af);
     const b = bentukMeN(w, af.pre);
     const suf = af.suf || '';
     const hasil = k ? k.res : b.alo + b.sisa + suf;
@@ -163,8 +164,9 @@ const LAB_IMBUHAN = {
 `;
   },
   live2(d, s) {
+    const af = (d.affixes || [])[s.af] || { pre: 'me', label: 'meN-' };
     const w = String(s.values.word || '').trim().toLowerCase();
-    const cur = /^[a-z]{2,}$/.test(w) && !(d.special || []).some(x => x.word === w) ? bentukMeN(w, 'me').rule : '';
+    const cur = /^[a-z]{2,}$/.test(w) && !matchSpec(d, w, af) ? bentukMeN(w, 'me').rule : '';
     return (d.rules || []).map(r => `<tr class="border-t border-slate-100 ${(r.match || [r.id]).includes(cur) ? 'bg-indigo-50 font-semibold' : ''}"><td class="px-3 py-1.5 rich">${rich(r.awal)}</td><td class="px-3 py-1.5 font-mono">${esc(r.jadi)}</td><td class="px-3 py-1.5 rich">${rich(r.contoh)}</td></tr>`).join('');
   },
   render(d, s, n) {
@@ -301,19 +303,48 @@ function enBuild(sub, vb, form) {
   const ansDo = ansS === 'I' || ansS === 'you' || k.p >= 4 ? 'do' : 'does';
   return { html: `${hl(doW.charAt(0).toUpperCase() + doW.slice(1))} ${esc(low)} ${esc(v)} ${esc(rest)}?`, say: `${doW} ${low} ${v} ${rest}?`, why, extra: `Jawaban singkat: <strong>Yes, ${esc(ansS)} ${hl(ansDo)}.</strong> / <strong>No, ${esc(ansS)} ${hl(ansDo + "n't")}.</strong>` };
 }
+function enNounBuild(it, form) {
+  const hl = t => `<span class="stabilo">${t}</span>`;
+  const note = it.note ? [it.note] : [];
+  if (it.kind === 'sg') {
+    const sg = it.sg, pl = it.pl, bare = it.bare || sg.replace(/^an?\s+/, '');
+    if (form === 'pos') return { html: `There${hl("'s")} ${hl(esc(sg))}.`, say: `There's ${sg}.`, why: [`<strong>${esc(bare)}</strong> adalah <em>countable tunggal</em> (satu benda) → pakai <strong>There's (There is)</strong> dan <strong>a/an</strong>.`].concat(note) };
+    if (form === 'neg') return { html: `There ${hl("isn't")} ${hl(esc(sg))}.`, say: `There isn't ${sg}.`, extra: `Dengan <em>no</em>: <strong>There's ${hl('no')} ${esc(bare)}.</strong>`, why: [`Countable tunggal negatif → <strong>There isn't + a/an</strong> (atau <em>There's no ${esc(bare)}</em>).`].concat(note) };
+    if (form === 'q') return { html: `${hl('Is there')} ${hl(esc(sg))}?`, say: `Is there ${sg}?`, extra: `Jawaban singkat: <strong>Yes, there ${hl('is')}.</strong> / <strong>No, there ${hl("isn't")}.</strong>`, why: [`Pertanyaan satu benda → <strong>Is there + a/an…?</strong>`].concat(note) };
+    return { html: `${hl('How many')} ${esc(pl)} ${hl('are')} there?`, say: `How many ${pl} are there?`, why: [`Karena <em>countable</em>, saat menanyakan jumlah pakai <strong>How many + bentuk jamak (${esc(pl)})</strong>.`].concat(note) };
+  }
+  if (it.kind === 'pl') {
+    const pl = it.pl, pos = it.pos || 'some ' + pl;
+    if (form === 'pos') return { html: `There ${hl('are')} ${hl(esc(pos))}.`, say: `There are ${pos}.`, why: [`<strong>${esc(pl)}</strong> adalah <em>countable jamak</em> (lebih dari satu) → pakai <strong>There are</strong>.`].concat(note) };
+    if (form === 'neg') return { html: `There ${hl("aren't")} ${hl('any')} ${esc(pl)}.`, say: `There aren't any ${pl}.`, extra: `Dengan <em>no</em>: <strong>There are ${hl('no')} ${esc(pl)}.</strong>`, why: [`Jamak negatif → <strong>There aren't + any</strong> (atau <em>There are no ${esc(pl)}</em>). Jangan dobel: ✗ <em>There aren't no…</em>`].concat(note) };
+    if (form === 'q') return { html: `${hl('Are there')} ${hl('any')} ${esc(pl)}?`, say: `Are there any ${pl}?`, extra: `Jawaban singkat: <strong>Yes, there ${hl('are')}.</strong> / <strong>No, there ${hl("aren't")}.</strong>`, why: [`Pertanyaan jamak → <strong>Are there + any + noun jamak?</strong>`].concat(note) };
+    return { html: `${hl('How many')} ${esc(pl)} ${hl('are')} there?`, say: `How many ${pl} are there?`, why: [`<strong>${esc(pl)}</strong> bisa dihitung (countable jamak) → pakai <strong>How many … are there?</strong>`].concat(note) };
+  }
+  const w = it.w;
+  if (form === 'pos') return { html: `There${hl("'s")} ${hl('some')} ${esc(w)}.`, say: `There's some ${w}.`, why: [`<strong>${esc(w)}</strong> adalah <em>uncountable</em> (tidak dihitung satuan) → dianggap tunggal (<strong>There's</strong>) dan memakai <strong>some</strong> di kalimat positif (tanpa a/an, tanpa -s).`].concat(note) };
+  if (form === 'neg') return { html: `There ${hl("isn't")} ${hl('any')} ${esc(w)}.`, say: `There isn't any ${w}.`, extra: `Dengan <em>no</em>: <strong>There's ${hl('no')} ${esc(w)}.</strong>`, why: [`Uncountable negatif → <strong>There isn't + any</strong> (atau <em>There's no ${esc(w)}</em>).`].concat(note) };
+  if (form === 'q') return { html: `${hl('Is there')} ${hl('any')} ${esc(w)}?`, say: `Is there any ${w}?`, extra: `Jawaban singkat: <strong>Yes, there ${hl('is')}.</strong> / <strong>No, there ${hl("isn't")}.</strong> (Menawarkan: <em>Would you like <strong>some</strong> ${esc(w)}?</em>)`, why: [`Pertanyaan uncountable → <strong>Is there + any…?</strong>`].concat(note) };
+  return { html: `${hl('How much')} ${esc(w)} ${hl('is')} there?`, say: `How much ${w} is there?`, why: [`<strong>${esc(w)}</strong> tidak dihitung satu per satu (uncountable) → pakai <strong>How much … is there?</strong>`].concat(note) };
+}
 const LAB_SENTENCE = {
   init: d => ({ sub: (d.start || {}).sub || 'She', vb: (d.start || {}).vb || 0, form: (d.start || {}).form || 'pos' }),
   render(d, s, n) {
-    const subs = d.subjects || ['I', 'You', 'He', 'She', 'We', 'They'];
-    const vbs = d.verbs || [];
-    const vb = vbs[s.vb] || vbs[0]; if (!vb) return '';
-    const r = enBuild(s.sub, vb, s.form);
     const row = (label, html) => `<div class="flex flex-wrap items-center gap-2"><span class="w-full sm:w-24 text-xs font-bold uppercase tracking-wider text-slate-500">${label}</span>${html}</div>`;
-    return `<div class="space-y-2.5">
-        ${row('Subjek', subs.map(x => labBtn(n, 'sub', x, esc(x), x === s.sub)).join(''))}
+    let r, controls;
+    if (d.nouns) {
+      const nouns = d.nouns || [], it = nouns[s.vb] || nouns[0]; if (!it) return '';
+      r = enNounBuild(it, s.form);
+      controls = `${row('Kata benda', nouns.map((x, i) => labBtn(n, 'vb', i, esc(x.label), i === s.vb)).join(''))}
+        ${row('Bentuk', [['pos', 'Positif (+)'], ['neg', 'Negatif (−)'], ['q', 'Pertanyaan (?)'], ['hm', 'How much / many']].map(([k, l]) => labBtn(n, 'form', k, l, k === s.form)).join(''))}`;
+    } else {
+      const subs = d.subjects || ['I', 'You', 'He', 'She', 'We', 'They'];
+      const vbs = d.verbs || [], vb = vbs[s.vb] || vbs[0]; if (!vb) return '';
+      r = enBuild(s.sub, vb, s.form);
+      controls = `${row('Subjek', subs.map(x => labBtn(n, 'sub', x, esc(x), x === s.sub)).join(''))}
         ${row('Kata kerja', vbs.map((x, i) => labBtn(n, 'vb', i, esc(x.label), i === s.vb)).join(''))}
-        ${row('Bentuk', [['pos', 'Positif'], ['neg', 'Negatif'], ['q', 'Pertanyaan']].map(([k, l]) => labBtn(n, 'form', k, l, k === s.form)).join(''))}
-      </div>
+        ${row('Bentuk', [['pos', 'Positif'], ['neg', 'Negatif'], ['q', 'Pertanyaan']].map(([k, l]) => labBtn(n, 'form', k, l, k === s.form)).join(''))}`;
+    }
+    return `<div class="space-y-2.5">${controls}</div>
       <div class="mt-4 grid gap-3 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]" aria-live="polite">
         <div class="rounded-xl border-[1.5px] border-ink bg-indigo-50 p-3 sm:p-4 space-y-2">
           <div class="font-display text-2xl sm:text-3xl font-extrabold text-ink break-words">${r.html}</div>
@@ -325,7 +356,10 @@ const LAB_SENTENCE = {
   },
   on: {
     sub(d, s, x) { s.sub = x; }, vb(d, s, i) { s.vb = +i; }, form(d, s, f) { s.form = f; },
-    say(d, s) { const vb = (d.verbs || [])[s.vb]; if (vb) labSpeak(enBuild(s.sub, vb, s.form).say); return false; }
+    say(d, s) {
+      if (d.nouns) { const it = (d.nouns || [])[s.vb]; if (it) labSpeak(enNounBuild(it, s.form).say); return false; }
+      const vb = (d.verbs || [])[s.vb]; if (vb) labSpeak(enBuild(s.sub, vb, s.form).say); return false;
+    }
   }
 };
 

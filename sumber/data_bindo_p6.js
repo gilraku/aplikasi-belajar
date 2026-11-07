@@ -1,5 +1,6 @@
 // Bahasa Indonesia — Pertemuan 6: Penulisan Kalimat Efektif (lanjutan, catatan dosen):
 // transitif/intransitif, kalimat tunggal/majemuk, KMB perluasan subjek/objek/keterangan.
+const LAB3 = require("./lab_tahap3.js");
 const TI = ["Transitif", "Intransitif"];
 const JK = ["Tunggal", "Majemuk setara", "Majemuk bertingkat"];
 const PER = ["Perluasan subjek", "Perluasan objek", "Perluasan keterangan"];
@@ -37,6 +38,7 @@ module.exports = {
       defaultNote: "➕ Konjungsi bertingkat bisa di depan kalimat (Karena…, …). Konjungsi setara seperti <em>dan, tetapi</em> tidak dipakai di awal kalimat dalam ragam resmi." }
   ],
   simulator: [
+    LAB3.BINDO_KALIMAT_P6,
     { type: "exercise", label: "Permainan Interaktif 1 • Transitif atau Intransitif?", title: "Lihat Predikatnya", headers: ["Kalimat", "Jenis"],
       rows: [["Mereka menjual sepeda.", "Transitif"], ["Kami sedang berlibur.", "Intransitif"], ["Para karyawan sedang membahas kualitas produk.", "Transitif"], ["Ia menangis.", "Intransitif"], ["Ia menangisi kepergian sahabatnya.", "Transitif"], ["Banyak orang akan berjualan takjil selama Ramadan.", "Intransitif"], ["Mereka sedang mendiskusikan hasil penelitian.", "Transitif"], ["Seluruh mahasiswa akan praktikum di laboratorium.", "Intransitif"]]
         .map(([c, a]) => ({ cells: [c], fields: [{ options: TI, answer: a }], ok: "✓" })) },

@@ -144,24 +144,6 @@ module.exports = {
   simulator: [
     LAB3.BINDO_IMBUHAN,
     {
-      type: "terminal",
-      label: "Simulasi 1 • Mesin Pembentuk Kata",
-      title: "Gabungkan Imbuhan + Kata Dasar",
-      desc: "Pilih skenario untuk melihat hasil pembentukan kata dan alasannya.",
-      shell: "+",
-      header: "Mesin Afiksasi Bahasa Indonesia",
-      scenarios: [
-        { label: "ke- + kasih", code: "prefiks", ok: true, pill: "PREFIKSASI", cmd: "ke- + kasih", res: "kekasih", exp: "Imbuhan diletakkan di <strong>awal</strong> bentuk dasar." },
-        { label: "-el- + tunjuk", code: "infiks", ok: true, pill: "INFIKSASI", cmd: "-el- + tunjuk", res: "telunjuk", exp: "Sisipan diletakkan di <strong>tengah</strong> bentuk dasar." },
-        { label: "genang + -an", code: "sufiks", ok: true, pill: "SUFIKSASI", cmd: "genang + -an", res: "genangan", exp: "Imbuhan diletakkan di <strong>akhir</strong> bentuk dasar." },
-        { label: "meN- + konsumsi", code: "luluh", ok: true, pill: "LULUH (K)", cmd: "meN- + konsumsi", res: "mengonsumsi", exp: "Huruf awal <strong>k</strong> diikuti vokal → <strong>luluh</strong>. Bukan <em>mengkonsumsi</em>." },
-        { label: "meN- + kritik → mengritik?", code: "salah", ok: false, pill: "BENTUK SALAH", cmd: "meN- + kritik = mengritik ?", res: "✗ Salah. Bentuk yang benar: mengkritik", exp: "<strong>kr</strong> adalah dua konsonan berurutan, jadi huruf k <strong>tidak luluh</strong>." },
-        { label: "peN- + protes", code: "khusus", ok: true, pill: "PENGECUALIAN", cmd: "peN- + protes", res: "pemrotes   (meN- + protes = memprotes)", exp: "Menurut materi, <em>pemrotes</em> adalah bentuk khusus: huruf p tetap hilang karena sama dengan huruf awal imbuhan, padahal diawali dua konsonan." },
-        { label: "anti- + virus", code: "asing", ok: true, pill: "IMBUHAN ASING", cmd: "anti- + virus", res: "antivirus", exp: "Imbuhan asing ditulis <strong>serangkai</strong>, bukan <em>anti virus</em> atau <em>anti-virus</em>." },
-        { label: "pasca- + panen", code: "daerah", ok: true, pill: "IMBUHAN DAERAH", cmd: "pasca- + panen", res: "pascapanen", exp: "Imbuhan daerah (Sanskerta) ditulis <strong>serangkai</strong>, bukan <em>pasca panen</em>." }
-      ]
-    },
-    {
       type: "exercise",
       label: "Latihan 1 • Peluluhan",
       title: "Ketik Bentuk Kata yang Benar",

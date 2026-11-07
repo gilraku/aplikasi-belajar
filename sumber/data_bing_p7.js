@@ -1,4 +1,5 @@
 // Bahasa Inggris — Pertemuan 7: New Cutting Edge Elementary, Module 6 "Eating and drinking"
+const LAB3 = require("./lab_tahap3.js");
 const Q = (q, opts, ans, exp) => ({ q, opts, ans, exp });
 const ex = (label, title, headers, opts, rows, preview) => ({ type: "exercise", label, title, preview, headers, rows: rows.map(([c, a, h]) => ({ cells: [c], fields: [{ options: opts, answer: a }], ok: "✓ " + (h || "Benar!") })) });
 const free = (label, title, preview, rows) => ({ type: "exercise", label, title, preview, headers: ["Soal", "Jawaban"], rows: rows.map(([c, a, ok]) => ({ cells: [c], fields: [{ answer: a, placeholder: "ketik jawaban" }], ok: "✓ " + (ok || "Benar!") })) });
@@ -43,6 +44,7 @@ module.exports = {
     ] }
   ],
   simulator: [
+    LAB3.EN_P7,
     ex("Permainan Interaktif 1 • Countable atau Uncountable?", "Kelompokkan Kata (Exercise 3a & Study modul)", ["Kata", "Jenis"], ["Countable", "Uncountable"], [
       ["egg", "Countable"], ["milk", "Uncountable"], ["butter", "Uncountable"], ["banana", "Countable"], ["biscuit", "Countable"], ["cheese", "Uncountable"],
       ["money", "Uncountable"], ["coin", "Countable"], ["traffic", "Uncountable"], ["flight", "Countable"], ["music", "Uncountable"], ["job", "Countable"], ["work", "Uncountable", "work (pekerjaan secara umum) uncountable; job countable."], ["chewing gum", "Uncountable"]
@@ -61,7 +63,13 @@ module.exports = {
     free("Permainan Interaktif 5 • Memesan Makanan", "Susun Percakapan (Practise 5 modul)", "Tulis kalimat lengkap.", [
       ["ready / order / you / Are / to ?", "Are you ready to order"], ["soup / can / Yes / some / have / chicken / please / I ?", ["Yes, can I have some chicken soup, please", "Yes can I have some chicken soup please"]],
       ["else / Anything ?", "Anything else"], ["sandwich / a / like / Yes / cheese / I'd", ["Yes, I'd like a cheese sandwich", "Yes I'd like a cheese sandwich"]], ["drink / you / Would / to / like / anything ?", "Would you like anything to drink"]
-    ])
+    ]),
+    { type: "reveal", label: "Jawab dengan Kalimat Lengkap", title: "Cek Pemahaman Module 6, Lalu Buka", items: [
+      { prompt: "Mengapa kita mengatakan “How many cups of coffee”, padahal coffee uncountable?", answer: "Karena yang dihitung adalah cups (cangkirnya), dan cup termasuk countable jamak.", reason: "Kalau menanyakan kopinya langsung: How much coffee do you drink?" },
+      { prompt: "Apa beda “Is there any coffee?” dan “Would you like some coffee?”", answer: "any dipakai untuk bertanya (ada atau tidak), sedangkan some dipakai saat menawarkan atau meminta.", reason: "Can I have some water, please? juga memakai some." },
+      { prompt: "Ubah menjadi negatif dengan no: “There isn't any milk.” dan “There aren't any eggs.”", answer: "There's no milk. • There are no eggs.", reason: "no = not any; jangan dobel negatif (✗ There isn't no milk)." },
+      { prompt: "Apa yang salah pada kalimat “I'd like two breads and a milk”?", answer: "bread dan milk adalah uncountable (tanpa a/an dan tanpa -s).", reason: "Yang benar: some bread / two bread rolls dan some milk / a glass of milk." }
+    ] }
   ],
   flashcards: [
     { tag: "Grammar", q: "Countable noun?", a: "Bisa dihitung, punya a/an dan bentuk jamak: an egg, two eggs." },

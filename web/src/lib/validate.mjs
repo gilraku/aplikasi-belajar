@@ -13,6 +13,13 @@ export const BLOCK_TYPES = ['text', 'article', 'ayat', 'code', 'playground', 'ca
 
 const str = z.string().trim().min(1, 'tidak boleh kosong');
 const optValue = o => (o && typeof o === 'object' ? o.value : o);
+const normKal = s => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+function canBuildKalimat(it, target) {
+  const want = normKal(target), toks = it.tokens || [], alt = it.alt || {};
+  const reach = (i, acc) => i === toks.length ? normKal(acc.join(' ')) === want
+    : ['', toks[i], ...(alt[i] || [])].some(w => reach(i + 1, w ? acc.concat(w) : acc));
+  return reach(0, []);
+}
 
 const Block = z.lazy(() => z.looseObject({
   type: z.enum(BLOCK_TYPES, { error: i => `jenis blok "${i.input}" tidak dikenal (yang ada: ${BLOCK_TYPES.join(', ')})` }),
@@ -39,6 +46,27 @@ const Block = z.lazy(() => z.looseObject({
     });
   }
   if (b.type === 'diagram' && typeof b.svg !== 'string') ctx.addIssue({ code: 'custom', path: ['svg'], message: 'diagram butuh svg (string)' });
+  if (b.type === 'lab-5k' && !(Array.isArray(b.cols) && b.cols.length && Array.isArray(b.rows) && b.rows.length && Array.isArray(b.contexts) && b.contexts.length))
+    ctx.addIssue({ code: 'custom', path: ['rows'], message: 'lab-5k butuh cols[], rows[], dan contexts[]' });
+  if (b.type === 'lab-imbuhan' && !(Array.isArray(b.affixes) && b.affixes.length && Array.isArray(b.rules) && b.rules.length))
+    ctx.addIssue({ code: 'custom', path: ['affixes'], message: 'lab-imbuhan butuh affixes[] dan rules[]' });
+  if (b.type === 'lab-kalimat') {
+    if (!Array.isArray(b.items) || !b.items.length) ctx.addIssue({ code: 'custom', path: ['items'], message: 'lab-kalimat butuh minimal 1 kalimat di items[]' });
+    else b.items.forEach((it, ii) => {
+      if (!Array.isArray(it.tokens) || !it.tokens.length || !Array.isArray(it.accept) || !it.accept.length)
+        ctx.addIssue({ code: 'custom', path: ['items', ii], message: 'setiap item lab-kalimat butuh tokens[] dan accept[]' });
+      else it.accept.forEach((a, ai) => {
+        if (!a || !a.text || !canBuildKalimat(it, a.text))
+          ctx.addIssue({ code: 'custom', path: ['items', ii, 'accept', ai, 'text'], message: `kalimat "${a && a.text}" tidak bisa dibentuk dari tokens[] dan alt{}` });
+      });
+    });
+  }
+  if (b.type === 'lab-kalimat-en' && !((Array.isArray(b.verbs) && b.verbs.length) || (Array.isArray(b.nouns) && b.nouns.length)))
+    ctx.addIssue({ code: 'custom', path: ['verbs'], message: 'lab-kalimat-en butuh verbs[] atau nouns[]' });
+  if (b.type === 'lab-jam' && (typeof b.start !== 'number' || !Array.isArray(b.presets) || !b.presets.length))
+    ctx.addIssue({ code: 'custom', path: ['presets'], message: 'lab-jam butuh start (angka) dan presets[]' });
+  if (b.type === 'lab-rute' && !(typeof b.start === 'number' && typeof b.money === 'number' && typeof b.due === 'number' && Array.isArray(b.routes) && b.routes.length && b.routes.every(r => r && typeof r.label === 'string' && typeof r.cost === 'number' && typeof r.mins === 'number' && typeof r.say === 'string')))
+    ctx.addIssue({ code: 'custom', path: ['routes'], message: 'lab-rute butuh start, money, due, dan routes[] { label, cost, mins, say }' });
 }));
 
 const Quiz = z.looseObject({
