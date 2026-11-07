@@ -34,7 +34,7 @@ export const semester = 'Semester 1';
 
 // Sama dengan aturan di mesin (availableTabs & countInteractive), supaya % kesiapan di beranda tetap benar
 const arr = x => (Array.isArray(x) ? x : []);
-const INTERACTIVE = new Set(['say', 'diagram', 'steps', 'shot', 'symbols', 'table', 'choices', 'reveal', 'tabs', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'exercise', 'playground']);
+const INTERACTIVE = new Set(['say', 'diagram', 'steps', 'shot', 'symbols', 'table', 'choices', 'reveal', 'tabs', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'lab-5k', 'lab-imbuhan', 'lab-kalimat', 'lab-kalimat-en', 'lab-jam', 'lab-rute', 'exercise', 'playground']);
 function countInteractive(m) {
   let n = 0;
   const walk = list => arr(list).forEach(b => {

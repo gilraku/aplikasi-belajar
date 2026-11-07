@@ -1,4 +1,5 @@
 // Dasar-dasar Sistem Informasi — Pertemuan 2: Konsep Informasi (sumber: modul BAB 2)
+const LAB3 = require("./lab_tahap3.js");
 const DIK = ["Data", "Informasi", "Pengetahuan"];
 const C5 = ["Kondensasi", "Kontekstualisasi", "Kalkulasi", "Kategorisasi", "Koreksi"];
 const KI = ["Accessible", "Accurate", "Complete", "Economical", "Flexible", "Relevant", "Reliable", "Secure", "Simple", "Timely", "Verifiable"];
@@ -116,6 +117,7 @@ module.exports = {
     }
   ],
   simulator: [
+    LAB3.DSI_5K,
     {
       type: "exercise",
       label: "Permainan 1 • Data, Informasi, atau Pengetahuan?",
