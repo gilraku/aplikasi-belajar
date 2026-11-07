@@ -2,3 +2,5 @@ sumber/out/
 node_modules/
 web/.astro/
 web/dist/
+web/dist-*/
+.vercel/

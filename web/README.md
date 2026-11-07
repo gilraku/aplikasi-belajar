@@ -4,6 +4,7 @@ Aplikasi belajar yang dibangun dengan [Astro](https://astro.build). Materinya di
 
 - Diterbitkan otomatis oleh `.github/workflows/astro-pages.yml` setiap ada push ke `main` → https://gilraku.github.io/aplikasi-belajar/
 - Alamat lama `/beta/` dialihkan ke alamat utama.
+- Bisa juga diterbitkan di **Vercel** (alamat `https://<nama-proyek>.vercel.app/`). Pengaturannya ada di `vercel.json` di akar repo; saat build di Vercel, base otomatis jadi `/` dan alamat situs mengikuti domain Vercel. Lihat bagian [Deploy ke Vercel](#deploy-ke-vercel).
 - Progres memakai kunci localStorage yang sama dengan versi lama (`belajar:progress:v1`), jadi progres yang sudah ada tetap terbaca.
 
 ## Bedanya dengan versi satu file
@@ -58,3 +59,17 @@ Kalau salah satu gagal, situs **tidak** diterbitkan (versi sebelumnya tetap taya
 ## Kembali ke versi lama (darurat)
 
 Settings → Pages → Source: **Deploy from a branch** (`main`, `/ (root)`). Situs langsung memakai `index.html` satu file lagi. Kembalikan ke **GitHub Actions** untuk memakai versi Astro.
+
+## Deploy ke Vercel
+
+Kode yang sama jalan di GitHub Pages (`/aplikasi-belajar/`) dan Vercel (`/`). `astro.config.mjs` membaca variabel `VERCEL` yang diisi Vercel saat build; `ASTRO_BASE` dan `ASTRO_SITE` bisa dipakai untuk memaksa nilai lain (misalnya domain sendiri).
+
+1. Masuk ke https://vercel.com dengan akun GitHub → **Add New… → Project** → pilih repo `aplikasi-belajar` → **Import**.
+2. Isi **Project Name** (misalnya `sinau`, jadi alamatnya `sinau.vercel.app`). **Root Directory biarkan `./`** dan jangan ubah Build Settings: semuanya diambil dari `vercel.json`.
+3. Klik **Deploy**. Setiap push ke `main` diterbitkan ulang otomatis, dan setiap PR dapat link pratinjau.
+4. Domain sendiri (opsional): **Project → Settings → Domains → Add**, lalu ikuti petunjuk DNS-nya.
+
+Progres tersimpan per alamat situs (localStorage), jadi ekspor dulu lewat **Progresku** di alamat lama lalu impor di alamat baru.
+
+Cek lokal versi Vercel: `ASTRO_BASE=/ ASTRO_OUT=dist-root npm run build && ASTRO_BASE=/ ASTRO_OUT=dist-root npm test`.
+
