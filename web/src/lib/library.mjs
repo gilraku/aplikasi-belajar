@@ -8,6 +8,12 @@ const SUMBER = path.resolve(process.cwd(), '../sumber');
 const require = createRequire(path.join(SUMBER, 'build.js'));
 const B = require('./build.js');
 
+import { validateLibrary } from './validate.mjs';
+const problems = validateLibrary(B.lib);
+if (problems.length) {
+  throw new Error(`Data materi tidak valid (${problems.length} masalah):\n  - ` + problems.slice(0, 30).join('\n  - ') + (problems.length > 30 ? `\n  … dan ${problems.length - 30} lagi` : ''));
+}
+
 export const library = B.lib;
 export const prompt = B.prompt;
 export const renderOffline = B.render;

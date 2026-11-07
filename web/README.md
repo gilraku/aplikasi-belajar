@@ -26,6 +26,16 @@ npm run dev        # server lokal di http://localhost:4321/aplikasi-belajar/
 
 Untuk menerbitkan materi baru cukup push perubahan `sumber/` ke `main`.
 
+## Pengaman sebelum terbit
+
+Workflow `.github/workflows/astro-pages.yml` (di setiap PR dan push ke `main`):
+
+1. `npm audit --audit-level=high`: gagal kalau ada paket dengan kerentanan tingkat tinggi.
+2. `npm run build`: sekaligus **validasi data** (`src/lib/validate.mjs`, Zod). Contoh pesan: `AIK › P4 › quiz[4].ans: ans = 7, padahal opsinya hanya 4`. Dicek: kunci jawaban di dalam jumlah opsi, `optExp` sepanjang `opts`, opsi kembar, flashcard kosong, jenis blok dikenal, jawaban latihan ada di pilihannya, id pertemuan/matkul unik.
+3. `npm test` (`tests/smoke.mjs`, Playwright): membuka semua tab semua pertemuan, menjawab kuis, mengecek Back browser, progres tersimpan, dan pengalihan `/beta/`.
+
+Kalau salah satu gagal, situs **tidak** diterbitkan (versi sebelumnya tetap tayang). Dependabot (`.github/dependabot.yml`) membuka PR otomatis untuk update paket.
+
 ## Struktur
 
 - `src/lib/library.mjs`: memanggil `sumber/build.js`, membuat indeks ringan + data per pertemuan.
