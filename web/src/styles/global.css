@@ -81,6 +81,7 @@
   .rich li { margin: .15rem 0; }
   .rich p + p { margin-top: .5rem; }
   .dg svg { width: 100%; height: auto; display: block; font-family: 'Atkinson Hyperlegible', system-ui, sans-serif; }
+  .sym svg { width: 100%; height: auto; display: block; font-family: 'Atkinson Hyperlegible', system-ui, sans-serif; }
   .dg [data-act] { cursor: pointer; transition: opacity .15s; }
   .dg [data-act]:hover { opacity: .8; }
   .dg [data-on] { filter: drop-shadow(0 0 5px rgba(31,92,82,.9)); }
