@@ -284,5 +284,5 @@ const MB = module.exports = {
   ]
 };
 
-Object.assign(MB, require("./materi_bindo_p56.js"), require("./materi_bindo_p78.js"));
+Object.assign(MB, require("./materi_bindo_p4.js"), require("./materi_bindo_p56.js"), require("./materi_bindo_p78.js"));
 { const TU = require("./materi_bindo_tutor.js"); MB.p2 = MB.p2.concat(TU.p2); MB.p3 = MB.p3.concat(TU.p3); }

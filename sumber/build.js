@@ -5,7 +5,7 @@ const BD=require('./data_bd_p2.js');BD.meetings.unshift(spread(require('./data_b
 require('./data_bindo_tutor.js');
 const lib=[BD, {
   id: 'bahasa-indonesia', nama: 'Bahasa Indonesia', prodi: 'PJJ Sistem Informasi', kampus: 'Universitas Siber Muhammadiyah', dosen: 'Tri Wahyono, M.Pd.',
-  meetings: [spread(require('./data_bindo_p1.js'),0), spread(require('./data_bindo_p2.js'),3), spread(require('./data_bindo_p3.js'),6), spread(require('./data_bindo_p5.js'),2), spread(require('./data_bindo_p6.js'),5), spread(require('./data_bindo_p7.js'),8), spread(require('./data_bindo_p8.js'),1)]
+  meetings: [spread(require('./data_bindo_p1.js'),0), spread(require('./data_bindo_p2.js'),3), spread(require('./data_bindo_p3.js'),6), spread(require('./data_bindo_p4.js'),9), spread(require('./data_bindo_p5.js'),2), spread(require('./data_bindo_p6.js'),5), spread(require('./data_bindo_p7.js'),8), spread(require('./data_bindo_p8.js'),1)]
 }, {
   id: 'aik', nama: 'AIK (Al-Islam & Kemuhammadiyahan)', prodi: 'PJJ Sistem Informasi', kampus: 'Universitas Siber Muhammadiyah',
   meetings: [spread(require('./data_aik_p1.js'),1), spread(require('./data_aik_p2.js'),4), spread(require('./data_aik_p3.js'),7), spread(require('./data_aik_p4.js'),0), spread(require('./data_aik_p5.js'),5), spread(require('./data_aik_p6.js'),8), spread(require('./data_aik_p7.js'),2), spread(require('./data_aik_p8.js'),3)]
