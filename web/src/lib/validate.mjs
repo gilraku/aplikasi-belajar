@@ -3,7 +3,7 @@
 import { z } from 'zod';
 
 // Jenis blok yang dikenali mesin (objek R di src/scripts/engine.js)
-export const BLOCK_TYPES = ['text', 'article', 'ayat', 'code', 'playground', 'callout', 'cards', 'list', 'flow', 'row', 'tabs', 'choices', 'table', 'diagram', 'reveal', 'say', 'detective', 'terminal', 'sql-lab', 'exercise'];
+export const BLOCK_TYPES = ['text', 'article', 'ayat', 'code', 'playground', 'callout', 'cards', 'list', 'flow', 'row', 'tabs', 'choices', 'table', 'diagram', 'reveal', 'say', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'exercise'];
 
 const str = z.string().trim().min(1, 'tidak boleh kosong');
 const optValue = o => (o && typeof o === 'object' ? o.value : o);
@@ -17,6 +17,16 @@ const Block = z.lazy(() => z.looseObject({
     if (Array.isArray(f.options) && f.answer != null && !f.options.map(optValue).includes(f.answer))
       ctx.addIssue({ code: 'custom', path: ['rows', ri, 'fields', fi, 'answer'], message: `jawaban "${f.answer}" tidak ada di pilihan (${f.options.map(optValue).join(' / ')})` });
   }));
+  if (b.type === 'trace-lab') {
+    if (!Array.isArray(b.cases) || !b.cases.length) ctx.addIssue({ code: 'custom', path: ['cases'], message: 'trace-lab butuh minimal 1 kasus' });
+    else b.cases.forEach((c, ci) => {
+      if (!Array.isArray(c.panes) || !c.panes.length || c.panes.some(p => !Array.isArray(p.code) || !Array.isArray(p.steps) || !p.steps.length))
+        ctx.addIssue({ code: 'custom', path: ['cases', ci, 'panes'], message: 'setiap panel butuh code[] dan steps[]' });
+      Object.entries(c.asks || {}).forEach(([k, a]) => {
+        if (!Array.isArray(a.opts) || a.ans < 0 || a.ans >= a.opts.length) ctx.addIssue({ code: 'custom', path: ['cases', ci, 'asks', k], message: 'jawaban di luar pilihan' });
+      });
+    });
+  }
   if (b.type === 'diagram' && typeof b.svg !== 'string') ctx.addIssue({ code: 'custom', path: ['svg'], message: 'diagram butuh svg (string)' });
 }));
 

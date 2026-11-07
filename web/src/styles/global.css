@@ -53,6 +53,18 @@
   .peta-tab[aria-pressed="true"] { background: #fff; color: #17202a; box-shadow: 0 1px 2px rgba(23,32,42,.15); }
   .babak > summary::-webkit-details-marker { display: none; }
   @media (prefers-reduced-motion: reduce) { .peta-cell { transition: none; } .peta-cell:hover { transform: none; } }
+  /* Lab Algoritma: penelusur loop */
+  .trc-code, .trc-mono { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
+  .trc-line { display: flex; gap: .75rem; padding: 0 .75rem 0 .5rem; border-left: 3px solid transparent; white-space: pre; }
+  .trc-no { flex-shrink: 0; width: 1.25rem; text-align: right; color: #64748b; user-select: none; }
+  .trc-cur { background: rgba(255,225,77,.12); border-left-color: #ffe14d; }
+  .trc-hl { background: #ffe14d; color: #17202a; border-radius: 3px; padding: 0 .15em; box-shadow: 0 0 0 1px #ffe14d; }
+  .trc-hl span { color: #17202a !important; font-style: normal; }
+  .trc-chg { background-repeat: no-repeat; background-size: 100% 100%; animation: trcIn .5s ease-out; }
+  @keyframes trcIn { from { background-size: 0 100%; } }
+  .trc-caret { animation: trcBlink 1s steps(1) infinite; color: #ffe14d; }
+  @keyframes trcBlink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .trc-chg, .trc-caret { animation: none; } }
   .perspective-1000 { perspective: 1000px; }
   [id^="blk-"] { scroll-margin-top: 9.5rem; }
   .hdr-compact .hdr-collapse { display: none; }

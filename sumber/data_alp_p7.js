@@ -1,5 +1,6 @@
 // Algoritma dan Pemrograman — Pertemuan 7: Perulangan while & do-while, break, continue
 const Q = (q, opts, ans, exp) => ({ q, opts, ans, exp });
+const LAB = require("./lab_alp.js");
 const ex = (label, title, headers, opts, rows) => ({ type: "exercise", label, title, headers, rows: rows.map(([c, a]) => ({ cells: [c], fields: [{ options: opts, answer: a }], ok: "✓" })) });
 module.exports = {
   id: "p7", nomor: 7, judul: "Perulangan while & do-while", ujian: "UTS",
@@ -26,15 +27,8 @@ do {
 } while (kondisi);   // titik koma wajib`, note: "Ingat: kondisi while dicek di depan; do-while di belakang." }
   ],
   simulator: [
-    { type: "terminal", label: "Permainan Interaktif 1 • while vs do-while", title: "Program Hitung Mundur dari Slide", desc: "Program meminta <code>n</code>, lalu menghitung mundur. Bandingkan kedua versi dengan masukan yang sama.", shell: "n =", header: "./countdown",
-      scenarios: [
-        { label: "1. while, n = 5", pill: "while", ok: true, cmd: "5", res: "5 4 3 2 1 FIRE!", exp: "n > 0 dicek dulu. Setiap putaran n berkurang sampai 0." },
-        { label: "2. do-while, n = 5", pill: "do-while", ok: true, cmd: "5", res: "5 4 3 2 1 FIRE!", exp: "Untuk n positif, hasilnya sama dengan while." },
-        { label: "3. while, n = 0", pill: "0 putaran", ok: false, cmd: "0", res: "FIRE!", exp: "Kondisi langsung false, badan tidak pernah dijalankan." },
-        { label: "4. do-while, n = 0", pill: "1 putaran", ok: false, cmd: "0", res: "0 FIRE!", exp: "Badan dijalankan dulu, baru dicek. Inilah perbedaan utamanya." },
-        { label: "5. while tanpa n--", pill: "Infinite", ok: false, cmd: "5", res: "5 5 5 5 5 5 5 5 5 5 5 5 5 ... (tidak berhenti)", exp: "Tanpa step, n tetap 5 dan syarat selalu true. Hentikan dengan Ctrl + C." }
-      ] },
-    ex("Permainan Interaktif 2 • Tebak Keluaran", "Apa yang Dicetak?", ["Kode", "Keluaran"], ["1 2 3", "3 2 1", "10", "(tidak ada)", "1 2 4 5", "1 2"], [
+    { type: "trace-lab", label: "Lab Algoritma • Telusuri Loop", title: "while vs do-while, Langkah demi Langkah", desc: "Dua versi hitung mundur dari slide berjalan berdampingan. Tebak dulu, lalu tekan <strong>Langkah Berikutnya</strong> dan perhatikan kapan kondisi dicek di masing-masing versi.", tip: "Ini penelusuran yang sudah disiapkan, bukan compiler C++ sungguhan.", cases: LAB.P7 },
+    ex("Permainan Interaktif 1 • Tebak Keluaran", "Apa yang Dicetak?", ["Kode", "Keluaran"], ["1 2 3", "3 2 1", "10", "(tidak ada)", "1 2 4 5", "1 2"], [
       ["int i = 1; while (i <= 3) { cout << i << \" \"; i++; }", "1 2 3"], ["int i = 3; while (i > 0) { cout << i << \" \"; i--; }", "3 2 1"], ["int i = 10; while (i < 5) { cout << i; i++; }", "(tidak ada)"], ["int i = 10; do { cout << i; i++; } while (i < 5);", "10"], ["for (int i = 1; i <= 5; i++) { if (i == 3) continue; cout << i << \" \"; }", "1 2 4 5"], ["for (int i = 1; i <= 5; i++) { if (i == 3) break; cout << i << \" \"; }", "1 2"]]),
     { type: "playground", lang: "cpp", label: "Tugas Nested • Cek Misi", title: "Pola Angka dengan while dan for", desc: "Tugas dari slide: <em>“Membuat program sederhana dengan pengulangan while dan for yang dapat memberikan output sebagai berikut! Batas Nilai &gt;= 5 (5, 6, 7, 8, 9, 10, dst)”</em>. Tiga pola keluarannya ada di tab Materi. Tugas dinilai, jadi tidak ada contoh jawaban; misi di bawah hanya memeriksa unsur wajibnya.", file: "tugas_nested.cpp",
       starter: "// Tugas Nested: pola angka dengan while dan for\n// Batas >= 5\n\n",

@@ -1,5 +1,6 @@
 // Algoritma dan Pemrograman — Pertemuan 6: Perulangan for
 const Q = (q, opts, ans, exp) => ({ q, opts, ans, exp });
+const LAB = require("./lab_alp.js");
 const ex = (label, title, headers, opts, rows) => ({ type: "exercise", label, title, headers, rows: rows.map(([c, a]) => ({ cells: [c], fields: [{ options: opts, answer: a }], ok: "✓" })) });
 module.exports = {
   id: "p6", nomor: 6, judul: "Perulangan for", ujian: "UTS",
@@ -22,6 +23,7 @@ module.exports = {
       modes: [{ label: "&lt; vs &lt;=", target: "row", row: 3, title: "Mulai 0 pakai &lt;, mulai 1 pakai &lt;=", text: "Keduanya sama-sama n putaran. Salah pasangan = kurang atau lebih satu putaran (off-by-one)." }] }
   ],
   simulator: [
+    { type: "trace-lab", label: "Lab Algoritma • Telusuri Loop", title: "Jalankan for Selangkah demi Selangkah", desc: "Tebak dulu, lalu tekan <strong>Langkah Berikutnya</strong>. Bagian kode yang sedang dijalankan diberi stabilo, dan panel Keadaan menunjukkan nilai variabel, hasil kondisi, serta output.", tip: "Ini penelusuran yang sudah disiapkan, bukan compiler C++ sungguhan.", cases: LAB.P6 },
     ex("Permainan Interaktif 1 • Tebak Keluaran", "Apa yang Dicetak? (dipisah spasi)", ["Kode", "Keluaran"], ["1 2 3", "1 4 7 10", "5 4 3 2 1", "0 2 4", "(tidak ada)", "10 8 6"], [
       ["for (int i = 1; i <= 3; i++) cout << i << \" \";", "1 2 3"], ["for (int i = 1; i <= 10; i += 3) cout << i << \" \";", "1 4 7 10"], ["for (int n = 5; n > 0; n--) cout << n << \" \";", "5 4 3 2 1"], ["for (int i = 0; i < 5; i += 2) cout << i << \" \";", "0 2 4"], ["for (int i = 5; i < 3; i++) cout << i << \" \";", "(tidak ada)"], ["for (int i = 10; i > 5; i -= 2) cout << i << \" \";", "10 8 6"]]),
     ex("Permainan Interaktif 2 • Hitung Putaran", "Berapa Kali Badan Loop Dijalankan?", ["Kode", "Putaran"], ["0", "4", "5", "6", "10", "50"], [
