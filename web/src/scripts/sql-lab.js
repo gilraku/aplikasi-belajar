@@ -101,14 +101,16 @@ function runSqlLab(db, input) {
     const table = schema.tables.find(t => t.name === name.toLowerCase());
     if (!table) return fail(1146, `Tabel '${schema.name}.${name}' belum ada.`);
     const indexOf = field => table.columns.findIndex(c => c.name === field.toLowerCase());
-    const where = text => sqlWhere(text, indexOf);
+    const where = text => sqlWhere(text, indexOf, i => table.columns[i]);
     if (describe) {
       ok(sqlTable(['Field', 'Type', 'Null', 'Key'], table.columns.map(c => [c.name, c.type, c.required || c.name === table.key ? 'NO' : 'YES', c.name === table.key ? 'PRI' : ''])));
     } else if (insert) {
       const fields = insert[2] ? insert[2].split(',').map(f => f.trim()).filter(Boolean) : table.columns.map(c => c.name);
       if (fields.some(f => indexOf(f) < 0)) return fail(1054, 'Nama kolom tidak ditemukan.');
-      const groups = [...insert[3].matchAll(/\(((?:'(?:''|[^'])*'|[^()'])*)\)/g)].map(g => g[1]);
-      if (!groups.length) return fail(1064, 'Tulis nilai di dalam kurung: VALUES (...).');
+      // Seluruh bagian VALUES harus berupa (...), (...), ... tanpa sisa teks atau koma yang terlewat
+      const tuple = String.raw`\(((?:'(?:''|[^'])*'|[^()'])*)\)`;
+      if (!new RegExp(`^${tuple}(?:\\s*,\\s*${tuple})*$`).test(insert[3].trim())) return fail(1064, 'Tulis nilai di dalam kurung dan pisahkan tiap baris dengan koma: VALUES (...), (...).');
+      const groups = [...insert[3].matchAll(new RegExp(tuple, 'g'))].map(g => g[1]);
       const added = [];
       for (const group of groups) {
         const parts = group.match(/(?:'(?:''|[^'])*'|[^,'])+/g)?.map(v => v.trim()) || [];
@@ -134,7 +136,7 @@ function runSqlLab(db, input) {
       if (test.error) return fail(test.code || 1064, test.error);
       let rows = table.rows.filter(test);
       if (count) { ok(sqlTable(['COUNT(*)'], [[String(rows.length)]])); continue; }
-      if (select[5]) { const i = indexOf(select[5]), dir = /DESC/i.test(select[6] || '') ? -1 : 1; rows = [...rows].sort((a, b) => sqlCompare(a[i], b[i]) * dir); }
+      if (select[5]) { const i = indexOf(select[5]), dir = /DESC/i.test(select[6] || '') ? -1 : 1; rows = [...rows].sort((a, b) => sqlCompare(a[i], b[i], sqlNumType(table.columns[i])) * dir); }
       let out = rows.map(r => fields.map(c => r[indexOf(c)]));
       if (select[1]) out = out.filter((r, i) => out.findIndex(x => JSON.stringify(x) === JSON.stringify(r)) === i);
       if (select[7]) out = out.slice(0, +select[7]);
@@ -186,16 +188,19 @@ function sqlValue(raw) {
   if (/^-?\d+(\.\d+)?$/.test(t)) return t;
   return undefined;
 }
-// Bandingkan dua nilai sel: angka dengan angka, selain itu teks tanpa membedakan huruf besar/kecil (seperti collation bawaan MySQL)
-function sqlCompare(a, b) {
+const sqlNumType = column => !!column && /^(int|decimal|year)/.test(column.type);
+// Bandingkan dua nilai sel. numeric = true (kolom angka, atau kolom teks dibandingkan dengan angka tanpa kutip):
+// bandingkan sebagai angka. Selain itu sebagai teks tanpa membedakan huruf besar/kecil (seperti collation bawaan MySQL),
+// jadi nim CHAR '02301001' tidak sama dengan '2301001'.
+function sqlCompare(a, b, numeric) {
   if (a === null || b === null) return a === b ? 0 : a === null ? -1 : 1;
   const x = Number(a), y = Number(b);
-  if (a !== '' && b !== '' && !Number.isNaN(x) && !Number.isNaN(y)) return x - y;
+  if (numeric && a !== '' && b !== '' && !Number.isNaN(x) && !Number.isNaN(y)) return x - y;
   const p = String(a).toLowerCase(), q = String(b).toLowerCase();
   return p < q ? -1 : p > q ? 1 : 0;
 }
 // WHERE sederhana: syarat "kolom operator nilai" yang digabung AND / OR (AND lebih kuat), plus LIKE dan IS [NOT] NULL
-function sqlWhere(text, indexOf) {
+function sqlWhere(text, indexOf, columnAt = () => null) {
   const quoted = [];
   const safe = text.replace(/'(?:''|[^'])*'/g, m => { quoted.push(m); return `\u0000${quoted.length - 1}\u0000`; });
   const back = t => t.replace(/\u0000(\d+)\u0000/g, (m, i) => quoted[+i]);
@@ -219,12 +224,12 @@ function sqlWhere(text, indexOf) {
         const i = indexOf(m[1]); if (i < 0) return { error: 'Nama kolom tidak ditemukan.', code: 1054 };
         const value = sqlValue(m[3]);
         if (value === undefined) return { error: 'Gunakan tanda kutip tunggal untuk teks pada WHERE.' };
-        const op = m[2];
+        const op = m[2], numeric = sqlNumType(columnAt(i)) || !/^'/.test(m[3].trim());
         // Sama seperti MySQL: perbandingan dengan NULL (mis. ipk = NULL) tidak pernah benar, gunakan IS NULL
         if (value === null) { group.push(() => false); continue; }
         group.push(r => {
           if (r[i] === null) return false;
-          const c = sqlCompare(r[i], value);
+          const c = sqlCompare(r[i], value, numeric);
           return op === '=' ? c === 0 : op === '<>' || op === '!=' ? c !== 0 : op === '<' ? c < 0 : op === '>' ? c > 0 : op === '<=' ? c <= 0 : c >= 0;
         });
         continue;
