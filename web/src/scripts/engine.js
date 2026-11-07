@@ -1201,6 +1201,28 @@ function openModal(html, width = 'max-w-lg') {
 function closeModal() { $('modalRoot').innerHTML = ''; }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
+// ---------- Pasang sebagai aplikasi (PWA) ----------
+let INSTALL_PROMPT = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); INSTALL_PROMPT = e; });
+window.addEventListener('appinstalled', () => { INSTALL_PROMPT = null; showToast('Aplikasi terpasang. Buka dari layar utama, bisa tanpa internet.', 'success'); });
+const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+async function installApp() {
+  if (!INSTALL_PROMPT) return;
+  const p = INSTALL_PROMPT; INSTALL_PROMPT = null;
+  p.prompt();
+  try { await p.userChoice; } catch (e) { }
+  closeModal();
+}
+function installBox(box, b) {
+  if (!('serviceWorker' in navigator) || !window.isSecureContext) return '';
+  const title = 'Pasang sebagai Aplikasi (bisa tanpa internet)';
+  if (isStandalone()) return box(title, '✅ Sudah terpasang. Semua materi tersimpan di perangkat ini, jadi tetap bisa dibuka saat tidak ada sinyal.', '');
+  if (INSTALL_PROMPT) return box(title, 'Muncul sebagai ikon <strong>Belajar</strong> di layar utama, terbuka tanpa bilah browser, dan semua materi bisa dibuka saat offline.', b('installApp()', 'Pasang Aplikasi'));
+  if (isIOS()) return box(title, 'Di iPhone/iPad (Safari): ketuk tombol <strong>Bagikan</strong> <span aria-hidden="true">⬆️</span> di bawah, lalu pilih <strong>Tambah ke Layar Utama</strong>. Setelah itu materi bisa dibuka tanpa internet.', '');
+  return box(title, 'Buka menu browser (<strong>⋮</strong>), lalu pilih <strong>Instal aplikasi</strong> atau <strong>Tambahkan ke layar utama</strong>. Setelah dibuka sekali, materi tetap bisa dibuka tanpa internet.', '');
+}
+
 function openShareModal() {
   const c = S.course, m = S.meeting;
   const box = (title, text, btn) => `<div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2"><p class="font-bold text-slate-900 text-sm">${title}</p><p class="text-xs text-slate-600">${text}</p>${btn}</div>`;
@@ -1208,6 +1230,7 @@ function openShareModal() {
   openModal(`<div class="flex items-center gap-3 mb-4 pr-8"><div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">${svg('share')}</div>
       <div><h3 class="text-lg font-extrabold text-slate-900">Bagikan ke Teman Kuliah</h3><p class="text-xs text-slate-500">Bisa dibuka di HP/Laptop tanpa instal aplikasi tambahan</p></div></div>
     <div class="space-y-3">
+      ${installBox(box, b)}
       ${box('Cara 1: Unduh File Aplikasi Mandiri (.html)', 'Semua materi, flashcard, dan kuis tersimpan dalam <strong>1 file HTML</strong>, termasuk materi yang kamu tambahkan. Kirim lewat grup WhatsApp/Telegram, temanmu cukup membukanya di browser.',
         `<div class="grid ${m ? 'sm:grid-cols-2' : ''} gap-2">${b('downloadApp(\'all\')', 'Unduh (semua materi)')}${m ? b('downloadApp(\'meeting\')', 'Unduh (pertemuan ini saja)', 'bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-50') : ''}</div>`)}
       ${m ? box('Cara 2: Salin Ringkasan Cepat untuk WhatsApp', `Intisari Pertemuan ${esc(m.nomor)} yang sudah diformat rapi untuk langsung ditempel ke chat.`, b('copySummary()', 'Salin Ringkasan ke Clipboard', 'bg-emerald-600 hover:bg-emerald-700 text-white')) : ''}
