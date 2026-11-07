@@ -72,7 +72,7 @@ try {
   await page.evaluate(() => { startExam(); beginExam(); examAnswer(0, S.meeting.quiz[0].ans); });
   if (await page.locator('#appMain').getByText('Pembahasan:').count()) fail('mode ujian menampilkan pembahasan sebelum selesai');
   await page.evaluate(() => finishExam(true));
-  if (await page.evaluate(() => S.exam !== null || S.prog.quiz[0] !== S.meeting.quiz[0].ans)) fail('hasil mode ujian tidak tersimpan');
+  if (await page.evaluate(() => S.exam !== null || S.prog.quiz[0] !== undefined || store.get(examKey('result'), null)?.ans[0] !== S.meeting.quiz[0].ans)) fail('hasil mode ujian tidak tersimpan terpisah dari latihan');
 
   cur = 'beranda';
   await page.evaluate(() => go('#/')); await ready();
@@ -116,6 +116,126 @@ try {
     await octx.setOffline(false);
   }
   await octx.close();
+
+  cur = 'simulasi P8: simpan sesi dan pisahkan hasil';
+  const basis = 'sif002-basis-data';
+  const web = 'pemrograman-web-dinamis';
+  const visit = async (c, m, t) => {
+    await page.evaluate(h => go(h), `#/c/${c}/m/${m}/${t}`);
+    await ready();
+    await page.waitForFunction(([c, m, t]) => S.course?.id === c && S.meeting?.id === m && S.tab === t, [c, m, t]);
+  };
+  await visit(basis, 'p8', 'quiz');
+  const quick = await page.evaluate(() => {
+    const q = S.meeting.quiz;
+    const chosen = sampleExam(q);
+    return [chosen.length, new Set(chosen).size, new Set(chosen.map(i => q[i].q.match(/^\[P\d+\]/)?.[0])).size];
+  });
+  if (quick.join('/') !== '25/25/7') fail('Simulasi Cepat harus berisi 25 soal unik dari 7 pertemuan Basis Data');
+  const practiceBefore = await page.evaluate(() => JSON.stringify(S.prog.quiz));
+  await page.getByRole('button', { name: 'Simulasi Cepat · 25 soal' }).click();
+  await page.getByRole('button', { name: 'Mulai', exact: true }).click();
+  await page.locator('[onclick^="examAnswer"]').first().click();
+  await page.reload();
+  await ready();
+  await page.getByText('Simulasi Cepat • terjawab 1/25').waitFor();
+  await page.getByRole('button', { name: 'Selesai & lihat nilai', exact: true }).click();
+  await page.getByRole('button', { name: 'Selesai', exact: true }).click();
+  await page.getByRole('button', { name: 'Kembali ke latihan' }).waitFor();
+  if (await page.evaluate(() => JSON.stringify(S.prog.quiz)) !== practiceBefore) fail('hasil Simulasi Cepat mengubah bank latihan');
+  await page.reload();
+  await ready();
+  await page.getByRole('button', { name: 'Hasil simulasi terakhir' }).click();
+  if (!(await page.getByText('Simulasi Cepat •', { exact: false }).count())) fail('hasil Simulasi Cepat tidak dapat ditinjau setelah reload');
+
+  cur = 'lab SQL P6–P8';
+  await visit(basis, 'p6', 'simulator');
+  const click = name => page.getByRole('button', { name, exact: true }).click();
+  const labStatus = () => page.locator('#appMain pre[role=status]').innerText();
+  await click('WebStart → phpMyAdmin');
+  if (!(await labStatus()).includes('Layanan belum berjalan')) fail('WebStart terbuka sebelum server berjalan');
+  await click('Start Servers');
+  await click('Ubah porta Apache');
+  await click('Cek alamat');
+  if (!(await labStatus()).includes('belum cocok')) fail('alamat Apache lama masih diterima');
+  await click('WebStart → phpMyAdmin');
+  await page.getByLabel('Nama basis data', { exact: true }).fill('perpustakaan');
+  await click('Buat basis data');
+  await click('Lihat daftar');
+  await click('Jalankan SQL');
+  if (!(await labStatus()).includes('perpustakaan')) fail('database yang dibuat lewat GUI hilang dari SQL');
+  await click('Buat perpustakaan');
+  await click('Jalankan SQL');
+  if (!(await labStatus()).includes('ERROR 1007')) fail('database duplikat tidak ditolak');
+  await click('Buat basis data latihan');
+  await click('Jalankan SQL');
+  await click('Lihat daftar');
+  await click('Jalankan SQL');
+  if (!(await labStatus()).includes('perpustakaan_latihan')) fail('database dari SQL tidak muncul di daftar');
+  await click('perpustakaan_latihan');
+  await click('Operasi');
+  await click('Hapus basis data aktif');
+  await click('Konfirmasi hapus');
+  await click('Hapus basis data latihan');
+  await click('Jalankan SQL');
+  await click('Konfirmasi hapus');
+  if (!(await labStatus()).includes('ERROR 1008')) fail('menghapus basis data yang sudah hilang harus menghasilkan galat');
+  await visit(basis, 'p7', 'simulator');
+  await click('perpustakaan');
+  await click('Buat tabel buku');
+  await click('Jalankan SQL');
+  await click('Lihat kolom buku');
+  await click('Jalankan SQL');
+  if (!(await labStatus()).includes('id_buku')) fail('struktur tabel P7 tidak mengikuti perintah CREATE TABLE');
+  await visit(basis, 'p8', 'simulator');
+  const run = async name => { await click(name); await click('Jalankan SQL'); };
+  await run('Tampilkan anggota SI');
+  if (!(await labStatus()).includes('ERROR 1046')) fail('SELECT P8 dari sesi kosong harus gagal');
+  await run('Buat dan pilih basis data');
+  await run('Buat tabel anggota');
+  await run('Tampilkan anggota SI');
+  if (!(await labStatus()).includes('Empty set')) fail('tabel P8 berisi data sebelum INSERT');
+  await run('Coba nama NULL');
+  if (!(await labStatus()).includes('ERROR 1048')) fail('INSERT NULL ke kolom wajib tidak ditolak');
+  await run('Isi satu anggota');
+  await run('Tampilkan anggota SI');
+  if (!(await labStatus()).includes('Ahmad Fauzi')) fail('data INSERT P8 tidak muncul di hasil SELECT');
+  await run('Coba ROLLBACK setelah DROP');
+  await click('Konfirmasi hapus');
+  if (!(await labStatus()).includes('Empty set')) fail('DROP TABLE tetap harus berlaku setelah ROLLBACK');
+
+  cur = 'Web P7–P8: perilaku dan penyimpanan draf';
+  for (const [meeting, labs] of [['p7', [4, 6]], ['p8', [13]]]) {
+    await visit(web, meeting, 'simulator');
+    for (const [i, total] of labs.entries()) {
+      const card = page.locator('#appMain [id^=blk-]').filter({ has: page.getByRole('button', { name: 'Periksa Kode', exact: true }) }).nth(i);
+      const editor = card.locator('textarea');
+      await card.getByRole('button', { name: 'Lihat Contoh Jawaban' }).click();
+      const solution = await editor.inputValue();
+      await card.getByRole('button', { name: 'Periksa Kode' }).click();
+      await card.getByText(`Misi (${total}/${total} selesai)`, { exact: true }).waitFor();
+      const disabledCode = solution.replace(/(<script>)([\s\S]*?)(<\/script>)/, (_, open, js, close) =>
+        open + js.split('\n').map(line => '// ' + line).join('\n') + close);
+      await editor.fill(disabledCode);
+      await card.getByRole('button', { name: 'Periksa Kode' }).click();
+      await card.getByText(/Misi \(\d+\/\d+ selesai\)/).waitFor();
+      if (await card.getByText(`Misi (${total}/${total} selesai)`, { exact: true }).count()) fail(`Web ${meeting}: komentar JavaScript lolos semua misi`);
+      await page.reload();
+      await ready();
+      if (await editor.inputValue() !== disabledCode) fail(`Web ${meeting}: draf hilang setelah reload`);
+      await card.getByRole('button', { name: 'Ulang dari Awal' }).click();
+    }
+  }
+
+  cur = 'HTML unduhan';
+  const standalone = await ctx.newPage();
+  standalone.on('pageerror', e => fail(`HTML unduhan: error JS: ${e.message}`));
+  await standalone.goto(URL0 + 'offline.html#/c/sif002-basis-data/m/p6/simulator');
+  await standalone.getByRole('button', { name: 'Start Servers' }).waitFor();
+  await standalone.getByRole('button', { name: 'Start Servers' }).click();
+  await standalone.getByRole('button', { name: 'WebStart → phpMyAdmin' }).click();
+  await standalone.getByRole('button', { name: 'Buat basis data', exact: true }).waitFor();
+  await standalone.close();
 
   console.log(`Selesai: ${routes.length} tab, ${fails.length} masalah.`);
 } finally {

@@ -121,7 +121,7 @@ module.exports = {
     { tag: "P6", q: "‘Abduhu dan rasuluhu menolak sikap apa?", a: "‘Abduhu menolak ifrath (berlebihan); rasuluhu menolak tafrith (meremehkan)." },
     { tag: "P7", q: "Dua syarat diterimanya ibadah?", a: "Ikhlas dan sesuai tuntunan Rasul." }
   ],
-  quiz: S.map(([p, q, opts, ans, exp, optExp]) => ({ q, opts, ans, exp: "<strong>P" + p + "</strong> • " + exp, optExp })),
+  quiz: S.map(([p, q, opts, ans, exp, optExp]) => ({ q, opts, ans, topic: "P" + p, exp: "<strong>P" + p + "</strong> • " + exp, optExp })),
   ringkasan: `*RANGKUMAN KILAT UTS AIK — PERTEMUAN 1–7*
 📝 *Strategi soal bercabang:* garis bawahi kata kunci • cek "KECUALI" • coret yang ekstrem (liberal/pluralis/hedonis maupun anarkis/menolak semua) • pilih yang paling lengkap • cocokkan dengan bahasa slide.
 

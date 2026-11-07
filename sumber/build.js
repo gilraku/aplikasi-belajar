@@ -32,8 +32,17 @@ Object.entries(T).forEach(([key,add])=>{const [cid,mid]=key.split('/');const c=l
 const path=require('path'),P=f=>path.join(__dirname,f);
 const prompt=fs.readFileSync(P('prompt.txt'),'utf8');
 const enc=o=>JSON.stringify(o).replace(/</g,'\\u003c');
-// Aplikasi satu file (dipakai index.html sekarang, dan "offline.html" di versi Astro)
-const render=()=>fs.readFileSync(P('engine.html'),'utf8').replace('__TWCSS__',()=>fs.readFileSync(P('tw.css'),'utf8')).replace('__LIBRARY__',()=>enc(lib)).replace('__PROMPT__',()=>enc(prompt)).replace('__CONFIG__',()=>enc({semester:'Semester 1'}));
+// Template HTML mandiri dengan data penuh dan mesin browser yang sama dengan Astro.
+const render = ({ library = lib, css, code } = {}) => {
+  const web = path.join(__dirname, '../web/src/scripts');
+  const script = code ?? ['sql-lab.js', 'playground-assessment.js', 'engine.js'].map(name => fs.readFileSync(path.join(web, name), 'utf8')).join('\n');
+  return fs.readFileSync(P('engine.html'), 'utf8')
+    .replace(/(\n<script data-app>\n)[\s\S]*(\n<\/script>\n<\/body>)/, (_, before, after) => before + "'use strict';\n" + script.replace(/<\/script/gi, '<\\/script') + after)
+    .replace('__TWCSS__', () => css ?? fs.readFileSync(P('tw.css'), 'utf8'))
+    .replace('__LIBRARY__', () => enc(library))
+    .replace('__PROMPT__', () => enc(prompt))
+    .replace('__CONFIG__', () => enc({ semester: 'Semester 1', standalone: true }));
+};
 module.exports={lib,prompt,render};
 if(require.main===module){
 const h=render();

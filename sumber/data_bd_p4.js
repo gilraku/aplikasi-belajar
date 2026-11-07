@@ -98,7 +98,7 @@ module.exports = {
     { tag: "P4", q: "Arti PRI dan MUL?", a: "PRI = kunci primer. MUL = kolom berindeks yang nilainya boleh berulang (biasanya kunci tamu)." },
     { tag: "SQL", q: "4 kelompok SQL?", a: "DDL (CREATE, ALTER, DROP), DML (INSERT, SELECT, UPDATE, DELETE), DCL (GRANT, REVOKE), TCL (COMMIT, ROLLBACK, SAVEPOINT)." },
     { tag: "SQL", q: "Bahaya UPDATE/DELETE tanpa WHERE?", a: "Mengenai <strong>seluruh</strong> baris tabel." },
-    { tag: "SQL", q: "DELETE vs TRUNCATE vs DROP?", a: "DELETE hapus baris sesuai WHERE (bisa ROLLBACK). TRUNCATE kosongkan semua (tidak bisa ROLLBACK). DROP hapus tabel + struktur." },
+    { tag: "SQL", q: "DELETE vs TRUNCATE vs DROP?", a: "DELETE hapus baris sesuai WHERE (bisa ROLLBACK pada tabel transaksional sebelum COMMIT). TRUNCATE kosongkan semua (tidak bisa ROLLBACK). DROP hapus tabel + struktur." },
     { tag: "SQL", q: "COMMIT vs ROLLBACK?", a: "COMMIT menyimpan permanen; ROLLBACK mengembalikan ke COMMIT terakhir. ➕ Di MySQL mulai dengan START TRANSACTION." },
     { tag: "SQL", q: "Arti LIKE 'A%'?", a: "Teks yang diawali huruf A; % mewakili sembarang karakter." },
     { tag: "SQL", q: "Padanan LIMIT di SQL Server dan Oracle?", a: "SQL Server: TOP. Oracle: FETCH FIRST n ROWS ONLY." }
@@ -149,7 +149,7 @@ module.exports = {
     { q: "[P4] GRANT dan REVOKE termasuk kelompok…", opts: ["DDL", "DML", "DCL", "TCL"], ans: 2, exp: "Data Control Language: hak akses." },
     { q: "[P4] Perintah UPDATE mahasiswa SET ipk = 3.70; (tanpa WHERE) akan…", opts: ["Ditolak DBMS", "Mengubah IPK seluruh mahasiswa", "Mengubah baris pertama saja", "Menghapus tabel"], ans: 1, exp: "Tanpa WHERE, semua baris kena." },
     { q: "[P4] Perintah untuk menampilkan tiga IPK tertinggi adalah…", opts: ["SELECT nama, ipk FROM mahasiswa ORDER BY ipk ASC LIMIT 3;", "SELECT nama, ipk FROM mahasiswa ORDER BY ipk DESC LIMIT 3;", "SELECT TOP ipk FROM mahasiswa;", "SELECT nama FROM mahasiswa WHERE ipk = 3;"], ans: 1, exp: "DESC besar ke kecil, LIMIT 3." },
-    { q: "[P4] Perbedaan DELETE dan TRUNCATE yang benar adalah…", opts: ["DELETE menghapus struktur tabel", "TRUNCATE bisa memakai WHERE", "DELETE bisa dibatalkan dengan ROLLBACK, TRUNCATE tidak", "Keduanya termasuk DCL"], ans: 2, exp: "TRUNCATE mengosongkan semua tanpa kondisi dan tidak bisa di-ROLLBACK." },
+    { q: "[P4] Perbedaan DELETE dan TRUNCATE yang benar adalah…", opts: ["DELETE menghapus struktur tabel", "TRUNCATE bisa memakai WHERE", "DELETE pada tabel transaksional bisa dibatalkan sebelum COMMIT, TRUNCATE tidak", "Keduanya termasuk DCL"], ans: 2, exp: "TRUNCATE mengosongkan semua tanpa kondisi dan tidak bisa di-ROLLBACK." },
     { q: "[P4] Penulisan nilai yang benar dalam INSERT adalah…", opts: ["Teks tanpa kutip, angka dengan kutip", "Teks dan tanggal dalam kutip tunggal, angka tanpa kutip", "Semua nilai dalam kutip ganda wajib", "Semua tanpa kutip"], ans: 1, exp: "'Sistem Informasi', '2026-10-01', 2023, 3.60." },
     { q: "[P4] Operator untuk mencocokkan pola teks adalah…", opts: ["IN", "BETWEEN", "LIKE", "IS NULL"], ans: 2, exp: "LIKE dengan % sebagai sembarang karakter." },
     { q: "[P4] ROLLBACK berfungsi…", opts: ["Menyimpan perubahan permanen", "Mengembalikan isi tabel ke kondisi COMMIT terakhir", "Menghapus tabel", "Mengurutkan data"], ans: 1, exp: "COMMIT menyimpan, ROLLBACK membatalkan." }
@@ -164,6 +164,6 @@ module.exports = {
 5️⃣ DESCRIBE: PRI = PK, MUL = boleh berulang (FK).
 6️⃣ SQL: DDL (CREATE/ALTER/DROP) • DML (INSERT/SELECT/UPDATE/DELETE) • DCL (GRANT/REVOKE) • TCL (COMMIT/ROLLBACK/SAVEPOINT).
 7️⃣ WHERE: = <> > < BETWEEN IN LIKE 'A%' IS NULL AND OR NOT • ORDER BY ASC/DESC • DISTINCT • LIMIT.
-8️⃣ UPDATE/DELETE tanpa WHERE = semua baris! DELETE (bisa rollback) vs TRUNCATE (tidak) vs DROP (hapus tabel).
+8️⃣ UPDATE/DELETE tanpa WHERE = semua baris! DELETE (bisa rollback pada tabel transaksional sebelum COMMIT) vs TRUNCATE (tidak) vs DROP (hapus tabel).
 📝 CPMK 1 = materi P1–P4.`
 };

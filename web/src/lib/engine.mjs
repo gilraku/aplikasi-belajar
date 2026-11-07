@@ -6,10 +6,10 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { transform } from 'esbuild';
 
-const SRC = path.resolve(process.cwd(), 'src/scripts/engine.js');
+const SCRIPTS = ['sql-lab.js', 'playground-assessment.js', 'engine.js'].map(file => path.resolve(process.cwd(), 'src/scripts', file));
 let cache = null;
 export async function engine() {
-  const raw = fs.readFileSync(SRC, 'utf8');
+  const raw = "'use strict';\n" + SCRIPTS.map(file => fs.readFileSync(file, 'utf8')).join('\n');
   if (cache && cache.raw === raw) return cache;
   const { code } = await transform(raw, { loader: 'js', minify: true, target: 'es2019', charset: 'utf8' });
   cache = { raw, code, hash: crypto.createHash('sha1').update(code).digest('hex').slice(0, 10) };

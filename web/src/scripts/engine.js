@@ -5,7 +5,7 @@
    - <script id="library-data"> hanya berisi INDEKS RINGAN (judul pertemuan + ringkasan
      jumlah soal/flashcard untuk % kesiapan). Isi lengkap tiap pertemuan diambil dari
      data/<matkul>/<pertemuan>.json saat pertemuan itu dibuka.
-   - Fitur "Unduh .html mandiri" memakai offline.html (aplikasi satu file versi lama).
+   - Fitur "Unduh .html mandiri" memakai mesin yang sama dengan data materi penuh.
    ===================================================================== */
 
 // ---------- Ambil sumber halaman (untuk fitur unduh .html mandiri) ----------
@@ -63,12 +63,15 @@ function hlCpp(src) {
   return esc(src || '').replace(/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|(&quot;[\s\S]*?&quot;|&#39;(?:\\.|[^&]|&(?!#39;)[^;]*;)*?&#39;)|(#\w+)|\b([A-Za-z_]\w*)\b/g, (m, cm, st, pp, w) =>
     cm ? '<span class="text-slate-500 italic">' + cm + '</span>' : st ? '<span class="text-amber-200">' + st + '</span>' : pp ? '<span class="text-rose-300">' + pp + '</span>' : KW.test(w) ? '<span class="text-sky-300">' + w + '</span>' : w);
 }
-function pgCheck(d, code) {
+function pgCheck(d, code, behavior = {}) {
   const doc = new DOMParser().parseFromString(code || '', 'text/html');
   const clean = (code || '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '');
-  const cleanX = d.lang === 'cpp' ? clean.replace(/\/\/[^\n]*/g, '') : clean;
+  const stripLineComments = js => js.replace(/("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|\/\/[^\r\n]*/g, (_, literal) => literal || '');
+  const cleanX = d.lang === 'cpp' ? stripLineComments(clean) : clean.replace(/(<script\b[^>]*>)([\s\S]*?)(<\/script>)/gi, (_, open, js, close) => open + stripLineComments(js) + close);
   return (d.tasks || []).map(t => {
     try {
+      if (t.behavior && !behavior[t.behavior]) return false;
+      if (t.elements && !t.elements.every(([selector, min = 1]) => doc.querySelectorAll(selector).length >= min)) return false;
       if (t.regex && !new RegExp(t.regex, t.cs ? '' : 'i').test(t.raw ? (code || '') : cleanX)) return false;
       if (t.sel) { const els = [...doc.querySelectorAll(t.sel)].filter(e => !t.hasText || e.textContent.trim()); if (els.length < (t.min || 1)) return false; }
       return true;
@@ -91,18 +94,27 @@ window.addEventListener('message', e => {
   const line = document.createElement('div'); line.className = (PG_COLORS[m.t] || 'text-slate-200') + ' whitespace-pre-wrap break-words';
   line.textContent = (PG_ICON[m.t] || '› ') + String(m.m).slice(0, 2000); box.appendChild(line); box.scrollTop = box.scrollHeight;
 });
-let pgTimer;
+const pgTimers = new WeakMap();
 document.addEventListener('input', e => {
   const el = e.target.closest('[data-pg]'); if (!el) return;
   const n = +el.dataset.pg; const b = BLOCKS[n];
-  clearTimeout(pgTimer); pgTimer = setTimeout(() => {
+  if (!b) return;
+  store.set(b.state.draftKey, el.value);
+  b.state.checked = false;
+  b.state.checking = null;
+  const missions = $('pg-missions-' + n);
+  if (missions) missions.innerHTML = playgroundMissions(b.def, b.state);
+  const check = $('pg-check-' + n);
+  if (check) { check.disabled = false; check.textContent = 'Periksa Kode'; }
+  clearTimeout(pgTimers.get(b)); pgTimers.set(b, setTimeout(() => {
+    if (BLOCKS[n] !== b || !el.isConnected) return;
     const f = document.getElementById('pg-frame-' + n); if (!f) return;
     const box = document.getElementById('pg-console-' + n); if (box) { box.innerHTML = '<div class="text-slate-500">// belum ada output</div>'; box.dataset.fresh = ''; }
     f.srcdoc = pgDoc(b ? b.def : {}, el.value, n);
-  }, b && b.def.js ? 700 : 250);
+  }, b.def.js ? 700 : 250));
 });
 document.addEventListener('keydown', e => {
-  const el = e.target.closest && e.target.closest('[data-pg]'); if (!el || e.key !== 'Tab') return;
+  const el = e.target.closest && e.target.closest('[data-pg]'); if (!el || e.key !== ']' || !e.ctrlKey) return;
   e.preventDefault(); const a = el.selectionStart, b = el.selectionEnd; el.value = el.value.slice(0, a) + '  ' + el.value.slice(b); el.selectionStart = el.selectionEnd = a + 2; el.dispatchEvent(new Event('input', { bubbles: true }));
 });
 const richCache = new Map();
@@ -165,6 +177,7 @@ try { BUILTIN = JSON.parse($('library-data').textContent); } catch (e) { BUILTIN
 if (!Array.isArray(BUILTIN)) BUILTIN = BUILTIN && BUILTIN.courses ? BUILTIN.courses : [];
 let APP = {};
 try { APP = JSON.parse($('app-config').textContent) || {}; } catch (e) {}
+if (APP.standalone) PAGE_SOURCE = document.documentElement.cloneNode(true);
 let PROMPT_TEMPLATE = '';
 try { PROMPT_TEMPLATE = JSON.parse($('prompt-data').textContent); } catch (e) {}
 const IMPORT_KEY = 'belajar:imported:v1';
@@ -335,7 +348,15 @@ const PROGRESS = (() => {
       persist();
       return n;
     },
-    reset() { doc = empty(); persist(); }
+    reset() {
+      doc = empty(); persist();
+      try {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const key = localStorage.key(i);
+          if (key?.startsWith('belajar:ujian:v1:')) store.del(key);
+        }
+      } catch (e) {}
+    }
   };
 })();
 const progId = (c, m) => `${c.id}/${m.id}`;
@@ -386,7 +407,7 @@ const defaultTab = m => { const t = availableTabs(m); return t.length ? t[0].id 
 // =====================================================================
 //  BLOK MATERI — setiap jenis blok punya fungsi render & aksi
 // =====================================================================
-const INTERACTIVE = new Set(['say', 'diagram', 'table', 'choices', 'reveal', 'tabs', 'detective', 'terminal', 'exercise', 'playground']);
+const INTERACTIVE = new Set(['say', 'diagram', 'table', 'choices', 'reveal', 'tabs', 'detective', 'terminal', 'sql-lab', 'exercise', 'playground']);
 function countInteractive(m) {
   let n = 0;
   const walk = list => (list || []).forEach(b => {
@@ -432,6 +453,32 @@ function markInteract(n) {
 }
 const act = (n, name, arg = '') => `data-blk="${n}" data-act="${name}" data-arg="${esc(arg)}"`;
 
+function playgroundMissions(d, s) {
+  const res = s.results || [], done = res.filter(Boolean).length;
+  return (d.tasks || []).length ? `<div class="mt-3 p-4 rounded-xl border ${s.checked && done === res.length ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'}">
+        <div class="text-xs font-bold text-slate-700 mb-2">Misi (${s.checked ? done + '/' + res.length + ' selesai' : 'klik Periksa Kode'})</div>
+        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs sm:text-sm">${d.tasks.map((t, i) => `<li class="flex gap-2 items-start ${s.checked ? (res[i] ? 'text-emerald-800' : 'text-rose-700') : 'text-slate-700'}"><span class="shrink-0">${s.checked ? (res[i] ? '✅' : '❌') : '⬜'}</span><span class="rich">${rich(t.label)}</span></li>`).join('')}</ul>
+      </div>` : '';
+}
+
+const labSessions = new Map();
+function loadLabSession(key) {
+  try { return JSON.parse(sessionStorage.getItem(key)) || labSessions.get(key) || sqlSession(); }
+  catch (e) { return labSessions.get(key) || sqlSession(); }
+}
+function saveLabSession(key, db) {
+  labSessions.set(key, db);
+  try { sessionStorage.setItem(key, JSON.stringify(db)); } catch (e) {}
+}
+function runLabAction(s, sql, { nameOnly = false } = {}) {
+  if (!s.open) return;
+  s.pending = '';
+  s.result = nameOnly && !/^CREATE DATABASE [a-z_]\w*$/i.test(sql)
+    ? { ok: false, text: 'Gunakan nama basis data tanpa spasi, misalnya perpustakaan.' }
+    : runSqlLab(s.db, sql);
+  if (s.key) saveLabSession(s.key, s.db);
+}
+
 const R = {
   _unknown: { render: d => `<div class="p-3 rounded-xl bg-slate-100 text-xs text-slate-500">Blok jenis "<code>${esc(d.type)}</code>" belum dikenali aplikasi.</div>` },
 
@@ -460,13 +507,16 @@ const R = {
   },
 
   playground: {
-    init: d => ({ values: { code: d.starter || '' }, checked: false }),
+    init(d, path) {
+      const draftKey = 'belajar:draf:v1:' + progId(S.course, S.meeting) + ':' + path + ':' + (d.file || 'editor');
+      return { draftKey, values: { code: store.get(draftKey, d.starter || '') }, checked: false };
+    },
     render: (d, s, n) => {
-      const code = s.values.code; const res = pgCheck(d, code); const done = res.filter(Boolean).length;
+      const code = s.values.code;
       const cpp = d.lang === 'cpp';
       return `<div class="grid grid-cols-1 ${cpp ? '' : 'lg:grid-cols-2'} gap-3">
         <div class="rounded-xl bg-slate-950 overflow-hidden flex flex-col">
-          <div class="px-4 py-2 bg-slate-900 border-b border-slate-800 text-xs text-slate-400 font-mono flex justify-between gap-2"><span>✏️ ${esc(d.file || 'index.html')}</span><span>ketik di sini</span></div>
+          <div class="px-4 py-2 bg-slate-900 border-b border-slate-800 text-xs text-slate-400 font-mono flex justify-between gap-2"><span>✏️ ${esc(d.file || 'index.html')}</span><span>Draf disimpan di browser</span></div>
           <textarea data-field="${n}" data-key="code" data-pg="${n}" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off" class="w-full flex-1 min-h-[18rem] p-4 bg-transparent text-slate-100 font-mono text-xs sm:text-[13px] leading-relaxed outline-none resize-y">${esc(code)}</textarea>
         </div>
 ${cpp ? `<p class="text-xs text-slate-500">💡 C++ tidak bisa dijalankan di aplikasi ini. Ketik kodenya di sini untuk dicek misinya, lalu salin ke Dev C++ / Code::Blocks / OnlineGDB untuk dijalankan.</p>` : `
@@ -478,21 +528,41 @@ ${cpp ? `<p class="text-xs text-slate-500">💡 C++ tidak bisa dijalankan di apl
 `}
       </div>
       ${d.js ? `<div class="mt-3 rounded-xl bg-slate-950 overflow-hidden"><div class="px-4 py-2 bg-slate-900 border-b border-slate-800 text-xs text-slate-400 font-mono flex justify-between gap-2"><span>🖥️ Console (hasil console.log, alert, prompt & error)</span><button ${act(n, 'run')} class="text-emerald-300 font-bold">▶ Jalankan ulang</button></div><div id="pg-console-${n}" class="p-3 font-mono text-xs space-y-1 max-h-48 overflow-y-auto min-h-[3rem]"><div class="text-slate-500">// belum ada output</div></div></div>` : ''}
-      ${(d.tasks || []).length ? `<div class="mt-3 p-4 rounded-xl border ${s.checked && done === res.length ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'}">
-        <div class="text-xs font-bold text-slate-700 mb-2">Misi (${s.checked ? done + '/' + res.length + ' selesai' : 'klik Periksa Kode'})</div>
-        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs sm:text-sm">${d.tasks.map((t, i) => `<li class="flex gap-2 items-start ${s.checked ? (res[i] ? 'text-emerald-800' : 'text-rose-700') : 'text-slate-700'}"><span class="shrink-0">${s.checked ? (res[i] ? '✅' : '❌') : '⬜'}</span><span class="rich">${rich(t.label)}</span></li>`).join('')}</ul>
-      </div>` : ''}
+      <div id="pg-missions-${n}">${playgroundMissions(d, s)}</div>
       <div class="mt-3 flex flex-wrap gap-2">
-        <button ${act(n, 'check')} class="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white">Periksa Kode</button>
+        <button id="pg-check-${n}" ${act(n, 'check')} class="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white">Periksa Kode</button>
         ${d.solution ? `<button ${act(n, 'solve')} class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700">Lihat Contoh Jawaban</button>` : ''}
         <button ${act(n, 'reset')} class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700">Ulang dari Awal</button>
       </div>`;
     },
     on: {
-      check(d, s) { s.checked = true; const r = pgCheck(d, s.values.code); const ok = r.filter(Boolean).length;
-        showToast(ok === r.length ? 'Mantap! Semua misi selesai.' : `Selesai ${ok} dari ${r.length} misi. Cek tanda ❌.`, ok === r.length ? 'success' : 'warning'); },
-      solve(d, s) { s.values.code = d.solution; s.checked = false; },
-      reset(d, s) { s.values.code = d.starter || ''; s.checked = false; },
+      check(d, s, arg, n) {
+        const code = s.values.code;
+        const complete = behavior => {
+          if (BLOCKS[n]?.state !== s || s.values.code !== code) return;
+          s.results = pgCheck(d, code, behavior);
+          s.checked = true;
+          const ok = s.results.filter(Boolean).length;
+          const missions = $('pg-missions-' + n);
+          if (missions) missions.innerHTML = playgroundMissions(d, s);
+          showToast(ok === s.results.length ? 'Semua misi selesai.' : `Selesai ${ok} dari ${s.results.length} misi. Cek tanda ❌.`, ok === s.results.length ? 'success' : 'warning');
+        };
+        if (d.assessment) {
+          const pending = assessPlayground(d.assessment, code);
+          s.checking = pending;
+          const button = $('pg-check-' + n);
+          button.disabled = true; button.textContent = 'Menguji kode…';
+          pending.then(behavior => {
+            if (s.checking !== pending) return;
+            s.checking = null;
+            button.disabled = false; button.textContent = 'Periksa Kode';
+            complete(behavior);
+          });
+        } else complete({});
+        return false;
+      },
+      solve(d, s) { s.values.code = d.solution; s.checked = false; s.checking = null; store.set(s.draftKey, d.solution); },
+      reset(d, s) { s.values.code = d.starter || ''; s.checked = false; s.checking = null; store.del(s.draftKey); },
       width(d, s, arg) { s.w = arg; },
       run() {}
     }
@@ -682,6 +752,64 @@ ${cpp ? `<p class="text-xs text-slate-500">💡 C++ tidak bisa dijalankan di apl
     }
   },
 
+  'sql-lab': {
+    init(d) {
+      const key = d.profile === 'p8' ? '' : 'belajar:sql:v1:' + S.course.id;
+      const db = key ? loadLabSession(key) : sqlSession();
+      if (d.profile === 'p7' && !db.databases.some(item => item.name === 'perpustakaan')) runSqlLab(db, 'CREATE DATABASE perpustakaan; USE perpustakaan;');
+      return { key, db, running: d.profile !== 'p6', open: d.profile !== 'p6', port: 8888, panel: 'schema', values: { address: 'http://localhost:8888', name: '', sql: '' }, result: null, pending: '' };
+    },
+    render(d, s, n) {
+      const btn = (text, action, arg = '') => `<button ${act(n, action, arg)} class="px-3 py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-indigo-100">${esc(text)}</button>`;
+      const field = (key, label, extra = '') => `<label class="block text-xs font-semibold">${label}<input data-field="${n}" data-key="${key}" value="${esc(s.values[key])}" class="block mt-1 w-full rounded-lg border border-slate-300 p-2 font-mono" ${extra}></label>`;
+      const result = s.result ? `<pre role="status" class="whitespace-pre-wrap break-words rounded-xl p-3 text-xs font-mono ${s.result.ok ? 'bg-slate-900 text-emerald-200' : 'bg-rose-50 text-rose-800'}">${esc(s.result.text)}</pre>` : '';
+      const server = d.profile === 'p6' ? `<div class="rounded-xl border border-slate-200 p-3 space-y-2">
+        <div class="flex flex-wrap gap-2 items-center"><strong class="text-sm">1. Server lokal · Apache ${s.port} · MySQL 8889</strong><span class="text-xs">${s.running ? '● Kedua layanan berjalan' : '○ Layanan berhenti'}</span></div>
+        <div class="flex flex-wrap gap-2">${btn(s.running ? 'Stop Servers' : 'Start Servers', 'server')}${btn('Ubah porta Apache', 'port')}${btn('WebStart → phpMyAdmin', 'webstart')}</div>
+        <div class="flex flex-wrap gap-2 items-end"><div class="flex-1 min-w-[12rem]">${field('address', 'Alamat WebStart latihan')}</div>${btn('Cek alamat', 'address')}</div>
+      </div>` : '';
+      const workspace = s.open ? `<div class="rounded-xl border border-slate-200 overflow-hidden">
+        <div class="bg-slate-900 text-white px-3 py-2 text-sm font-bold">phpMyAdmin · ruang latihan</div>
+        <div class="grid gap-3 p-3 sm:grid-cols-[minmax(9rem,1fr)_minmax(0,3fr)]">
+          <aside class="space-y-1 text-xs min-w-0" aria-label="Daftar basis data"><strong class="block">Daftar basis data</strong>
+            <ul class="text-slate-500">${SQL_SYSTEM.map(name => `<li>${name} <small>· sistem</small></li>`).join('')}</ul>
+            <ul class="space-y-1">${s.db.databases.map(item => `<li>${btn(item.name, 'use', item.name)}${item.name === s.db.active ? ' <span>· aktif</span>' : ''}${item.tables.length ? `<ul class="pl-3">${item.tables.map(t => `<li>${esc(t.name)}</li>`).join('')}</ul>` : ''}</li>`).join('')}</ul>
+          </aside>
+          <div class="space-y-3 min-w-0"><div class="flex flex-wrap gap-2">${btn('Basis data', 'panel', 'schema')}${btn('SQL', 'panel', 'sql')}${btn('Operasi', 'panel', 'operations')}${btn('Kosongkan pilihan', 'unselect')}</div>
+            ${s.panel === 'schema' ? `<div class="space-y-2">${field('name', 'Nama basis data', 'placeholder="perpustakaan" autocomplete="off"')}${btn('Buat basis data', 'create')}</div>` : ''}
+            ${s.panel === 'sql' ? `<label class="block text-xs font-semibold">Perintah SQL<textarea data-field="${n}" data-key="sql" rows="5" spellcheck="false" class="block mt-1 w-full rounded-lg border border-slate-300 p-2 font-mono">${esc(s.values.sql)}</textarea></label>${btn('Jalankan SQL', 'run')}` : ''}
+            ${s.panel === 'operations' ? (s.db.active ? `<div class="text-sm">Basis data aktif <code>${esc(s.db.active)}</code> ${btn('Hapus basis data aktif', 'drop')}</div>` : '<p class="text-sm">Pilih basis data latihan di daftar terlebih dahulu.</p>') : ''}
+          </div>
+        </div></div>` : '<p class="text-sm text-slate-600">Nyalakan layanan dan buka WebStart untuk masuk ke phpMyAdmin.</p>';
+      return `<div class="space-y-3">${server}${workspace}${s.open && (d.examples || []).length ? `<div class="space-y-1"><p class="text-xs font-bold">Contoh untuk dimuat ke editor</p><div class="flex flex-wrap gap-2">${d.examples.map((item, i) => btn(item.label, 'example', i)).join('')}</div></div>` : ''}
+        ${s.pending ? `<div class="rounded-lg bg-amber-50 p-3 text-sm" role="alert">Jalankan perintah hapus pada data latihan? ${btn('Konfirmasi hapus', 'confirm')} ${btn('Batal', 'cancel')}</div>` : ''}
+        ${result}</div>`;
+    },
+    on: {
+      server(d, s) { s.running = !s.running; s.open = false; s.pending = ''; s.result = null; },
+      port(d, s) { s.port = s.port === 8888 ? 8080 : 8888; s.open = false; s.pending = ''; s.result = { ok: true, text: 'Porta Apache berubah. Coba alamat lama, lalu bandingkan dengan WebStart.' }; },
+      webstart(d, s) { s.values.address = 'http://localhost:' + s.port; R['sql-lab'].on.address(d, s); },
+      address(d, s) {
+        s.open = s.running && s.values.address.trim().replace(/\/$/, '') === 'http://localhost:' + s.port;
+        s.pending = '';
+        s.result = { ok: s.open, text: s.open ? 'WebStart terhubung. phpMyAdmin terbuka.' : s.running ? 'Alamat belum cocok dengan porta Apache yang aktif.' : 'Layanan belum berjalan. Pilih Start Servers.' };
+      },
+      panel(d, s, panel) { s.panel = panel; s.pending = ''; },
+      unselect(d, s) { s.db.active = ''; s.pending = ''; if (s.key) saveLabSession(s.key, s.db); },
+      use(d, s, name) { runLabAction(s, 'USE ' + name); },
+      create(d, s) { runLabAction(s, 'CREATE DATABASE ' + s.values.name.trim(), { nameOnly: true }); },
+      drop(d, s) { if (s.open && s.db.active) s.pending = 'DROP DATABASE ' + s.db.active; },
+      example(d, s, index) { s.panel = 'sql'; s.pending = ''; s.values.sql = d.examples[index]?.sql || ''; },
+      run(d, s) {
+        if (!s.open) return;
+        if (/\bDROP\s+(?:DATABASE|TABLE)\b/i.test(s.values.sql)) s.pending = s.values.sql;
+        else runLabAction(s, s.values.sql);
+      },
+      confirm(d, s) { if (s.pending) runLabAction(s, s.pending); },
+      cancel(d, s) { s.pending = ''; }
+    }
+  },
+
   terminal: {
     init: () => ({ sel: 0 }),
     render: (d, s, n) => {
@@ -863,14 +991,14 @@ function renderHeader() {
           <h1 class="text-[15px] sm:text-lg font-extrabold text-slate-900 leading-snug line-clamp-2" title="${esc(m.judul)}">${esc(m.judul)}</h1>`
         : `<h1 class="leading-none"><button onclick="go('#/')" class="wordmark text-[28px] sm:text-[32px]" aria-label="Beranda Sinau">sinau</button></h1><p class="mt-1.5 text-xs text-slate-500 truncate">${esc(['rangkuman', APP.semester, programLine()].filter(Boolean).join(' • '))}</p>`}
       </div>
-      ${m ? `<div class="md:hidden shrink-0 h-10 px-2 rounded-xl bg-indigo-50 text-indigo-700 flex flex-col items-center justify-center leading-none" title="Kesiapan ${esc(m.ujian)}"><span id="readinessPill" class="text-sm font-extrabold">0%</span><span class="text-[9px] font-bold uppercase tracking-wide">siap</span></div>` : ''}
+      ${m ? `<div class="md:hidden shrink-0 h-10 px-2 rounded-xl bg-indigo-50 text-indigo-700 flex flex-col items-center justify-center leading-none" title="Progres belajar"><span id="readinessPill" class="text-sm font-extrabold">0%</span><span class="text-[9px] font-bold uppercase tracking-wide">progres</span></div>` : ''}
       <button onclick="openProgressModal()" title="Progres belajarku (simpan / pindah perangkat)" aria-label="Progres belajarku" class="shrink-0 h-10 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1.5">${svg('chart', 'w-4 h-4')}<span class="hidden sm:inline">Progresku</span></button>
       <button onclick="openShareModal()" title="Bagikan / Unduh" aria-label="Bagikan / Unduh" class="shrink-0 h-10 px-3 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 flex items-center gap-1.5">${svg('share', 'w-4 h-4')}<span class="hidden sm:inline">Bagikan / Unduh</span></button>
     </div>
     <div class="hdr-collapse flex flex-wrap md:flex-nowrap items-center gap-2">
       ${LIB.length ? ddHtml('selCourse', 'Pilih mata kuliah', courseItems(), c ? c.id : '', 'md:w-72') : ''}
       ${c ? ddHtml('selMeeting', 'Pilih pertemuan', meetingItems(c), m ? m.id : '', 'md:w-[26rem]') : ''}
-      ${m ? `<div class="hidden md:block md:w-48 md:ml-auto"><div class="flex justify-between text-[11px] font-bold text-slate-500 mb-1"><span>Kesiapan ${esc(m.ujian)}</span><span id="readinessLabel" class="text-indigo-700">0%</span></div><div class="h-1.5 rounded-full bg-slate-200 overflow-hidden"><div id="readinessBar" class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-500" style="width:0%"></div></div></div>` : ''}
+      ${m ? `<div class="hidden md:block md:w-48 md:ml-auto"><div class="flex justify-between text-[11px] font-bold text-slate-500 mb-1"><span>Progres belajar</span><span id="readinessLabel" class="text-indigo-700">0%</span></div><div class="h-1.5 rounded-full bg-slate-200 overflow-hidden"><div id="readinessBar" class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-500" style="width:0%"></div></div><p id="practiceScore" class="mt-1 text-[10px] text-slate-500"></p></div>` : ''}
     </div>
     ${tabs.length ? `<div class="relative -mx-4 sm:mx-0"><nav id="tabNav" class="flex gap-1.5 overflow-x-auto pb-0.5 px-4 sm:px-0 scroll-px-4" aria-label="Menu Utama">${tabs.map(t =>
       `<button onclick="go('${routeFor(c, m, t.id)}')" ${S.tab === t.id ? 'aria-current="page"' : ''} class="shrink-0 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${S.tab === t.id ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}"><span class="sm:hidden">${esc(t.short(m))}</span><span class="hidden sm:inline">${esc(t.label(m))}</span></button>`).join('')}</nav>
@@ -913,6 +1041,9 @@ function updateReadiness() {
   if (!S.meeting) return;
   const pct = readiness(S.meeting, S.prog, S.interactiveTotal);
   const l = $('readinessLabel'), b = $('readinessBar'), pl = $('readinessPill');
+  const score = $('practiceScore');
+  const answers = quizAns(S.meeting);
+  if (score && answers.length) score.textContent = 'Skor latihan: ' + answers.filter((a, i) => S.prog.quiz[i] === a).length + '/' + answers.length;
   if (l) l.textContent = pct + '%'; if (b) b.style.width = pct + '%'; if (pl) pl.textContent = pct + '%';
 }
 
@@ -970,7 +1101,7 @@ function route(forced) {
     const tabs = availableTabs(m);
     if (!tabs.some(t => t.id === tab)) tab = tabs.length ? tabs[0].id : 'cheatsheet';
     S.tab = tab;
-    if (changedMeeting) { S.prog = loadProgress(c, m); S.fcFilter = 'all'; S.quizFilter = 'all'; S.exam = null; S.interactiveTotal = countInteractive(m); }
+    if (changedMeeting) { S.prog = loadProgress(c, m); S.fcFilter = 'all'; S.quizFilter = 'all'; S.exam = loadExam(); S.examPersisted = !!S.exam; S.examReview = false; S.lastExamResult = null; S.interactiveTotal = countInteractive(m); }
     if (!S.prog.visited.has(tab)) { S.prog.visited.add(tab); saveProgress(); }
     PROGRESS.setLast(routeFor(c, m, tab));
     document.title = `${c.nama} P${m.nomor} · Sinau`;
@@ -1031,11 +1162,11 @@ function renderHome(only) {
       cont = `<button onclick="go('${esc(last.hash)}')" class="w-full text-left p-4 rounded-2xl border border-slate-200 bg-white hover:border-ink transition flex flex-col sm:flex-row sm:items-center gap-3">
         <div class="min-w-0 flex-1 space-y-1"><div class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Lanjutkan belajar • ${esc(lc.nama)} • P${esc(lm.nomor)}${tab ? ' • ' + esc(tab.short(lm)) : ''}</div>
           <div class="font-display font-extrabold text-lg leading-snug text-ink"><span class="stabilo" style="--hl:${courseHL(lc)}">${esc(lm.judul)}</span></div>
-          <div class="text-xs text-slate-500">${pct}% siap</div></div>
+          <div class="text-xs text-slate-500">${pct}% progres</div></div>
         <span class="shrink-0 self-start sm:self-auto px-4 py-2.5 rounded-xl bg-ink text-white text-sm font-bold">Lanjutkan →</span></button>`;
     }
   }
-  // Peta: semua matkul × nomor pertemuan (P1–P16, dibagi babak UTS | UAS), warna makin pekat = makin siap
+  // Peta: semua matkul × nomor pertemuan (P1–P16, dibagi babak UTS | UAS), warna makin pekat = makin banyak aktivitas
   const showPeta = !only && LIB.length > 1;
   let peta = '';
   if (showPeta) {
@@ -1044,10 +1175,10 @@ function renderHome(only) {
     const utsN = nums.filter(n => babakOf(n) === 'uts'), uasN = nums.filter(n => babakOf(n) === 'uas');
     const cell = (c, n) => { const m = c.meetings.find(x => String(x.nomor) === n);
       if (!m) return c.meetings.some(x => parseFloat(x.nomor) > parseFloat(n))
-        ? `<td><span class="peta-none" title="${esc(c.nama)} tidak punya Pertemuan ${esc(n)}">×</span></td>`
+        ? `<td><span class="peta-none" aria-label="${esc(c.nama)} P${esc(n)}: materi belum tersedia" title="Materi ${esc(c.nama)} P${esc(n)} belum tersedia">–</span></td>`
         : `<td><span class="peta-soon" title="Pertemuan ${esc(n)} belum ada materinya"></span></td>`;
       const pct = storedReadiness(c, m);
-      return `<td><button type="button" onclick="go('${routeFor(c, m)}')" class="peta-cell" style="--hl:${courseHL(c)};--p:${pct}" ${pct ? `data-pct="${pct}"` : ''} ${examMark(m) ? 'data-exam' : ''} title="${esc(c.nama)} • P${esc(n)}: ${esc(m.judul)} • ${pct}% siap" aria-label="${esc(c.nama)} Pertemuan ${esc(n)}${examMark(m) ? ' (' + examMark(m) + ')' : ''}, ${pct}% siap">${examMark(m) ? `<span class="peta-mark">${examMark(m)}</span>${pct ? `<span class="peta-num">${pct}</span>` : ''}` : pct ? pct : ''}</button></td>`; };
+      return `<td><button type="button" onclick="go('${routeFor(c, m)}')" class="peta-cell" style="--hl:${courseHL(c)};--p:${pct}" ${pct ? `data-pct="${pct}"` : ''} ${examMark(m) ? 'data-exam' : ''} title="${esc(c.nama)} • P${esc(n)}: ${esc(m.judul)} • ${pct}% progres" aria-label="${esc(c.nama)} Pertemuan ${esc(n)}${examMark(m) ? ' (' + examMark(m) + ')' : ''}, ${pct}% progres">${examMark(m) ? `<span class="peta-mark">${examMark(m)}</span>${pct ? `<span class="peta-num">${pct}</span>` : ''}` : pct ? pct : ''}</button></td>`; };
     const cols = (c, f) => utsN.map(n => f(c, n)).join('') + (uasN.length ? '<td class="peta-sep" aria-hidden="true"></td>' + uasN.map(n => f(c, n)).join('') : '');
     // HP: tanpa tabel lebar. Tiap matkul = nama di atas + 8 kotak satu babak; tombol UTS/UAS untuk ganti babak.
     const nowBabak = babakOf(Math.max(...have.map(parseFloat).filter(x => !isNaN(x)), 1));
@@ -1060,7 +1191,7 @@ function renderHome(only) {
       ${uasN.length ? `<div class="inline-flex p-1 rounded-xl bg-[#ecebe4] text-xs font-bold" role="group" aria-label="Pilih babak">${BABAK.map(b => `<button type="button" data-b="${b.id}" aria-pressed="${b.id === nowBabak}" onclick="petaBabak('${b.id}')" class="peta-tab">${b.id === 'uts' ? 'UTS · P1–P8' : 'UAS · P9–P16'}</button>`).join('')}</div>` : ''}
       ${strip(utsN, 'uts')}${uasN.length ? strip(uasN, 'uas') : ''}</div>`;
     peta = `<section class="space-y-2" aria-label="Peta belajar">
-      <div class="flex flex-wrap items-end justify-between gap-2"><h2 class="text-xl font-extrabold text-ink">Peta belajar</h2>
+      <div class="flex flex-wrap items-end justify-between gap-2"><h2 class="text-xl font-extrabold text-ink">Peta belajar</h2><span class="text-xs text-slate-500">– Materi belum tersedia</span>
 </div>
       ${petaMobile}
       <div class="hidden sm:block overflow-x-auto"><table class="peta w-full ${uasN.length ? 'min-w-[880px]' : 'min-w-[600px]'}">
@@ -1086,7 +1217,7 @@ function renderHome(only) {
       if (g === cur) return `<div class="space-y-2">${groups.length > 1 || g.id === 'uas' ? `<h3 class="text-sm font-extrabold text-ink">${esc(g.label)} <span class="font-sans font-normal text-slate-500">• ${range}</span></h3>` : ''}${ol}</div>`;
       return `<details class="babak group rounded-2xl border border-slate-200 bg-white overflow-hidden">
         <summary class="cursor-pointer list-none px-4 py-3 flex items-center justify-between gap-3 hover:bg-[#f6f5ef]">
-          <span class="min-w-0"><span class="font-display font-extrabold text-ink">${esc(g.label)}</span> <span class="text-xs text-slate-500">• ${range} • ${g.ms.length} pertemuan • rata-rata ${avgOf(c, g.ms)}% siap</span></span>
+          <span class="min-w-0"><span class="font-display font-extrabold text-ink">${esc(g.label)}</span> <span class="text-xs text-slate-500">• ${range} • ${g.ms.length} pertemuan • rata-rata ${avgOf(c, g.ms)}% progres</span></span>
           <span class="shrink-0 text-xs font-bold text-slate-500"><span class="group-open:hidden">Buka ▸</span><span class="hidden group-open:inline">Tutup ▾</span></span></summary>
         <div class="border-t border-slate-200">${ol.replace('rounded-2xl border border-slate-200 ', '')}</div></details>`;
     }).join('');
@@ -1209,36 +1340,41 @@ function toggleMaster(i) {
   saveProgress(); renderFlashcards(); updateReadiness();
 }
 
-function quizStats(m, ans) {
-  const out = { total: m.quiz.length, answered: 0, score: 0, wrong: [] };
-  m.quiz.forEach((q, i) => { if (ans[i] === undefined) return; out.answered++; if (ans[i] === q.ans) out.score++; else out.wrong.push(i); });
+function quizStats(m, ans, indices = m.quiz.map((_, i) => i)) {
+  const out = { total: indices.length, answered: 0, score: 0, wrong: [] };
+  indices.forEach(i => { const q = m.quiz[i]; if (ans[i] === undefined) return; out.answered++; if (ans[i] === q.ans) out.score++; else out.wrong.push(i); });
   return out;
 }
 function renderQuiz() {
-  const m = S.meeting, ex = S.exam, L = 'ABCDEFGH';
+  const m = S.meeting, ex = S.exam, lastResult = !ex && (S.lastExamResult || store.get(examKey('result'), null)), review = S.examReview && lastResult, L = 'ABCDEFGH';
   const saved = S.prog.quiz, st = quizStats(m, saved), total = st.total, score = st.score;
-  const ans = ex ? ex.ans : saved;
+  const ans = (ex || review || { ans: saved }).ans;
+  const sessionTotal = (ex || review) ? (ex || review).indices.length : total;
   const f = ex ? 'all' : (S.quizFilter || 'all');
-  const idx = m.quiz.map((q, i) => i).filter(i => f === 'todo' ? saved[i] === undefined : f === 'wrong' ? st.wrong.includes(i) : true);
+  const idx = ex || review ? (ex || review).indices : m.quiz.map((q, i) => i).filter(i => f === 'todo' ? saved[i] === undefined : f === 'wrong' ? st.wrong.includes(i) : true);
   const btn = 'px-3 py-1.5 rounded-xl text-xs font-bold';
   const chip = (id, label, n) => `<button onclick="setQuizFilter('${id}')" class="${btn} ${f === id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">${label} (${n})</button>`;
   const exDone = ex ? Object.keys(ex.ans).length : 0;
   const controls = ex
     ? `<div class="p-3 rounded-xl bg-amber-50 border border-amber-200 flex flex-wrap items-center gap-2">
-        <span class="text-xs font-bold text-amber-900 flex-1 min-w-[10rem]">📝 Mode ujian • terjawab ${exDone}/${total}</span>
+        <span class="text-xs font-bold text-amber-900 flex-1 min-w-[10rem]">📝 ${ex.quick ? 'Simulasi Cepat' : 'Mode ujian'} • terjawab ${exDone}/${sessionTotal}</span>
         <button onclick="cancelExam()" class="${btn} bg-white border border-slate-300 text-slate-700 hover:bg-slate-50">Batal</button>
         <button onclick="finishExam()" class="${btn} bg-indigo-600 hover:bg-indigo-700 text-white">Selesai & lihat nilai</button></div>`
-    : `<div class="space-y-2">
+    : review
+      ? `<div class="rounded-xl bg-indigo-50 p-3 text-sm flex flex-wrap items-center gap-2"><strong>${review.quick ? 'Simulasi Cepat' : 'Mode ujian'} • ${review.score}/${sessionTotal} benar</strong><button onclick="closeExamReview()" class="${btn} bg-white border border-slate-300">Kembali ke latihan</button></div>`
+      : `<div class="space-y-2">
         <div class="flex items-center gap-2 overflow-x-auto pb-0.5 [&>*]:shrink-0">
           <span class="${btn} bg-indigo-100 text-indigo-800">Skor: ${score} / ${total}</span>
           ${chip('all', 'Semua', total)}${chip('todo', 'Belum dijawab', total - st.answered)}${chip('wrong', 'Salah', st.wrong.length)}</div>
         <div class="flex flex-wrap items-center gap-2">
           ${st.wrong.length ? `<button onclick="retryWrong()" class="${btn} bg-rose-50 text-rose-700 hover:bg-rose-100">🔁 Ulangi yang salah (${st.wrong.length})</button>` : ''}
           <button onclick="startExam()" class="${btn} bg-amber-50 text-amber-800 hover:bg-amber-100">📝 Mode ujian</button>
+          ${m.nomor === 8 && total > 25 ? `<button onclick="startExam(true)" class="${btn} bg-indigo-50 text-indigo-800">Simulasi Cepat · 25 soal</button>` : ''}
+          ${lastResult ? `<button onclick="openExamReview()" class="${btn} bg-slate-100 text-slate-700">Hasil simulasi terakhir</button>` : ''}
           <button onclick="resetQuiz()" class="${btn} bg-slate-100 hover:bg-slate-200 text-slate-700">↺ Ulangi kuis</button></div></div>`;
-  const card = qi => { const q = m.quiz[qi], ch = ans[qi], done = !ex && ch !== undefined;
+  const card = (qi, pos) => { const q = m.quiz[qi], ch = ans[qi], done = !!review || (!ex && ch !== undefined);
     return `<div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3">
-        <p class="font-bold text-slate-900 text-sm sm:text-[15px] leading-snug"><span class="text-indigo-600">${qi + 1}.</span> <span class="rich">${rich(q.q)}</span></p>
+        <p class="font-bold text-slate-900 text-sm sm:text-[15px] leading-snug"><span class="text-indigo-600">${ex || review ? pos + 1 : qi + 1}.</span> <span class="rich">${rich(q.q)}</span></p>
         <div class="grid gap-2">${q.opts.map((o, oi) => {
           const cls = ex ? (oi === ch ? 'bg-indigo-50 border-indigo-500 text-indigo-950 font-semibold' : 'bg-white border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 text-slate-800')
             : !done ? 'bg-white border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 text-slate-800' : oi === q.ans ? 'bg-emerald-100 border-emerald-500 text-emerald-950 font-bold' : oi === ch ? 'bg-rose-100 border-rose-400 text-rose-950 font-semibold' : 'bg-white/60 border-slate-200 text-slate-500';
@@ -1247,18 +1383,18 @@ function renderQuiz() {
           return `<button ${done ? 'disabled' : ''} onclick="${ex ? 'examAnswer' : 'answerQuiz'}(${qi},${oi})" class="w-full text-left p-3 rounded-xl border text-xs sm:text-sm font-medium transition flex items-start gap-2.5 ${cls}">
             <span class="w-6 h-6 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${badge}">${L[oi]}</span>
             <span class="min-w-0"><span class="rich">${rich(o)}</span>${oe}</span></button>`; }).join('')}</div>
-        ${done ? `<div class="p-3 rounded-xl text-xs sm:text-sm ${ch === q.ans ? 'bg-emerald-50 border border-emerald-200 text-emerald-950' : 'bg-rose-50 border border-rose-200 text-rose-950'}"><strong>${ch === q.ans ? '✅ Jawaban Benar!' : '❌ Kurang Tepat.'} Pembahasan:</strong> <span class="rich">${rich(q.exp || ('Jawaban yang benar adalah ' + L[q.ans] + '.'))}</span></div>` : ''}
+        ${done ? `<div class="p-3 rounded-xl text-xs sm:text-sm ${ch === q.ans ? 'bg-emerald-50 border border-emerald-200 text-emerald-950' : 'bg-rose-50 border border-rose-200 text-rose-950'}"><strong>${ch === undefined ? 'Belum dijawab.' : ch === q.ans ? '✅ Jawaban Benar!' : '❌ Kurang Tepat.'} Pembahasan:</strong> <span class="rich">${rich(q.exp || ('Jawaban yang benar adalah ' + L[q.ans] + '.'))}</span></div>` : ''}
       </div>`; };
   const empty = !idx.length ? `<div class="p-6 rounded-2xl border-2 border-dashed border-slate-200 text-center text-sm font-semibold text-slate-500">${f === 'wrong' ? '🎉 Tidak ada jawaban yang salah.' : f === 'todo' ? '✅ Semua soal sudah dijawab.' : 'Belum ada soal.'}</div>` : '';
   $('appMain').innerHTML = `<section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-5">
     <div class="space-y-3"><div>
       <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Evaluasi Mandiri Terpadu</span>
       <h2 class="text-xl font-extrabold text-slate-900">Simulasi Kuis ${esc(m.ujian)} Pertemuan ${esc(m.nomor)} (${total} Soal)</h2>
-      <p class="text-sm text-slate-600">${ex ? 'Seperti ujian sungguhan: jawaban bisa diganti, pembahasan dan nilai baru muncul setelah kamu menekan <strong>Selesai</strong>.' : 'Pilih jawaban yang paling tepat. Pembahasan langsung muncul setiap kali kamu menjawab!'}</p></div>
+      <p class="text-sm text-slate-600">${ex ? 'Seperti ujian sungguhan: jawaban bisa diganti, pembahasan dan nilai baru muncul setelah kamu menekan <strong>Selesai</strong>.' : review ? 'Tinjau jawaban dan pembahasan dari sesi yang sudah selesai.' : 'Pilih jawaban yang paling tepat. Pembahasan langsung muncul setiap kali kamu menjawab!'}</p></div>
       ${controls}</div>
     <div class="space-y-4">${idx.map(card).join('')}${empty}</div>
-    ${ex ? `<button onclick="finishExam()" class="w-full px-4 py-3 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white">Selesai & lihat nilai (${exDone}/${total} terjawab)</button>` : ''}
-    ${!ex && f === 'all' && st.answered === total && total ? `<div class="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-900 text-white text-center space-y-3">
+    ${ex ? `<button onclick="finishExam()" class="w-full px-4 py-3 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white">Selesai & lihat nilai (${exDone}/${sessionTotal} terjawab)</button>` : ''}
+    ${!ex && !review && f === 'all' && st.answered === total && total ? `<div class="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-900 text-white text-center space-y-3">
       <h3 class="text-lg sm:text-xl font-extrabold">${score / total >= 0.8 ? '🎉 Luar Biasa!' : '💪 Terus Semangat!'} Skor ${esc(m.ujian)} Kamu: ${Math.round(score / total * 100)} / 100 (${score}/${total} Benar)</h3>
       <p class="text-sm text-indigo-100">${score / total >= 0.8 ? `Kamu sudah sangat siap menghadapi soal-soal ${esc(m.ujian)} Pertemuan ${esc(m.nomor)}.` : 'Baca kembali pembahasan pada soal yang masih keliru, atau tekan "Ulangi yang salah" untuk mengerjakannya lagi.'}</p>
       <div class="flex flex-wrap justify-center gap-2">${st.wrong.length ? `<button onclick="retryWrong()" class="px-4 py-2 rounded-xl bg-white text-indigo-700 text-sm font-bold hover:bg-indigo-50">🔁 Ulangi yang salah (${st.wrong.length})</button>` : ''}<button onclick="resetQuiz()" class="px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-sm font-bold">Coba Kerjakan Ulang</button>
@@ -1273,18 +1409,85 @@ function retryWrong() {
   S.quizFilter = 'todo'; renderQuiz(); updateReadiness(); window.scrollTo({ top: 0 });
   showToast(`${st.wrong.length} soal yang salah dibuka lagi. Coba kerjakan ulang!`);
 }
-function startExam() {
-  openModal(`<h3 class="text-lg font-extrabold text-slate-900">📝 Mulai mode ujian?</h3>
-    <ul class="text-sm text-slate-600 mt-2 list-disc pl-5 space-y-1"><li>Semua ${S.meeting.quiz.length} soal dikerjakan tanpa melihat pembahasan.</li><li>Jawaban bisa diganti sebelum kamu menekan <strong>Selesai</strong>.</li><li>Setelah selesai, nilai dan pembahasan muncul, dan jawaban kuis sebelumnya di pertemuan ini <strong>diganti</strong> hasil ujian ini.</li></ul>
-    <div class="flex justify-end gap-2 mt-5"><button onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200">Batal</button>
-    <button onclick="beginExam()" class="px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700">Mulai</button></div>`, 'max-w-md');
+// Pisahkan sesi dan hasil dari bank latihan. Sidik soal menjaga indeks jawaban tetap cocok setelah pembaruan.
+const examFingerprints = new WeakMap();
+function examKey(kind) {
+  const m = S.meeting;
+  if (!examFingerprints.has(m)) {
+    let hash = 2166136261;
+    const data = JSON.stringify(m.quiz.map(q => [q.q, q.opts, q.ans]));
+    for (let i = 0; i < data.length; i++) hash = Math.imul(hash ^ data.charCodeAt(i), 16777619);
+    examFingerprints.set(m, (hash >>> 0).toString(36));
+  }
+  return `belajar:ujian:v1:${progId(S.course, m)}:${examFingerprints.get(m)}:${kind}`;
 }
-function beginExam() { closeModal(); S.exam = { ans: {}, start: Date.now() }; renderQuiz(); window.scrollTo({ top: 0 }); }
-function examAnswer(qi, oi) { if (!S.exam) return; S.exam.ans[qi] = oi; const y = window.scrollY; renderQuiz(); window.scrollTo(0, y); }
-function cancelExam() { S.exam = null; renderQuiz(); window.scrollTo({ top: 0 }); }
+function loadExam() { return S.meeting.quiz.length ? store.get(examKey('active'), null) : null; }
+function sampleExam(quiz, limit = 25, random = Math.random) {
+  const groups = new Map();
+  quiz.forEach((q, i) => {
+    const topic = q.topic || String(q.q).match(/^\[([^\]]+)\]/)?.[1] || 'Campuran';
+    if (!groups.has(topic)) groups.set(topic, []);
+    groups.get(topic).push(i);
+  });
+  for (const items of groups.values()) {
+    for (let i = items.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [items[i], items[j]] = [items[j], items[i]];
+    }
+  }
+  const selected = [];
+  while (selected.length < Math.min(limit, quiz.length)) {
+    for (const items of groups.values()) {
+      if (items.length) selected.push(items.pop());
+      if (selected.length >= limit) break;
+    }
+  }
+  return selected;
+}
+function startExam(quick = false) {
+  openModal(`<h3 class="text-lg font-extrabold text-slate-900">${quick ? 'Mulai Simulasi Cepat?' : '📝 Mulai mode ujian?'}</h3>
+    <ul class="text-sm text-slate-600 mt-2 list-disc pl-5 space-y-1"><li>${quick ? 'Kerjakan 25 soal yang diambil dari berbagai topik.' : `Kerjakan semua ${S.meeting.quiz.length} soal.`}</li><li>Jawaban tersimpan di browser ini dan pembahasan muncul setelah selesai.</li></ul>
+    <div class="flex justify-end gap-2 mt-5"><button onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200">Batal</button>
+    <button onclick="beginExam(${!!quick})" class="px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700">Mulai</button></div>`, 'max-w-md');
+}
+function beginExam(quick = false) {
+  closeModal();
+  S.examReview = false;
+  S.exam = loadExam() || { quick, indices: quick ? sampleExam(S.meeting.quiz) : S.meeting.quiz.map((_, i) => i), ans: {}, start: Date.now(), id: Math.random().toString(36).slice(2) };
+  S.examPersisted = store.set(examKey('active'), S.exam);
+  renderQuiz(); window.scrollTo({ top: 0 });
+}
+function currentExam() {
+  const saved = loadExam();
+  if (saved && saved.id === S.exam?.id) return saved;
+  if (saved || !S.exam || S.examPersisted) {
+    S.exam = saved;
+    renderQuiz();
+    return null;
+  }
+  // Penyimpanan yang diblokir tetap mengizinkan latihan selama halaman terbuka.
+  return S.exam;
+}
+function examAnswer(qi, oi) {
+  const ex = currentExam();
+  if (!ex || !ex.indices.includes(qi) || S.meeting.quiz[qi]?.opts[oi] === undefined) return;
+  ex.ans[qi] = oi;
+  S.exam = ex;
+  S.examPersisted = store.set(examKey('active'), ex) || S.examPersisted;
+  const y = window.scrollY;
+  renderQuiz(); window.scrollTo(0, y);
+}
+function cancelExam() {
+  if (!S.exam || !window.confirm('Batalkan sesi ini? Jawaban di sesi ini akan dihapus.')) return;
+  if (loadExam()?.id === S.exam.id) store.del(examKey('active'));
+  S.exam = null; renderQuiz(); window.scrollTo({ top: 0 });
+}
+function openExamReview() { S.examReview = true; renderQuiz(); window.scrollTo({ top: 0 }); }
+function closeExamReview() { S.examReview = false; renderQuiz(); window.scrollTo({ top: 0 }); }
 function finishExam(force) {
-  const ex = S.exam, m = S.meeting; if (!ex) return;
-  const left = m.quiz.length - Object.keys(ex.ans).length;
+  const ex = currentExam(), m = S.meeting; if (!ex) return;
+  const st = quizStats(m, ex.ans, ex.indices);
+  const left = st.total - st.answered;
   if (left && !force) {
     openModal(`<h3 class="text-lg font-extrabold text-slate-900">Masih ada ${left} soal belum dijawab</h3>
       <p class="text-sm text-slate-600 mt-2">Soal yang kosong tidak mendapat nilai. Tetap selesai sekarang?</p>
@@ -1293,11 +1496,13 @@ function finishExam(force) {
     return;
   }
   closeModal();
-  S.prog.quiz = Object.assign({}, ex.ans); saveProgress();
+  const result = { ...ex, score: st.score };
+  S.lastExamResult = result;
+  store.set(examKey('result'), result);
+  store.del(examKey('active'));
+  S.exam = null; openExamReview();
   const min = Math.max(1, Math.round((Date.now() - ex.start) / 60000));
-  S.exam = null; S.quizFilter = 'all'; renderQuiz(); updateReadiness(); window.scrollTo({ top: 0 });
-  const st = quizStats(m, S.prog.quiz);
-  showToast(`Nilai ujian: ${Math.round(st.score / Math.max(1, st.total) * 100)} (${st.score}/${st.total} benar, ±${min} menit).`, 'success');
+  showToast(`Nilai ujian: ${Math.round(st.score / st.total * 100)} (${st.score}/${st.total} benar, ±${min} menit).`, 'success');
 }
 function answerQuiz(qi, oi) { S.prog.quiz[qi] = oi; saveProgress(); const y = window.scrollY; renderQuiz(); window.scrollTo(0, y); updateReadiness(); }
 function resetQuiz() { S.exam = null; S.quizFilter = 'all'; S.prog.quiz = {}; saveProgress(); renderQuiz(); updateReadiness(); showToast('Kuis direset. Silakan kerjakan kembali!'); }
@@ -1330,6 +1535,7 @@ function installBox(box, b) {
   if (!('serviceWorker' in navigator) || !window.isSecureContext) return '';
   const title = 'Pasang sebagai Aplikasi (bisa tanpa internet)';
   if (isStandalone()) return box(title, '✅ Sudah terpasang. Semua materi tersimpan di perangkat ini, jadi tetap bisa dibuka saat tidak ada sinyal.', '');
+  if (APP.standalone) return '';
   if (INSTALL_PROMPT) return box(title, 'Muncul sebagai ikon <strong>Belajar</strong> di layar utama, terbuka tanpa bilah browser, dan semua materi bisa dibuka saat offline.', b('installApp()', 'Pasang Aplikasi'));
   if (isIOS()) return box(title, 'Di iPhone/iPad (Safari): ketuk tombol <strong>Bagikan</strong> <span aria-hidden="true">⬆️</span> di bawah, lalu pilih <strong>Tambah ke Layar Utama</strong>. Setelah itu materi bisa dibuka tanpa internet.', '');
   return box(title, 'Buka menu browser (<strong>⋮</strong>), lalu pilih <strong>Instal aplikasi</strong> atau <strong>Tambahkan ke layar utama</strong>. Setelah dibuka sekali, materi tetap bisa dibuka tanpa internet.', '');
@@ -1373,7 +1579,7 @@ function openProgressModal() {
         ${btn('importProgressText()', 'Pulihkan dari kode yang ditempel', ghost)}
         <p id="progMsg" class="text-xs"></p>`)}
       <details class="text-xs text-slate-500"><summary class="cursor-pointer font-semibold">Mulai dari nol</summary>
-        <div class="mt-2 space-y-2"><p>Menghapus seluruh progres di browser ini (kuis, flashcard, kesiapan). Unduh cadangan dulu kalau masih ingin menyimpannya.</p>
+        <div class="mt-2 space-y-2"><p>Menghapus seluruh progres di browser ini (kuis, flashcard, progres belajar). Unduh cadangan dulu kalau masih ingin menyimpannya.</p>
         <button onclick="confirmResetProgress()" class="px-3 py-2 rounded-xl font-bold text-rose-600 bg-white border border-rose-300 hover:bg-rose-50">Hapus semua progres</button></div></details>
     </div>`);
 }
@@ -1395,9 +1601,9 @@ function importProgressText() { const t = $('progText').value.trim(); if (!t) { 
 function importProgressFile(input) { const f = input.files && input.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => applyProgressImport(String(r.result || '')); r.onerror = () => { $('progMsg').textContent = 'File tidak bisa dibaca.'; }; r.readAsText(f); }
 function confirmResetProgress() {
   openModal(`<h3 class="text-lg font-extrabold text-slate-900">Hapus semua progres?</h3>
-    <p class="text-sm text-slate-600 mt-2">Semua jawaban kuis, flashcard yang ditandai paham, dan persentase kesiapan di browser ini akan dihapus. Tidak bisa dibatalkan.</p>
+    <p class="text-sm text-slate-600 mt-2">Semua jawaban latihan, sesi dan hasil ujian, flashcard yang ditandai paham, dan progres belajar di browser ini akan dihapus. Tidak bisa dibatalkan.</p>
     <div class="flex justify-end gap-2 mt-5"><button onclick="openProgressModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200">Batal</button>
-    <button onclick="PROGRESS.reset();closeModal();if(S.course&&S.meeting)S.prog=loadProgress(S.course,S.meeting);route(curHash());showToast('Progres dihapus. Mulai lagi dari awal!')" class="px-4 py-2 rounded-xl text-sm font-bold bg-rose-600 text-white hover:bg-rose-700">Hapus</button></div>`, 'max-w-md');
+    <button onclick="PROGRESS.reset();S.exam=null;S.examReview=false;S.lastExamResult=null;closeModal();if(S.course&&S.meeting)S.prog=loadProgress(S.course,S.meeting);route(curHash());showToast('Progres dihapus. Mulai lagi dari awal!')" class="px-4 py-2 rounded-xl text-sm font-bold bg-rose-600 text-white hover:bg-rose-700">Hapus</button></div>`, 'max-w-md');
 }
 function buildStandalone(src, courses) {
   const doc = src.cloneNode(true);
@@ -1414,7 +1620,7 @@ async function downloadApp(scope) {
   showToast('Menyiapkan file HTML…');
   try {
     let html;
-    if (courses === LIB && !LIB.some(c => c.meetings.some(m => m._imported))) html = await fetchText(assetUrl('offline.html'));
+    if (!APP.standalone && courses === LIB && !LIB.some(c => c.meetings.some(m => m._imported))) html = await fetchText(assetUrl('offline.html'));
     else {
       await Promise.all(courses.flatMap(c => c.meetings.filter(m => m._lazy).map(m => fetchMeeting(c, m))));
       html = buildStandalone(await pageSource(), courses);

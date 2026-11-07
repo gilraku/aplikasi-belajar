@@ -55,3 +55,24 @@ P5 S-P-O-Pel-K; objek vs pelengkap; 7 syarat efektif; jebakan: merubah, agar sup
 P6 Transitif/intransitif; KMS vs KMB; perluasan S (yang), O (bahwa), K (karena…).
 P7 Tesis → argumen (alasan + bukti) → penegasan ulang.`
 };
+
+// Lengkapi pembahasan singkat pada soal yang disalin dari pertemuan sebelumnya.
+const pembahasan = {
+  "Kalimat pasif dengan predikat konfiks ke-an": "Kehujanan memakai konfiks ke-an dan menyatakan keadaan yang dialami subjek Adik.",
+  "Adiknya rajin, tetapi ia sendiri malas": "Tetapi menghubungkan dua klausa sederajat yang maknanya berlawanan.",
+  "Inti kalimat yang terdiri atas S + P": "Klausa memiliki predikat. Subjek bisa disebutkan atau tersirat, dan objek hadir jika dibutuhkan predikat.",
+  "Kalimat aktif yang predikatnya membutuhkan objek": "Verba transitif memerlukan objek. Objeknya dapat menjadi subjek ketika kalimat dipasifkan.",
+  "Kalimat aktif intransitif ditunjukkan": "Predikat sedang berlibur sudah lengkap tanpa objek.",
+  "Kalimat yang hanya terdiri atas satu klausa": "Kalimat tunggal terdiri atas satu klausa, meskipun klausa itu boleh memiliki keterangan.",
+  "Anton tidak datang karena sakit hati": "Anton tidak datang dapat berdiri sendiri. Bagian karena sakit hati menjelaskan sebabnya.",
+  "Bagian yang memuat alasan dan bukti": "Bagian argumen mendukung tesis dengan alasan, data, atau contoh yang relevan.",
+  "Berikut yang paling kuat sebagai bukti": "Nama lembaga, tahun, dan sumber membuat data bisa ditelusuri dan diperiksa.",
+  "Perbedaan argumentasi dan persuasi": "Argumentasi membangun penerimaan terhadap pendapat lewat penalaran. Persuasi menekankan ajakan kepada pembaca.",
+  "Kata “berpendapat, meyakini, menilai”": "Kata-kata itu menggambarkan proses berpikir, sikap, atau penilaian.",
+  "Generalisasi dari satu contoh": "Satu contoh tidak cukup untuk menyimpulkan keadaan seluruh kelompok."
+};
+for (const soal of module.exports.quiz) {
+  if (soal.exp) continue;
+  const topik = Object.keys(pembahasan).find(potongan => soal.q.includes(potongan));
+  if (topik) soal.exp = pembahasan[topik];
+}

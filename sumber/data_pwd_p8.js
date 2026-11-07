@@ -17,7 +17,7 @@ const STARTER = `<!DOCTYPE html>
     </style>
 </head>
 <body>
-    <!-- Bangun halaman sesuai misi di atas -->
+    <!-- Bangun halaman sesuai misi di bawah editor -->
 
     <script>
         // Tulis JavaScript di sini
@@ -112,8 +112,8 @@ const SOLUSI = `<!DOCTYPE html>
                 alert("Harap isi semua field!");
                 return;
             }
-            if (isNaN(nim)) {
-                alert("NIM harus berupa angka!");
+            if (!/^[0-9]+$/.test(nim)) {
+                alert("NIM hanya boleh berisi digit 0–9.");
                 return;
             }
 
@@ -201,25 +201,27 @@ module.exports = fix({
       type: "playground",
       label: "Latihan Proyek • Gabungan P1–P7",
       title: "Mini Aplikasi Data Mahasiswa",
-      desc: "Bangun dari halaman kosong. Pakai tombol 📱 untuk cek tampilan HP dan panel Console untuk cek JavaScript. Ini latihan, jadi contoh jawaban tersedia; coba sendiri dulu.",
+      desc: "Bangun dari halaman kosong. Pakai tombol 📱 untuk cek tampilan HP dan panel Console untuk cek JavaScript. Untuk uji otomatis, pakai ID nim, nama, jurusan, dan tambah-btn pada kontrol, lalu gunakan tbody untuk baris data. Coba sendiri sebelum membuka contoh jawaban.",
       file: "latihan_uts.html",
       js: true,
+      assessment: "student-app",
       devices: true,
       starter: STARTER,
       solution: SOLUSI,
       tasks: [
         { label: "P5: ada `<meta name=\"viewport\">`", sel: "meta[name=viewport]" },
-        { label: "P2: elemen semantik header, nav, main, section (≥2), footer", sel: "body header, body nav, body main, body section, body footer", min: 6 },
-        { label: "P2: form dengan input NIM, Nama, dan select Jurusan yang memakai label", sel: "form label[for], form input, form select", min: 6 },
-        { label: "P2: tabel dengan thead (≥3 kolom) dan tbody ber-id", sel: "table thead th, table tbody[id]", min: 4 },
+        { label: "P2: elemen semantik header, nav, main, section (≥2), footer", elements: [["body header"], ["body nav"], ["body main"], ["body section", 2], ["body footer"]] },
+        { label: "P2: form dengan input NIM, Nama, dan select Jurusan yang memakai label", elements: [["form input#nim"], ["form input#nama"], ["form select#jurusan"], ["form label[for=nim]"], ["form label[for=nama]"], ["form label[for=jurusan]"]] },
+        { label: "P2: tabel dengan thead (≥3 kolom) dan tbody ber-id", elements: [["table thead th", 3], ["table tbody[id]"]] },
         { label: "P3/P4: CSS memakai `display: flex` atau `display: grid`", regex: "<style[\\s\\S]*display\\s*:\\s*(flex|grid)[\\s\\S]*</style>" },
         { label: "P4: ada `padding` dan `border` di CSS", regex: "<style[\\s\\S]*(padding[\\s\\S]*border|border[\\s\\S]*padding)[\\s\\S]*</style>" },
         { label: "P5: ada media query untuk layar ≤ 600px", regex: "@media\\s*\\(\\s*max-width\\s*:\\s*600px" },
         { label: "P6: tombol memakai `addEventListener(\"click\", ...)`", regex: "addEventListener\\s*\\(\\s*[\"'`]click" },
-        { label: "P6: validasi field kosong dengan `alert`", regex: "<script[\\s\\S]*(!\\s*\\w+\\s*\\|\\||&&)[\\s\\S]*alert\\s*\\(" },
-        { label: "P7: baris dibuat dengan `createElement(\"tr\")` + `appendChild`", regex: "createElement\\s*\\(\\s*[\"'`]tr[\"'`]\\s*\\)[\\s\\S]*appendChild" },
-        { label: "P7: data ditulis dengan `textContent` (aman dari XSS)", regex: "textContent\\s*=" },
-        { label: "Bonus: tiap baris bisa dihapus dengan `.remove()`", regex: "\\.remove\\s*\\(\\s*\\)" }
+        { label: "P6: validasi field kosong dengan `alert`", behavior: "empty", regex: "<script[\\s\\S]*(!\\s*\\w+\\s*\\|\\||&&)[\\s\\S]*alert\\s*\\(" },
+        { label: "P6: NIM hanya digit, termasuk yang diawali nol", behavior: "nim" },
+        { label: "P7: baris dibuat dengan `createElement(\"tr\")` + `appendChild`", behavior: "add", regex: "createElement\\s*\\(\\s*[\"'`]tr[\"'`]\\s*\\)[\\s\\S]*appendChild" },
+        { label: "P7: data ditulis dengan `textContent` (aman dari XSS)", behavior: "text", regex: "textContent\\s*=" },
+        { label: "Bonus: tiap baris bisa dihapus dengan `.remove()`", behavior: "remove", regex: "\\.remove\\s*\\(\\s*\\)" }
       ]
     },
     {
