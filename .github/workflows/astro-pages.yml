@@ -1,8 +1,10 @@
-# Deploy versi Astro sebagai situs UTAMA (gilraku.github.io/aplikasi-belajar/).
-# Hanya jalan kalau dipicu manual (tab Actions → Run workflow), jadi tidak mengubah situs live.
-# Sebelum dipakai: Settings → Pages → Source = "GitHub Actions".
-name: Deploy Astro ke GitHub Pages (manual)
+# Bangun versi Astro (web/) dari materi di sumber/ dan terbitkan sebagai situs utama
+# https://gilraku.github.io/aplikasi-belajar/ setiap ada push ke main.
+# Syarat: Settings → Pages → Source = "GitHub Actions".
+name: Deploy ke GitHub Pages
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
@@ -25,9 +27,6 @@ jobs:
         working-directory: web
       - run: npm run build
         working-directory: web
-        env:
-          ASTRO_BASE: /aplikasi-belajar/
-          ASTRO_OUT: dist
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web/dist
