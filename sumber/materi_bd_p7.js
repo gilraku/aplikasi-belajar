@@ -74,6 +74,33 @@ const formulir = {
   ]
 };
 
+// ---------- SHOW, DESCRIBE, DROP: klik vs query, dengan tangkapan layar hasil ----------
+const I = (f, alt) => ({ src: IMG7 + f, alt });
+const IMG6 = "materi/basis-data/p6/";
+const duaCara = {
+  type: "cara", label: "Klik vs Query", title: "SHOW, DESCRIBE, dan DROP: Dua Cara, Hasil Sama",
+  desc: "Pilih perintahnya. Tiap perintah ditunjukkan lewat klik di phpMyAdmin dan lewat query di tab SQL, lengkap dengan hasilnya.",
+  tabs: [
+    { label: "SHOW DATABASES", what: "Melihat daftar semua basis data di server.",
+      klik: { how: "Klik menu <strong>Basis data</strong> di halaman depan. Daftar kiri juga selalu menampilkannya.", imgs: [{ src: IMG6 + "buat.webp", alt: "Menu Basis data berisi daftar basis data" }], ok: "tabel daftar basis data (information_schema, mysql, …)." },
+      query: { how: "Di halaman depan, klik tab <strong>SQL</strong>, ketik, lalu <strong>Kirim</strong>.", code: "SHOW DATABASES;", imgs: [{ src: IMG6 + "sql-hasil.webp", alt: "Hasil SHOW DATABASES" }], ok: "satu kolom bernama <code>Database</code> berisi semua basis data." } },
+    { label: "SHOW TABLES", what: "Melihat daftar tabel di dalam satu basis data.",
+      klik: { how: "Klik <code>perpustakaan</code> di daftar kiri. Tab <strong>Struktur</strong> langsung terbuka.", imgs: [I("show-klik.webp", "Tab Struktur basis data perpustakaan berisi tabel buku dan coba")], ok: "daftar tabel (buku, coba) beserta jumlah baris dan ukurannya." },
+      query: { how: "Pilih <code>perpustakaan</code> dulu, lalu tab <strong>SQL</strong>.", code: "SHOW TABLES;", imgs: [I("show-query.webp", "Hasil SHOW TABLES: Tables_in_perpustakaan berisi buku dan coba")], ok: "satu kolom bernama <code>Tables_in_perpustakaan</code>." } },
+    { label: "DESCRIBE", what: "Melihat susunan kolom satu tabel: nama, tipe, boleh kosong atau tidak, dan kunci.",
+      klik: { how: "Klik tabel <code>buku</code> di daftar kiri, lalu tab <strong>Struktur</strong>.", imgs: [I("desc-klik.webp", "Tab Struktur tabel buku dengan ikon kunci pada id_buku")], ok: "daftar kolom; ikon kunci di <code>id_buku</code> menandai kunci primer." },
+      query: { how: "Di basis data <code>perpustakaan</code>, tab <strong>SQL</strong>.", code: "DESCRIBE buku;", imgs: [I("desc-query.webp", "Hasil DESCRIBE buku: Field, Type, Null, Key, Default, Extra")], ok: "kolom Field, Type, Null, Key, Default, Extra. <code>PRI</code> di kolom Key = kunci primer." } },
+    { label: "DROP TABLE", what: "Menghapus satu tabel beserta seluruh isinya. Coba dengan tabel <code>coba</code>, jangan <code>buku</code>.",
+      klik: { how: "Buka tabel <code>coba</code> → tab <strong>Operasi</strong> → bagian <em>Hapus data atau tabel</em> → <strong>Hapus tabel (DROP)</strong>, lalu <strong>Oke</strong>.", imgs: [I("droptable-klik.webp", "Kotak konfirmasi: Anda akan MENGHANCURKAN sebuah tabel lengkap"), I("droptable-klik-hasil.webp", "Setelah dihapus, tabel coba hilang dari daftar")], ok: "<code>coba</code> hilang dari daftar kiri; yang tersisa hanya <code>buku</code>." },
+      query: { how: "Di basis data <code>perpustakaan</code>, tab <strong>SQL</strong>. phpMyAdmin akan bertanya “Anda yakin akan menjalankan DROP TABLE coba;?”, klik <strong>OK</strong>.", code: "DROP TABLE coba;", imgs: [I("droptable-query.webp", "Hasil DROP TABLE coba: MySQL memberikan hasil kosong")], ok: "pesan hijau “MySQL memberikan hasil kosong (atau nol baris)”. Itu tanda berhasil, karena DROP memang tidak menghasilkan baris." },
+      note: "Pertanyaan konfirmasi itu dari phpMyAdmin. Di MySQL sendiri, DROP langsung jalan tanpa bertanya dan tidak bisa dibatalkan." },
+    { label: "DROP DATABASE", what: "Menghapus satu basis data beserta semua tabel di dalamnya. Contoh di sini memakai <code>latihan_db</code>.",
+      klik: { how: "Klik <code>latihan_db</code> → tab <strong>Operasi</strong> → <strong>Hapus basis data (DROP)</strong>, lalu <strong>Oke</strong>.", imgs: [I("dropdb-klik.webp", "Kotak konfirmasi: Anda akan MENGHANCURKAN sebuah database lengkap"), I("dropdb-klik-hasil.webp", "Setelah dihapus, latihan_db hilang dari daftar basis data")], ok: "<code>latihan_db</code> hilang dari daftar kiri dan dari menu Basis data." },
+      query: { how: "Dari halaman depan (server), tab <strong>SQL</strong>, lalu jawab <strong>OK</strong> saat ditanya.", code: "DROP DATABASE latihan_db;", imgs: [I("dropdb-query.webp", "Hasil DROP DATABASE latihan_db: MySQL memberikan hasil kosong")], ok: "pesan hijau yang sama, dan <code>latihan_db</code> hilang dari daftar kiri." },
+      note: "Di beberapa versi phpMyAdmin, di bawah pesan hijau muncul juga “#1046 No database selected”. Itu bisa diabaikan karena basis datanya memang sudah terhapus." }
+  ]
+};
+
 module.exports = [
   A("DDL: Perintah untuk Membuat Rangka", `<p>Perintah SQL dikelompokkan menurut tugasnya (lihat P4: DDL, DML, DCL, TCL). <strong>DDL</strong> mengurus rangka basis data: <strong>CREATE</strong> membuat, <strong>ALTER</strong> mengubah (Bab 8), <strong>DROP</strong> menghapus. DDL tidak menyentuh isi data.</p>
 <p>Ibarat tukang lemari: memotong papan, menentukan jumlah laci, dan besar kotak isian kartu. Setelah lemari jadi, tukang selesai; mengisi kartu adalah tugas petugas (DML).</p>`, "Bagian 1"),
@@ -89,6 +116,7 @@ module.exports = [
   alur,
   klik,
   formulir,
+  duaCara,
   { type: "code", label: "Contoh Kode", title: "Hasil DESCRIBE buku", file: "describe.txt", code: `+-----------+-------------+------+-----+---------+-------+
 | Field     | Type        | Null | Key | Default | Extra |
 +-----------+-------------+------+-----+---------+-------+
