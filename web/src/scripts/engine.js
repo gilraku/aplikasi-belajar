@@ -1049,10 +1049,21 @@ function renderHome(only) {
       const pct = storedReadiness(c, m);
       return `<td><button type="button" onclick="go('${routeFor(c, m)}')" class="peta-cell" style="--hl:${courseHL(c)};--p:${pct}" ${pct ? `data-pct="${pct}"` : ''} ${examMark(m) ? 'data-exam' : ''} title="${esc(c.nama)} • P${esc(n)}: ${esc(m.judul)} • ${pct}% siap" aria-label="${esc(c.nama)} Pertemuan ${esc(n)}${examMark(m) ? ' (' + examMark(m) + ')' : ''}, ${pct}% siap">${examMark(m) ? `<span class="peta-mark">${examMark(m)}</span>${pct ? `<span class="peta-num">${pct}</span>` : ''}` : pct ? pct : ''}</button></td>`; };
     const cols = (c, f) => utsN.map(n => f(c, n)).join('') + (uasN.length ? '<td class="peta-sep" aria-hidden="true"></td>' + uasN.map(n => f(c, n)).join('') : '');
+    // HP: tanpa tabel lebar. Tiap matkul = nama di atas + 8 kotak satu babak; tombol UTS/UAS untuk ganti babak.
+    const nowBabak = babakOf(Math.max(...have.map(parseFloat).filter(x => !isNaN(x)), 1));
+    const strip = (nn, b) => `<div class="peta-m space-y-2.5" data-babak="${b}" ${b === nowBabak ? '' : 'hidden'}>
+        <div class="peta-m-row">${nn.map(n => `<span class="text-center text-[10px] font-bold text-slate-500 font-display">P${esc(n)}</span>`).join('')}</div>
+        ${LIB.map(c => `<div class="space-y-1"><button onclick="go('#/c/${encodeURIComponent(c.id)}')" class="flex items-center gap-1.5 text-[13px] font-display font-bold text-ink leading-tight"><span class="dd-sw" style="background:${courseHL(c)}"></span>${esc(shortName(c))}</button>
+          <div class="peta-m-row">${nn.map(n => cell(c, n).replace(/^<td>|<\/td>$/g, '')).join('')}</div></div>`).join('')}
+      </div>`;
+    const petaMobile = `<div class="sm:hidden space-y-3" id="petaM">
+      ${uasN.length ? `<div class="inline-flex p-1 rounded-xl bg-[#ecebe4] text-xs font-bold" role="group" aria-label="Pilih babak">${BABAK.map(b => `<button type="button" data-b="${b.id}" aria-pressed="${b.id === nowBabak}" onclick="petaBabak('${b.id}')" class="peta-tab">${b.id === 'uts' ? 'UTS · P1–P8' : 'UAS · P9–P16'}</button>`).join('')}</div>` : ''}
+      ${strip(utsN, 'uts')}${uasN.length ? strip(uasN, 'uas') : ''}</div>`;
     peta = `<section class="space-y-2" aria-label="Peta belajar">
       <div class="flex flex-wrap items-end justify-between gap-2"><h2 class="text-xl font-extrabold text-ink">Peta belajar</h2>
 </div>
-      <div class="-mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-auto"><table class="peta w-full ${uasN.length ? 'min-w-[880px]' : 'min-w-[600px]'}">
+      ${petaMobile}
+      <div class="hidden sm:block overflow-x-auto"><table class="peta w-full ${uasN.length ? 'min-w-[880px]' : 'min-w-[600px]'}">
         <colgroup><col class="w-[7rem] sm:w-[9.5rem]">${utsN.map(() => '<col>').join('')}${uasN.length ? '<col style="width:8px">' + uasN.map(() => '<col>').join('') : ''}</colgroup>
         <thead>${uasN.length ? `<tr><th></th><th colspan="${utsN.length}" class="peta-babak">Menuju UTS</th><th></th><th colspan="${uasN.length}" class="peta-babak">Menuju UAS</th></tr>` : ''}
           <tr><th class="w-[7rem] sm:w-[9.5rem]"></th>${cols(null, (c, n) => `<th class="text-[11px] font-bold text-slate-500 font-display">P${esc(n)}</th>`).replace('<td class="peta-sep" aria-hidden="true"></td>', '<th></th>')}</tr></thead>
@@ -1090,6 +1101,9 @@ function renderHome(only) {
     ${list.length ? '' : `<div class="p-8 rounded-2xl border-2 border-dashed border-slate-300 text-center text-slate-500">Belum ada materi.</div>`}
   </div>`;
 }
+function petaBabak(b) { const r = $('petaM'); if (!r) return;
+  r.querySelectorAll('.peta-m').forEach(x => { x.hidden = x.dataset.babak !== b; });
+  r.querySelectorAll('.peta-tab').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.b === b))); }
 function confirmDelete(cid, mid) {
   const c = findCourse(cid), m = findMeeting(c, mid);
   if (!m) return;
