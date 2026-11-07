@@ -15,7 +15,7 @@ const TRACE_LAB = {
     const code = (p, st) => `<pre class="trc-code bg-slate-900 text-slate-100 rounded-xl py-2 text-[12px] sm:text-[13px] leading-6 font-mono overflow-x-auto" aria-label="Kode ${esc(p.title || '')}">${p.code.map((line, i) => {
       const cur = st && st.l === i;
       let html = hlCpp(line);
-      if (cur && st.p) { const j = line.indexOf(st.p); if (j >= 0) html = hlCpp(line.slice(0, j)) + `<mark class="trc-hl">${hlCpp(st.p)}</mark>` + hlCpp(line.slice(j + st.p.length)); }
+      if (cur && st.p) { const j = st.pl ? line.lastIndexOf(st.p) : line.indexOf(st.p); if (j >= 0) html = hlCpp(line.slice(0, j)) + `<mark class="trc-hl">${hlCpp(st.p)}</mark>` + hlCpp(line.slice(j + st.p.length)); }
       return `<div class="trc-line${cur ? ' trc-cur' : ''}"><span class="trc-no">${i + 1}</span><span>${html || ' '}</span></div>`;
     }).join('')}</pre>`;
 
