@@ -1,4 +1,5 @@
 // Algoritma dan Pemrograman — Pertemuan 3: Operator, Struktur dan Kontrol Statement
+const LAB = require("./lab_alp.js");
 const Q = (q, opts, ans, exp) => ({ q, opts, ans, exp });
 const ex = (label, title, headers, opts, rows) => ({ type: "exercise", label, title, headers, rows: rows.map(([c, a]) => ({ cells: [c], fields: [{ options: opts, answer: a }], ok: "✓" })) });
 module.exports = {
@@ -26,6 +27,7 @@ module.exports = {
       modes: [{ label: "Perhatikan kurung", target: "row", row: 3, title: "Sisi kanan dihitung dulu", text: "Bukan <code>price * units + 1</code>. Seluruh sisi kanan dihitung dulu, baru dikalikan." }] }
   ],
   simulator: [
+    { type: "trace-lab", label: "Lab Algoritma • Telusuri Operator", title: "Hitung Ekspresi Selangkah demi Selangkah", desc: "Tebak dulu, lalu tekan <strong>Langkah Berikutnya</strong>. Bagian ekspresi yang sedang dihitung diberi stabilo, dan panel Keadaan menunjukkan nilai variabel serta output.", tip: "Ini penelusuran yang sudah disiapkan, bukan compiler C++ sungguhan.", cases: LAB.P3 },
     { type: "terminal", label: "Permainan Interaktif 1 • Prefix vs Postfix", title: "Kapan Nilainya Naik?", desc: "Setiap skenario dimulai dengan <code>int x = 5;</code>", shell: "$", header: "Simulasi ++ dan --",
       scenarios: [
         { label: "1. y = x++;", pill: "postfix", ok: true, cmd: "int y = x++;\ncout << y << \" \" << x;", res: "5 6", exp: "<strong>Postfix</strong>: nilai lama (5) dipakai dulu untuk y, baru x naik menjadi 6." },

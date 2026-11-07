@@ -55,6 +55,7 @@ const TRACE_LAB = {
       const fb = answered && answered.later ? `<p class="text-sm font-bold text-ink">📝 Tebakanmu dicatat: <span class="font-mono">${esc(answered.opts[s.ans[s.last]])}</span>. Cocokkan di langkah terakhir.</p>` : answered ? verdict(answered, s.last) : '';
       const notes = s.k < 0 ? `<p class="text-sm text-slate-700 rich">${rich(cs.intro || 'Tekan Langkah Berikutnya untuk mulai.')}</p>` : panes.map(p => note(p, panes.length > 1 ? p.title : '')).join('');
       const sum = done ? `<div class="pt-2 mt-1 border-t border-slate-200 space-y-1">${panes.map(p => { const m = p.sum;
+        if (m.text) return `<p class="text-sm text-slate-800 rich">${panes.length > 1 ? `<strong>${esc(p.title)}:</strong> ` : '📋 '}${rich(m.text)}</p>`;
         return `<p class="text-sm text-slate-800">${panes.length > 1 ? `<strong>${esc(p.title)}:</strong> ` : '📋 '}kondisi loop dicek <strong>${m.checks} kali</strong> (${m.trues} true${m.checks - m.trues ? ', ' + (m.checks - m.trues) + ' false' : ''}), badan loop dijalankan <strong>${m.rounds} kali</strong>${m.broke ? ', lalu dihentikan oleh <code>break</code>' : ''}.</p>`; }).join('')}</div>` : '';
       const end = done ? later.map(i => verdict(cs.asks[i], i)).join('') : '';
       box = `<div class="rounded-xl border border-indigo-200 bg-indigo-50/60 p-3 sm:p-4 space-y-1.5" aria-live="polite">${fb}${notes}${sum}${end}</div>`;

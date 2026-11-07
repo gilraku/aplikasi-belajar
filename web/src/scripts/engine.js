@@ -95,6 +95,16 @@ window.addEventListener('message', e => {
   line.textContent = (PG_ICON[m.t] || '› ') + String(m.m).slice(0, 2000); box.appendChild(line); box.scrollTop = box.scrollHeight;
 });
 const pgTimers = new WeakMap();
+// Penggeser lebar pratinjau (playground dengan devices): ubah lebar iframe langsung tanpa menggambar ulang blok,
+// sehingga media query di dalam pratinjau bisa diamati berganti tepat di breakpoint-nya (mis. 600 → 601px)
+document.addEventListener('input', e => {
+  const el = e.target.closest && e.target.closest('[data-pgw]'); if (!el) return;
+  const n = +el.dataset.pgw, b = BLOCKS[n]; if (!b) return;
+  b.state.w = String(el.value);
+  const f = document.getElementById('pg-frame-' + n);
+  if (f) { f.style.width = el.value + 'px'; f.style.minWidth = el.value + 'px'; f.style.flex = 'none'; }
+  const out = document.getElementById('pg-wl-' + n); if (out) out.textContent = el.value + 'px';
+});
 document.addEventListener('input', e => {
   const el = e.target.closest('[data-pg]'); if (!el) return;
   const n = +el.dataset.pg; const b = BLOCKS[n];
@@ -523,6 +533,7 @@ ${cpp ? `<p class="text-xs text-slate-500">💡 C++ tidak bisa dijalankan di apl
         <div class="rounded-xl border border-slate-200 overflow-hidden flex flex-col bg-white">
           <div class="px-3 py-2 bg-slate-100 border-b border-slate-200 text-xs text-slate-500 flex items-center gap-2"><span class="flex gap-1"><i class="w-2.5 h-2.5 rounded-full bg-rose-400"></i><i class="w-2.5 h-2.5 rounded-full bg-amber-400"></i><i class="w-2.5 h-2.5 rounded-full bg-emerald-400"></i></span><span class="truncate flex-1">Tampilan di browser (live)</span>
             ${d.devices ? [['', '🖥️ Penuh'], ['768', '📟 768'], ['360', '📱 360']].map(([w, l]) => `<button ${act(n, 'width', w)} class="px-1.5 py-0.5 rounded-md text-[11px] font-bold ${String(s.w || '') === w ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-200'}">${l}</button>`).join('') : ''}</div>
+          ${d.devices ? `<div class="px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-3 text-xs text-slate-600"><label for="pg-wr-${n}" class="font-semibold whitespace-nowrap">Geser lebar</label><input id="pg-wr-${n}" type="range" min="320" max="1280" step="1" value="${+s.w || 1280}" data-pgw="${n}" class="flex-1 min-w-0 accent-indigo-600"><output id="pg-wl-${n}" for="pg-wr-${n}" class="font-mono font-bold text-ink w-16 text-right">${s.w ? +s.w + 'px' : 'penuh'}</output></div>` : ''}
           <div class="flex-1 flex overflow-x-auto bg-slate-200"><iframe id="pg-frame-${n}" sandbox="${d.js ? 'allow-forms allow-scripts allow-modals' : 'allow-forms'}" title="Pratinjau" class="flex-1 min-h-[18rem] bg-white mx-auto" style="${s.w ? `width:${+s.w}px;min-width:${+s.w}px;flex:none` : 'width:100%'}" srcdoc="${esc(pgDoc(d, code, n))}"></iframe></div>
         </div>
 `}
@@ -833,10 +844,12 @@ ${cpp ? `<p class="text-xs text-slate-500">💡 C++ tidak bisa dijalankan di apl
 
   'sql-lab': {
     init(d) {
-      const key = d.profile === 'p8' ? '' : 'belajar:sql:v1:' + S.course.id;
+      // P4 punya basis data latihan sendiri (kampus.mahasiswa) agar tidak bercampur dengan perpustakaan P6–P8
+      const key = d.profile === 'p8' ? '' : 'belajar:sql:v1:' + S.course.id + (d.seed ? ':' + d.profile : '');
       const db = key ? loadLabSession(key) : sqlSession();
+      if (d.seed && !db.databases.length) runSqlLab(db, d.seed);
       if (d.profile === 'p7' && !db.databases.some(item => item.name === 'perpustakaan')) runSqlLab(db, 'CREATE DATABASE perpustakaan; USE perpustakaan;');
-      return { key, db, running: d.profile !== 'p6', open: d.profile !== 'p6', port: 8888, panel: 'schema', values: { address: 'http://localhost:8888', name: '', sql: '' }, result: null, pending: '' };
+      return { key, db, running: d.profile !== 'p6', open: d.profile !== 'p6', port: 8888, panel: d.seed ? 'sql' : 'schema', values: { address: 'http://localhost:8888', name: '', sql: '' }, result: null, pending: '' };
     },
     render(d, s, n) {
       const btn = (text, action, arg = '') => `<button ${act(n, action, arg)} class="px-3 py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-indigo-100">${esc(text)}</button>`;
@@ -853,6 +866,7 @@ ${cpp ? `<p class="text-xs text-slate-500">💡 C++ tidak bisa dijalankan di apl
           <aside class="space-y-1 text-xs min-w-0" aria-label="Daftar basis data"><strong class="block">Daftar basis data</strong>
             <ul class="text-slate-500">${SQL_SYSTEM.map(name => `<li>${name} <small>· sistem</small></li>`).join('')}</ul>
             <ul class="space-y-1">${s.db.databases.map(item => `<li>${btn(item.name, 'use', item.name)}${item.name === s.db.active ? ' <span>· aktif</span>' : ''}${item.tables.length ? `<ul class="pl-3">${item.tables.map(t => `<li>${esc(t.name)}</li>`).join('')}</ul>` : ''}</li>`).join('')}</ul>
+            ${d.seed ? `<div class="pt-2">${btn('Kembalikan data awal', 'reseed')}</div>` : ''}
           </aside>
           <div class="space-y-3 min-w-0"><div class="flex flex-wrap gap-2">${btn('Basis data', 'panel', 'schema')}${btn('SQL', 'panel', 'sql')}${btn('Operasi', 'panel', 'operations')}${btn('Kosongkan pilihan', 'unselect')}</div>
             ${s.panel === 'schema' ? `<div class="space-y-2">${field('name', 'Nama basis data', 'placeholder="perpustakaan" autocomplete="off"')}${btn('Buat basis data', 'create')}</div>` : ''}
@@ -885,7 +899,13 @@ ${cpp ? `<p class="text-xs text-slate-500">💡 C++ tidak bisa dijalankan di apl
         else runLabAction(s, s.values.sql);
       },
       confirm(d, s) { if (s.pending) runLabAction(s, s.pending); },
-      cancel(d, s) { s.pending = ''; }
+      cancel(d, s) { s.pending = ''; },
+      reseed(d, s) {
+        if (!d.seed) return;
+        s.db = sqlSession(); runSqlLab(s.db, d.seed); s.pending = '';
+        if (s.key) saveLabSession(s.key, s.db);
+        s.result = { ok: true, text: 'Data latihan dikembalikan ke keadaan awal.' };
+      }
     }
   },
 
