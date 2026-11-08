@@ -123,7 +123,7 @@ const erdSimbol = diagram({
     { id: "key", label: "Key", title: "Atribut key: oval dengan garis bawah", text: "Atribut yang menentukan entity secara unik: NIM. Nanti menjadi <strong>kunci primer</strong>." },
     { id: "mv", label: "Multi-value", title: "Atribut multi-value: oval bergaris ganda", text: "Bisa berisi lebih dari satu nilai yang jenisnya sama: NO_HP (satu mahasiswa bisa punya 2 nomor)." },
     { id: "drv", label: "Turunan", title: "Atribut turunan: oval garis putus-putus", text: "Diperoleh dari pengolahan atribut lain: UMUR dihitung dari TGL_LAHIR, sehingga tidak perlu disimpan." },
-    { id: "weak", label: "Entity lemah", title: "➕ Entity lemah: persegi panjang ganda", text: "Entity yang tidak bisa berdiri sendiri tanpa entity lain, misalnya TANGGUNGAN milik seorang PEGAWAI. Tidak ada di slide, tetapi sering muncul di buku ERD." }
+    { id: "weak", label: "Entity lemah", title: "➕ Entity lemah: persegi panjang ganda", text: "Entity yang tidak bisa berdiri sendiri tanpa entity lain, misalnya TANGGUNGAN milik seorang PEGAWAI. Sering muncul di buku ERD." }
   ]
 });
 

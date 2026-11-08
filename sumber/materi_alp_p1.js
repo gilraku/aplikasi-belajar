@@ -90,7 +90,7 @@ int main() {             // program mulai dijalankan dari sini
   { type: "table", label: "Tabel Interaktif", title: "Editor vs IDE (Slide Ditambah Contoh)", headers: ["Jenis", "Isi", "Contoh"],
     rows: [["Text editor", "Hanya untuk mengetik kode; compiler dipasang terpisah", "Notepad++, Sublime Text, VS Code (+ ekstensi C/C++)"], ["IDE", "Editor + compiler + debugger dalam satu aplikasi", "Dev-C++, Code::Blocks, Visual Studio"], ["IDE online ➕", "Tanpa instalasi, jalan di browser", "OnlineGDB, Programiz, Replit"]],
     modes: [{ label: "Saran untuk pemula", target: "row", row: 1, title: "Mulai dengan Dev-C++ atau Code::Blocks", text: "Sekali pasang langsung bisa kompilasi. Kalau laptop tidak memungkinkan, OnlineGDB bisa dipakai dari HP." }] },
-  tip("Catatan slide", "Slide “Editor vs IDE” muncul dua kali dengan isi sama; cukup dibaca sekali. Slide juga belum menyebut IDE online, padahal sangat membantu untuk mahasiswa PJJ yang belajar lewat HP.", "warn"),
+  tip("Catatan slide", "Slide “Editor vs IDE” muncul dua kali dengan isi sama; cukup dibaca sekali. IDE online juga sangat membantu mahasiswa PJJ yang belajar lewat HP.", "warn"),
   { type: "list", label: "Tips Belajar dari Slide + ➕", title: "Cara Belajar Pemrograman yang Efektif", groups: [
     { title: "Dari slide", tone: "indigo", items: ["Pahami logika dulu, baru sintaks", "Banyak latihan, jangan hanya membaca", "Biasakan membaca pesan error"] },
     { title: "➕ Tambahan", tone: "emerald", items: ["Ketik ulang contoh kode, jangan salin-tempel", "Ubah sedikit contoh kode lalu tebak hasilnya sebelum dijalankan", "Tulis pseudocode di kertas sebelum mengetik", "Simpan file dengan nama jelas: p1_halo.cpp"] }

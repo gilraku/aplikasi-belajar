@@ -95,7 +95,7 @@ module.exports = {
       type: "cards",
       label: "➕ Tambahan • Karakteristik Versi Lain",
       title: "Buku Lain (Jogiyanto) Memakai 8 Karakteristik",
-      desc: "Tidak ada di modul, tetapi sering muncul di soal SI. Hafalkan versi modul (6) untuk ujian, kenali versi ini supaya tidak bingung.",
+      desc: "Sering muncul di soal SI. Hafalkan versi modul (6) untuk ujian, kenali versi ini supaya tidak bingung.",
       cols: 2,
       items: [
         { badge: "Komponen", tone: "indigo", title: "Components", text: "Elemen/subsistem yang membentuk sistem." },

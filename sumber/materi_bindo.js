@@ -24,7 +24,7 @@ const linimasa = diagram({
     { id: "eyd", label: "1972", title: "EYD (16 Agustus 1972)", text: "Diresmikan Presiden Soeharto (Keppres No. 57/1972). Direvisi 1987 dan 2009." },
     { id: "pu", label: "2015", title: "PUEBI (Permendikbud No. 50/2015)", text: "Pedoman Umum Ejaan Bahasa Indonesia, berlaku 2015–2022." },
     { id: "e5", label: "2022", title: "EYD Edisi V (2022)", text: "Keputusan Kepala Badan Bahasa No. 0424/I/BS.00.01/2022. Inilah ejaan yang berlaku sekarang." },
-    { id: "un", label: "➕ UNESCO", title: "➕ Bahasa resmi Sidang Umum UNESCO (20 November 2023)", text: "Tidak ada di modul: bahasa Indonesia ditetapkan sebagai salah satu bahasa resmi Sidang Umum UNESCO. Bukti kedudukan internasional yang makin kuat." }
+    { id: "un", label: "➕ UNESCO", title: "➕ Bahasa resmi Sidang Umum UNESCO (20 November 2023)", text: "Bahasa Indonesia ditetapkan sebagai salah satu bahasa resmi Sidang Umum UNESCO. Bukti kedudukan internasional yang makin kuat." }
   ]
 });
 

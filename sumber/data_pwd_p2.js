@@ -189,7 +189,7 @@ module.exports = fix({
   hero: {
     badge: "Materi 2 • Pemrograman Web Dinamis",
     title: "Bikin Kerangka Halaman yang Rapi dan Form yang Siap Dikirim ke Server",
-    text: "Pahami <strong>elemen semantik HTML5</strong>, <strong>formulir</strong> (<code><form></code>, <code><input></code>, <code><select></code>, <code><textarea></code>), <strong>10 jenis input</strong> beserta atributnya, lalu kerjakan <strong>tugas Data Mahasiswa</strong> di editor live. ➕ Ada juga materi <strong>tabel HTML</strong> yang dibutuhkan tugas tetapi tidak ada di modul."
+    text: "Pahami <strong>elemen semantik HTML5</strong>, <strong>formulir</strong> (<code><form></code>, <code><input></code>, <code><select></code>, <code><textarea></code>), <strong>10 jenis input</strong> beserta atributnya, lalu kerjakan <strong>tugas Data Mahasiswa</strong> di editor live. ➕ Ada juga materi <strong>tabel HTML</strong> yang dibutuhkan tugas."
   },
   cheatsheet: [
     {
@@ -258,7 +258,7 @@ module.exports = fix({
       type: "choices",
       label: "Interaktif 4 • ➕ GET vs POST",
       title: "Saklar Method: <strong>GET</strong> vs <strong>POST</strong>",
-      desc: "Modul menanyakannya di bagian refleksi, tetapi belum menjelaskan. Ini sering keluar di ujian.",
+      desc: "Ditanyakan di bagian refleksi modul dan sering keluar di ujian.",
       style: "toggle",
       options: [
         { label: "method=\"GET\"", tone: "sky", badge: "Data di URL", title: "Data ditempel di alamat sebagai query string",
@@ -337,7 +337,7 @@ module.exports = fix({
       type: "tabs",
       label: "Interaktif 8 • ➕ Tabel HTML (dibutuhkan tugas)",
       title: "Membuat Tabel Data Mahasiswa",
-      desc: "Modul belum membahas tabel, padahal tugas meminta tabel minimal 3 kolom × 4 baris. Ini ringkasannya.",
+      desc: "Tugas meminta tabel minimal 3 kolom × 4 baris. Ini ringkasannya.",
       tabs: [
         { label: "Tag tabel", blocks: [
           { type: "table", headers: ["Tag", "Arti"], rows: [
