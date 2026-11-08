@@ -583,6 +583,36 @@ console.log(\`Halo \${nama}, semester \${semester}\`); // template literal ➕`,
       ["true && false", "false"]
     ]),
     A("Input dan Output Sederhana", `<p>${c("alert()")} menampilkan pesan, ${c("prompt()")} meminta input (hasilnya <strong>selalu string</strong>, ubah dengan ${c("Number()")}), ${c("confirm()")} meminta OK/Batal (hasil boolean), dan ${c("console.log()")} mencetak ke Console (F12) untuk debugging. Untuk aplikasi nyata, input diambil dari form dengan ${c("elemen.value")}.</p>`, "Bagian 3"),
+    A("Konversi Tipe, NaN, dan Nilai Falsy", `<p>➕ Nilai dari ${c("prompt()")} dan ${c("elemen.value")} <strong>selalu string</strong>, sedangkan hitungan butuh angka. Di sinilah kebanyakan bug pemula muncul. Tiga alat yang perlu dikenal:</p>
+<ul><li>${c("Number(\"25\")")} mengubah string menjadi angka (${c("Number(\"\")")} = 0, ${c("Number(\"abc\")")} = NaN).</li>
+<li>${c("parseInt(\"25 tahun\")")} membaca angka di awal teks lalu berhenti (hasil 25), dan ${c("parseFloat(\"3.75\")")} untuk pecahan.</li>
+<li>${c("String(25)")} atau ${c("25 + \"\"")} mengubah angka menjadi teks.</li></ul>
+<p>${c("NaN")} (<em>Not a Number</em>) adalah hasil konversi yang gagal. Ia bertipe number, dan ${c("NaN === NaN")} bernilai <strong>false</strong>, jadi cek dengan ${c("isNaN(x)")}, bukan dengan ${c("===")}.</p>
+<p><strong>Nilai falsy</strong> adalah nilai yang dianggap false di dalam ${c("if")}: ${c("false")}, ${c("0")}, ${c("\"\"")} (string kosong), ${c("null")}, ${c("undefined")}, dan ${c("NaN")}. Semua nilai lain adalah <strong>truthy</strong>, termasuk ${c("\"0\"")}, ${c("\"false\"")}, dan ${c("[]")}. Karena itu ${c("if (!teks) return;")} dipakai untuk menolak input kosong.</p>`, "Bagian 3 • ➕ Tambahan"),
+    code("konversi.js", `const a = prompt("Angka pertama:");   // misal ketik 20
+const b = prompt("Angka kedua:");    // misal ketik 3
+
+console.log(a + b);                  // "203"  (string disambung)
+console.log(Number(a) + Number(b));  // 23     (angka dijumlah)
+
+const umur = Number("dua puluh");
+console.log(umur);                   // NaN
+console.log(umur === NaN);           // false  (jebakan!)
+console.log(isNaN(umur));            // true
+
+if ("") console.log("tidak tampil"); // string kosong = falsy
+if ("0") console.log("tampil");      // "0" = truthy`, "Urutan aman untuk input angka: ambil .value, ubah dengan Number(), cek isNaN(), baru dihitung.", "Konversi Tipe dan Falsy"),
+    ex("Latihan Interaktif • ➕ Tambahan", "Konversi dan Falsy: Apa Hasilnya?", ["Ekspresi", "Hasil"], ["20", "\"20\"", "NaN", "true", "false", "7", "\"34\""], [
+      ["Number(\"20\")", "20"],
+      ["Number(\"abc\")", "NaN"],
+      ["parseInt(\"20 tahun\")", "20"],
+      ["\"3\" + \"4\"", "\"34\""],
+      ["Number(\"3\") + Number(\"4\")", "7"],
+      ["NaN === NaN", "false", "✓ NaN tidak sama dengan apa pun, termasuk dirinya sendiri. Pakai isNaN()."],
+      ["isNaN(Number(\"abc\"))", "true"],
+      ["Boolean(\"0\")", "true", "✓ Hanya string kosong yang falsy; \"0\" berisi karakter sehingga truthy."],
+      ["Boolean(\"\")", "false"]
+    ]),
     A("Percabangan dan Perulangan", `<p>➕ Modul fokus pada variabel dan event, tetapi validasi form hampir selalu butuh ${c("if")}. Perulangan dipakai untuk memproses array.</p>`, "Bagian 4 • ➕ Tambahan"),
     code("logika.js", `const nilai = 82;
 if (nilai >= 85) {
@@ -659,7 +689,62 @@ const barisHTML = mahasiswa
       hasil.style.color = "green";
     }
   });
-</script>`, "Pola lengkap: pilih elemen → pasang listener → baca .value → cek dengan if → tampilkan hasil.", "Validasi NIM dengan Event")
+</script>`, "Pola lengkap: pilih elemen → pasang listener → baca .value → cek dengan if → tampilkan hasil.", "Validasi NIM dengan Event"),
+    A("Event Form: submit, input, dan change", `<p>➕ Contoh di atas memakai ${c('type="button"')}, jadi form tidak pernah benar-benar dikirim. Pada form sungguhan, tombol ${c('type="submit"')} (atau menekan Enter) memicu event ${c("submit")} pada <strong>form</strong>, dan browser langsung mengirim data lalu memuat ulang halaman. Untuk validasi, tahan dulu dengan ${c("e.preventDefault()")}.</p>
+<ul><li>${c("submit")}: dipasang di ${c("<form>")}, bukan di tombolnya. Dipakai untuk validasi akhir sebelum data diproses.</li>
+<li>${c("input")}: jalan setiap kali isi kolom berubah. Cocok untuk hitung karakter atau pencarian langsung.</li>
+<li>${c("change")}: untuk ${c("select")}, checkbox, dan radio, jalan saat pilihan selesai diubah.</li>
+<li>${c("e.target")}: elemen yang memicu event, ${c("e.key")}: tombol keyboard pada ${c("keydown")}.</li></ul>`, "Bagian 5 • ➕ Tambahan"),
+    code("form-submit.html", `<form id="form-mhs">
+  <input id="nama" placeholder="Nama">
+  <small id="hitung">0 karakter</small>
+  <select id="prodi">
+    <option value="">Pilih prodi</option>
+    <option value="SI">Sistem Informasi</option>
+  </select>
+  <button type="submit">Simpan</button>
+  <p id="pesan"></p>
+</form>
+
+<script>
+  const form = document.getElementById("form-mhs");
+  const nama = document.getElementById("nama");
+
+  nama.addEventListener("input", () => {
+    document.getElementById("hitung").textContent = nama.value.length + " karakter";
+  });
+
+  document.getElementById("prodi").addEventListener("change", (e) => {
+    console.log("Prodi dipilih:", e.target.value);
+  });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();                       // cegah kirim + muat ulang
+    const pesan = document.getElementById("pesan");
+    if (!nama.value.trim()) {
+      pesan.textContent = "Nama wajib diisi!";
+      return;
+    }
+    pesan.textContent = "Tersimpan: " + nama.value;
+    form.reset();                             // kosongkan form
+  });
+</script>`, "Tekan Enter di kolom nama juga memicu submit. Itulah alasan listener dipasang di form, bukan di tombol.", "Validasi Form dengan submit"),
+    ex("Latihan Interaktif • ➕ Tambahan", "Event Mana yang Dipakai?", ["Kebutuhan", "Event"], ["click", "submit", "input", "change", "keydown"], [
+      ["Hitung jumlah karakter sambil mengetik", "input"],
+      ["Validasi seluruh form sebelum disimpan (termasuk lewat tombol Enter)", "submit"],
+      ["Membaca pilihan dropdown setelah diganti", "change"],
+      ["Menambah data saat menekan tombol Enter di kolom teks", "keydown"],
+      ["Tombol Hapus pada satu baris", "click"]
+    ]),
+    A("Membaca Error di Console", `<p>➕ Tekan <strong>F12</strong> lalu buka tab <strong>Console</strong>. Error JavaScript muncul berwarna merah lengkap dengan nama file dan nomor baris; klik nomor itu untuk melompat ke kodenya. Jika setelah klik tombol tidak terjadi apa pun, hal pertama yang dilakukan adalah membuka Console.</p>
+<p>Gunakan ${c("console.log(variabel)")} untuk melihat isi variabel di titik tertentu, dan tab <strong>Elements</strong> untuk memeriksa DOM yang sedang berlaku (termasuk perubahan yang dibuat JavaScript).</p>`, "Bagian 6 • ➕ Tambahan"),
+    rv("Cek Pemahaman • ➕ Tambahan", "Pesan Error: Artinya Apa?", [
+      { prompt: "Uncaught TypeError: Cannot read properties of null (reading 'addEventListener')", answer: "Elemen tidak ditemukan", reason: "id salah ketik, ada tanda #, atau script jalan sebelum elemen ada." },
+      { prompt: "Uncaught ReferenceError: nama is not defined", answer: "Variabel belum dibuat atau salah tulis", reason: "Cek ejaan dan huruf besar-kecil, atau variabel dibuat di blok lain (scope)." },
+      { prompt: "Uncaught SyntaxError: Unexpected token", answer: "Ada tanda kurung, kutip, atau koma yang kurang atau berlebih", reason: "Lihat baris yang ditunjuk dan baris sebelumnya." },
+      { prompt: "Uncaught TypeError: Assignment to constant variable", answer: "const diisi ulang", reason: "Ganti dengan let jika nilainya memang harus berubah." },
+      { prompt: "Halaman memuat ulang sendiri setelah klik Simpan, data hilang", answer: "Lupa e.preventDefault() pada event submit", reason: "Form terkirim dan halaman dimuat ulang." }
+    ])
   ],
 
   p7: [
@@ -697,6 +782,72 @@ const barisHTML = mahasiswa
     input.value = "";
   });
 </script>`, "Coba ketik kode ini di VS Code dan buka di browser. Ini mini-CRUD di sisi browser; setelah UTS, datanya akan disimpan ke database lewat PHP.", "Mini Aplikasi To-Do"),
+    A("Menelusuri Pohon DOM", `<p>➕ Selain memilih dari ${c("document")}, kamu bisa berpindah dari satu elemen ke elemen di sekitarnya. Ini berguna ketika ada banyak baris yang mirip, misalnya tombol Hapus di setiap baris tabel: dari tombol yang diklik, kamu perlu menemukan baris miliknya.</p>`, "Bagian 3 • ➕ Tambahan"),
+    { type: "table", label: "➕ Tambahan • Tabel Interaktif", title: "Berpindah Antar Elemen", headers: ["Properti / method", "Hasil", "Jika tidak ada"],
+      rows: [["el.parentElement", "elemen induk (satu tingkat ke atas)", "null"], ["el.children", "semua anak langsung (HTMLCollection)", "koleksi kosong"], ["el.firstElementChild / lastElementChild", "anak pertama / terakhir", "null"], ["el.nextElementSibling / previousElementSibling", "saudara sesudah / sebelum", "null"], ["el.closest(\"tr\")", "induk terdekat (atau dirinya sendiri) yang cocok selector", "null"]],
+      modes: [{ label: "closest", target: "row", row: 4, title: "Paling praktis untuk tabel", text: "Dari tombol Hapus, <code>tombol.closest(\"tr\")</code> langsung memberi baris yang memuatnya, berapa pun lapisan tag di antaranya." },
+        { label: "Element vs node", target: "none", title: "Kenapa ada kata Element", text: "<code>parentNode</code> dan <code>childNodes</code> ikut menghitung node teks (spasi dan baris baru). Properti berakhiran <code>Element</code> hanya menghitung tag, jadi lebih mudah dipakai." }] },
+    A("Menempel di Posisi Tertentu", `<p>${c("appendChild")} selalu menempel di <strong>akhir</strong> anak. Untuk posisi lain: ${c("parent.prepend(el)")} di awal, ${c("parent.insertBefore(el, pembanding)")} tepat sebelum elemen pembanding, dan ${c("el.insertAdjacentHTML(\"beforeend\", html)")} untuk menyisipkan string HTML tanpa menghapus isi lama (posisi: ${c("beforebegin")}, ${c("afterbegin")}, ${c("beforeend")}, ${c("afterend")}). ${c("el.innerHTML += ...")} sebaiknya dihindari karena membangun ulang semua isi dan menghapus listener yang sudah terpasang di dalamnya.</p>`, "Bagian 3 • ➕ Tambahan"),
+    A("Dari Array ke Tabel: Pola CRUD", `<p>➕ Aplikasi CRUD di proyek akhir menyimpan data di array, lalu menggambar tabel dari array itu. Polanya selalu sama: <strong>ubah array → panggil fungsi gambar ulang</strong> (sel dibuat dengan textContent agar aman). Listener untuk tombol Hapus dipasang sekali di ${c("<tbody>")} memakai ${c("e.target")} dan ${c("closest")} (disebut <em>event delegation</em>), sehingga baris yang dibuat belakangan tetap berfungsi tanpa memasang listener baru.</p>`, "Bagian 4 • ➕ Tambahan"),
+    code("crud-tabel.html", `<form id="form">
+  <input id="nim" placeholder="NIM">
+  <input id="nama" placeholder="Nama">
+  <button type="submit">Tambah</button>
+</form>
+<table border="1">
+  <thead><tr><th>NIM</th><th>Nama</th><th>Aksi</th></tr></thead>
+  <tbody id="isi"></tbody>
+</table>
+
+<script>
+  let data = [{ nim: "2401", nama: "Ani" }];   // sumber kebenaran
+  const isi = document.getElementById("isi");
+
+  function gambar() {                           // READ: gambar ulang dari array
+    isi.textContent = "";                       // kosongkan dulu
+    data.forEach((m, i) => {
+      const tr = document.createElement("tr");
+      [m.nim, m.nama].forEach(teks => {
+        const td = document.createElement("td");
+        td.textContent = teks;                  // aman dari XSS
+        tr.appendChild(td);
+      });
+      const aksi = document.createElement("td");
+      const hapus = document.createElement("button");
+      hapus.textContent = "Hapus";
+      hapus.dataset.i = i;
+      aksi.appendChild(hapus);
+      tr.appendChild(aksi);
+      isi.appendChild(tr);
+    });
+  }
+
+  document.getElementById("form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const nim = document.getElementById("nim").value.trim();
+    const nama = document.getElementById("nama").value.trim();
+    if (!nim || !nama) return;
+    data.push({ nim, nama });                   // CREATE: ubah array
+    e.target.reset();
+    gambar();
+  });
+
+  isi.addEventListener("click", (e) => {        // DELETE: satu listener di tbody
+    const tombol = e.target.closest("button");
+    if (!tombol) return;
+    data.splice(Number(tombol.dataset.i), 1);
+    gambar();
+  });
+
+  gambar();
+</script>`, "Sel dibuat dengan createElement + textContent, jadi input pengguna tampil apa adanya dan tidak dijalankan sebagai HTML. Nilai data-i dibaca lewat tombol.dataset.i dan selalu berupa string, sehingga diubah dengan Number().", "Tabel CRUD dari Array"),
+    ex("Latihan Interaktif • ➕ Tambahan", "Menelusuri dan Menyisipkan: Pilih yang Tepat", ["Tujuan", "Kode"], [], [
+      ["Dari tombol Hapus, ambil baris tabelnya", "tombol.closest(\"tr\")", "✓ closest naik ke induk terdekat yang cocok.", ["tombol.children", "tombol.closest(\"tr\")"]],
+      ["Menempel item baru di urutan paling atas daftar", "daftar.prepend(li)", "✓ appendChild menempel di akhir.", ["daftar.appendChild(li)", "daftar.prepend(li)"]],
+      ["Menambah satu baris HTML tanpa menghapus isi lama", "isi.insertAdjacentHTML(\"beforeend\", html)", "✓ innerHTML = html akan menimpa semuanya.", ["isi.innerHTML = html", "isi.insertAdjacentHTML(\"beforeend\", html)"]],
+      ["Satu listener untuk semua tombol Hapus, termasuk baris baru", "listener di tbody + e.target.closest(\"button\")", "✓ Event delegation: listener di induk.", ["listener di tiap tombol, dipasang sekali saat halaman dimuat", "listener di tbody + e.target.closest(\"button\")"]],
+      ["Data baru harus muncul di tabel", "ubah array dulu, lalu gambar ulang", "✓ Array adalah sumber data; tabel hanya tampilannya.", ["ubah tabel saja", "ubah array dulu, lalu gambar ulang"]]
+    ]),
     ex("Latihan Interaktif", "Kode Mana yang Benar?", ["Tujuan", "Kode"], [], [
       ["Memilih elemen id=\"nim\"", "getElementById(\"nim\")", "✓ Tanpa #.", ["getElementById(\"#nim\")", "getElementById(\"nim\")"]],
       ["Memilih semua li", "querySelectorAll(\"li\")", "✓", ["querySelector(\"li\")", "querySelectorAll(\"li\")"]],

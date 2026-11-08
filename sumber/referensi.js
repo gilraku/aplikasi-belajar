@@ -178,12 +178,17 @@ module.exports = {
     R('Grammar and types', 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Grammar_and_types', MDN, 'EN', 'Tipe data dan deklarasi variabel menurut panduan resmi MDN.', 'Contoh Variabel'),
     R('Loops and iteration', 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Loops_and_iteration', MDN, 'EN', 'for, while, do...while di JavaScript.', 'Percabangan dan Perulangan'),
     R('JavaScript Events', 'https://www.w3schools.com/js/js_events.asp', W3, 'EN', 'onclick, onchange, dan event lain.', 'Alur Sebuah Event'),
+    R('Number()', 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/Number', MDN, 'EN', 'Konversi nilai menjadi angka dan kapan hasilnya NaN.', 'Konversi Tipe, NaN, dan Nilai Falsy'),
+    R('Falsy', 'https://developer.mozilla.org/en-US/docs/Glossary/Falsy', MDN, 'EN', 'Daftar nilai yang dianggap false.', 'Konversi Tipe, NaN, dan Nilai Falsy'),
+    R('HTMLFormElement: submit event', 'https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/submit_event', MDN, 'EN', 'Event submit dan preventDefault.', 'Event Form: submit, input, dan change'),
   ],
   'pemrograman-web-dinamis/p7': [
     R('Introduction to the DOM', 'https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Introduction', MDN, 'EN', 'DOM sebagai pohon objek.', 'DOM: Halaman sebagai Pohon'),
     R('Document.querySelector()', 'https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector', MDN, 'EN', 'Memilih elemen dengan selector CSS.', 'Metode Seleksi'),
     R('JavaScript HTML DOM', 'https://www.w3schools.com/js/js_htmldom.asp', W3, 'EN', 'Mengubah konten, atribut, dan style dengan contoh.', 'Mengubah Konten'),
     R('EventTarget.addEventListener()', 'https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener', MDN, 'EN', 'Cara modern memasang event.', 'Mini Aplikasi To-Do'),
+    R('Element.closest()', 'https://developer.mozilla.org/en-US/docs/Web/API/Element/closest', MDN, 'EN', 'Mencari induk terdekat yang cocok selector.', 'Menelusuri Pohon DOM'),
+    R('Element.insertAdjacentHTML()', 'https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML', MDN, 'EN', 'Menyisipkan HTML di posisi tertentu tanpa menimpa isi.', 'Menempel di Posisi Tertentu'),
   ],
   'pemrograman-web-dinamis/p8': [
     R('HTML Tutorial', 'https://www.w3schools.com/html/', W3, 'EN', 'Ulang HTML.'),
