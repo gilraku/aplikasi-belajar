@@ -188,6 +188,50 @@ module.exports = {
           { label: "input vs change", target: "row", row: 1, title: "Setiap ketukan atau sekali di akhir", text: "<code>input</code> berjalan setiap kali isi berubah. Pada kolom teks, <code>change</code> baru berjalan setelah kolom ditinggalkan (blur)." },
           { label: "Objek event", target: "none", title: "Parameter e", text: "Fungsi listener menerima objek event: <code>e.target</code> = elemen yang memicu, <code>e.key</code> = tombol keyboard yang ditekan, <code>e.preventDefault()</code> = batalkan perilaku bawaan." }
         ]
+      },
+      {
+        type: "table",
+        label: "➕ Tambahan • Konversi Tipe",
+        title: "Input Selalu String: Ubah Dulu Sebelum Dihitung",
+        desc: "Nilai dari <code>prompt()</code> dan <code>.value</code> berupa string. Klik tombol untuk jebakannya.",
+        headers: ["Ekspresi", "Hasil", "Catatan"],
+        rows: [
+          ["<code>Number(\"25\")</code>", "<code>25</code>", "konversi ketat"],
+          ["<code>Number(\"\")</code>", "<code>0</code>", "string kosong jadi 0, bukan NaN"],
+          ["<code>Number(\"abc\")</code>", "<code>NaN</code>", "gagal konversi"],
+          ["<code>parseInt(\"25 tahun\")</code>", "<code>25</code>", "membaca angka di awal teks"],
+          ["<code>\"3\" + \"4\"</code>", "<code>\"34\"</code>", "+ pada string = menyambung"],
+          ["<code>\"8\" - 3</code>", "<code>5</code>", "- dan * memaksa jadi angka"],
+          ["<code>NaN === NaN</code>", "<code>false</code>", "cek dengan <code>isNaN()</code>"]
+        ],
+        modes: [
+          { label: "Nilai falsy", target: "none", title: "Enam nilai yang dianggap false", text: "<code>false</code>, <code>0</code>, <code>\"\"</code>, <code>null</code>, <code>undefined</code>, <code>NaN</code>. Selain itu truthy, termasuk <code>\"0\"</code> dan <code>[]</code>." },
+          { label: "Urutan aman", target: "none", title: "Input angka dari form", text: "Ambil <code>.value</code> → <code>trim()</code> → <code>Number()</code> → cek <code>isNaN()</code> → baru dihitung." }
+        ]
+      }
+    ]
+  },
+  "pemrograman-web-dinamis/p7": {
+    cheatsheet: [
+      {
+        type: "table",
+        label: "➕ Tambahan • Berpindah Antar Elemen",
+        title: "Menelusuri dan Menyisipkan Elemen",
+        desc: "Dari satu elemen, kamu bisa menjangkau sekitarnya tanpa memilih ulang dari document.",
+        headers: ["Kebutuhan", "Kode", "Jika tidak ada"],
+        rows: [
+          ["Induk langsung", "<code>el.parentElement</code>", "<code>null</code>"],
+          ["Induk terdekat yang cocok selector", "<code>el.closest(\"tr\")</code>", "<code>null</code>"],
+          ["Semua anak langsung", "<code>el.children</code>", "koleksi kosong"],
+          ["Saudara berikutnya", "<code>el.nextElementSibling</code>", "<code>null</code>"],
+          ["Tempel di awal / akhir anak", "<code>p.prepend(el)</code> / <code>p.appendChild(el)</code>", "-"],
+          ["Sisipkan string HTML tanpa menimpa", "<code>p.insertAdjacentHTML(\"beforeend\", html)</code>", "-"],
+          ["Baca atribut data-*", "<code>el.dataset.i</code> untuk <code>data-i=\"3\"</code>", "<code>undefined</code>"]
+        ],
+        modes: [
+          { label: "Pola CRUD", target: "none", title: "Array dulu, tampilan belakangan", text: "Ubah array (<code>push</code>/<code>splice</code>), lalu panggil fungsi yang menggambar ulang tabel dari array. Listener tombol Hapus dipasang sekali di <code>&lt;tbody&gt;</code> memakai <code>e.target.closest(\"button\")</code>." },
+          { label: "dataset selalu string", target: "row", row: 6, title: "Ubah dengan Number()", text: "Nilai <code>data-i</code> dibaca sebagai string. Sebelum dipakai sebagai indeks array, ubah dengan <code>Number()</code>." }
+        ]
       }
     ]
   },
