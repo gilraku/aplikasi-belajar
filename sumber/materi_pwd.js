@@ -619,7 +619,7 @@ if ("0") console.log("tampil");      // "0" = truthy`, "Urutan aman untuk input 
       ["Boolean(\"0\")", "true", "✓ Hanya string kosong yang falsy; \"0\" berisi karakter sehingga truthy."],
       ["Boolean(\"\")", "false"]
     ]),
-    A("Percabangan dan Perulangan", `<p>➕ Modul fokus pada variabel dan event, tetapi validasi form hampir selalu butuh ${c("if")}. Perulangan dipakai untuk memproses array.</p>`, "Bagian 4 • ➕ Tambahan"),
+    A("Percabangan dan Perulangan", `<p>➕ Validasi form hampir selalu butuh ${c("if")}. Perulangan dipakai untuk memproses array.</p>`, "Bagian 4 • ➕ Tambahan"),
     code("logika.js", `const nilai = 82;
 if (nilai >= 85) {
   console.log("A");
@@ -634,7 +634,7 @@ for (let i = 0; i < daftar.length; i++) {
   console.log(i + 1, daftar[i]);
 }
 daftar.forEach(n => console.log(n.toUpperCase()));`, "", "if-else dan for"),
-    A("Fungsi dan Array Secukupnya", `<p>➕ Modul tidak membahas keduanya secara khusus, padahal hampir semua kode di P6–P8 memakainya: setiap ${c("addEventListener")} menerima <strong>fungsi</strong>, dan data mahasiswa di P7–P8 disimpan dalam <strong>array</strong>.</p>
+    A("Fungsi dan Array Secukupnya", `<p>➕ Hampir semua kode di P6–P8 memakai fungsi dan array: setiap ${c("addEventListener")} menerima <strong>fungsi</strong>, dan data mahasiswa di P7–P8 disimpan dalam <strong>array</strong>.</p>
 <p><strong>Fungsi</strong> adalah sekumpulan perintah yang diberi nama dan bisa dipanggil berulang kali. Nilai yang dikirim saat memanggil disebut <strong>argumen</strong>; nama penampungnya di dalam fungsi disebut <strong>parameter</strong>. ${c("return")} mengembalikan hasil ke pemanggil dan langsung menghentikan fungsi. Fungsi tanpa ${c("return")} menghasilkan ${c("undefined")}.</p>
 <p>Ada tiga cara menulis fungsi yang akan sering kamu temui:</p>
 <ul><li>${c("function sapa(nama) { … }")}: deklarasi biasa, bisa dipanggil dengan ${c('sapa("Ani")')}.</li>
