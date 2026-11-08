@@ -212,6 +212,26 @@ module.exports = {
       },
       {
         type: "table",
+        label: "➕ Tambahan • Method String dan Array",
+        title: "Method yang Paling Sering Dipakai",
+        desc: "String tidak berubah di tempat: tampung hasilnya. Klik tombol untuk jebakannya.",
+        headers: ["Method", "Hasil", "Contoh"],
+        rows: [
+          ["<code>str.trim()</code>", "buang spasi tepi", "<code>\" Ani \"</code> → <code>\"Ani\"</code>"],
+          ["<code>str.includes(x)</code>", "true/false", "<code>\"Budi\".includes(\"ud\")</code> → true"],
+          ["<code>str.split(\",\")</code>", "array", "<code>\"a,b\"</code> → <code>[\"a\", \"b\"]</code>"],
+          ["<code>arr.find(fn)</code>", "elemen pertama yang cocok", "<code>[5, 8].find(n => n > 6)</code> → 8"],
+          ["<code>arr.filter(fn)</code>", "array semua yang cocok", "<code>[5, 8, 9].filter(n => n > 6)</code> → [8, 9]"],
+          ["<code>arr.indexOf(x)</code>", "indeks, atau -1", "<code>[\"a\"].indexOf(\"z\")</code> → -1"]
+        ],
+        modes: [
+          { label: "find vs filter", target: "row", row: 4, title: "Satu hasil atau banyak", text: "<code>find</code> mengembalikan satu elemen (atau <code>undefined</code>), <code>filter</code> selalu mengembalikan array." },
+          { label: "Ternary", target: "none", title: "if-else satu baris", text: "<code>kondisi ? nilaiTrue : nilaiFalse</code>, mis. <code>nilai >= 60 ? \"Lulus\" : \"Tidak\"</code>." },
+          { label: "switch", target: "none", title: "Tanpa break jatuh ke bawah", text: "Seperti C++, tanpa <code>break</code> eksekusi lanjut ke case berikutnya. Pencocokan memakai <code>===</code>." }
+        ]
+      },
+      {
+        type: "table",
         label: "➕ Tambahan • Konversi Tipe",
         title: "Input Selalu String: Ubah Dulu Sebelum Dihitung",
         desc: "Nilai dari <code>prompt()</code> dan <code>.value</code> berupa string. Klik tombol untuk jebakannya.",
@@ -252,6 +272,25 @@ module.exports = {
         modes: [
           { label: "Pola CRUD", target: "none", title: "Array dulu, tampilan belakangan", text: "Ubah array (<code>push</code>/<code>splice</code>), lalu panggil fungsi yang menggambar ulang tabel dari array. Listener tombol Hapus dipasang sekali di <code>&lt;tbody&gt;</code> memakai <code>e.target.closest(\"button\")</code>." },
           { label: "dataset selalu string", target: "row", row: 6, title: "Ubah dengan Number()", text: "Nilai <code>data-i</code> dibaca sebagai string. Sebelum dipakai sebagai indeks array, ubah dengan <code>Number()</code>." }
+        ]
+      },
+      {
+        type: "table",
+        label: "➕ Tambahan • Timer dan Penyimpanan",
+        title: "setTimeout, setInterval, dan localStorage",
+        desc: "Dua alat tambahan agar halaman terasa hidup dan datanya tidak hilang saat refresh.",
+        headers: ["Kebutuhan", "Kode", "Catatan"],
+        rows: [
+          ["Jalankan sekali setelah jeda", "<code>setTimeout(fn, 2000)</code>", "ms: 1000 = 1 detik"],
+          ["Jalankan berulang", "<code>const id = setInterval(fn, 1000)</code>", "simpan id untuk menghentikan"],
+          ["Hentikan timer", "<code>clearInterval(id)</code> / <code>clearTimeout(id)</code>", "-"],
+          ["Simpan data", "<code>localStorage.setItem(\"k\", JSON.stringify(arr))</code>", "hanya string"],
+          ["Baca data", "<code>JSON.parse(localStorage.getItem(\"k\")) || []</code>", "null jika belum ada"],
+          ["Hapus data", "<code>localStorage.removeItem(\"k\")</code>", "-"]
+        ],
+        modes: [
+          { label: "Tanpa kurung", target: "none", title: "Berikan fungsinya, jangan panggil", text: "<code>setTimeout(pesanHilang, 2000)</code> benar. <code>setTimeout(pesanHilang(), 2000)</code> menjalankan fungsinya sekarang juga." },
+          { label: "Batas localStorage", target: "none", title: "Bukan database", text: "Sekitar 5 MB per situs, hanya ada di browser itu, dan bisa dibaca lewat F12. Jangan simpan kata sandi." }
         ]
       }
     ]

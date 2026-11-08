@@ -59,7 +59,7 @@ function hlHtml(src) {
     .replace(/(\s)([a-zA-Z-:]+)=(&quot;.*?&quot;)/g, '$1<span class="text-sky-300">$2</span>=<span class="text-amber-200">$3</span>');
 }
 function hlCpp(src) {
-  const KW = /^(int|float|double|char|bool|string|void|return|if|else|switch|case|break|default|while|do|for|const|using|namespace|true|false|long|short|unsigned|continue|auto|std|cout|cin|endl)$/;
+  const KW = /^(int|float|double|char|bool|string|void|return|if|else|switch|case|break|default|while|do|for|const|using|namespace|true|false|let|var|function|null|undefined|typeof|new|of|long|short|unsigned|continue|auto|std|cout|cin|endl)$/;
   return esc(src || '').replace(/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|(&quot;[\s\S]*?&quot;|&#39;(?:\\.|[^&]|&(?!#39;)[^;]*;)*?&#39;)|(#\w+)|\b([A-Za-z_]\w*)\b/g, (m, cm, st, pp, w) =>
     cm ? '<span class="text-slate-500 italic">' + cm + '</span>' : st ? '<span class="text-amber-200">' + st + '</span>' : pp ? '<span class="text-rose-300">' + pp + '</span>' : KW.test(w) ? '<span class="text-sky-300">' + w + '</span>' : w);
 }

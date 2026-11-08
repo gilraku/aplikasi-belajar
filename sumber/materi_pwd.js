@@ -677,6 +677,44 @@ const barisHTML = mahasiswa
       ["btn.addEventListener(\"click\", simpan)", "jalan saat tombol diklik"],
       ["btn.addEventListener(\"click\", simpan())", "langsung jalan saat halaman dimuat", "✓ simpan() memanggil fungsinya saat itu juga. Yang diberikan ke listener hanyalah hasilnya."]
     ]),
+    A("Ternary, switch, dan while", `<p>➕ Tiga bentuk lain yang sering muncul di kode orang lain, jadi perlu dikenali.</p>
+<ul><li><strong>Ternary</strong> ${c("kondisi ? nilaiJikaTrue : nilaiJikaFalse")}: if-else satu baris yang menghasilkan nilai. Cocok untuk memilih teks atau warna.</li>
+<li><strong>switch</strong> mencocokkan satu nilai dengan beberapa ${c("case")}. Seperti di C++, tanpa ${c("break")} eksekusi <em>jatuh</em> ke case berikutnya. JavaScript memakai perbandingan ${c("===")}, jadi ${c('case "1"')} tidak cocok dengan angka ${c("1")}.</li>
+<li><strong>while</strong> mengulang selama kondisi true: ${c("while (kondisi) { … }")}. Pastikan ada baris yang membuat kondisi akhirnya false, kalau tidak halaman akan macet.</li>
+<li><strong>Operator singkat</strong>: ${c("x++")} sama dengan ${c("x = x + 1")}, ${c("x += 5")} sama dengan ${c("x = x + 5")}.</li></ul>`, "Bagian 4 • ➕ Tambahan"),
+    code("ternary-switch-while.js", `const nilai = 72;
+const status = nilai >= 60 ? "Lulus" : "Tidak lulus";   // ternary
+console.log(status);                                      // "Lulus"
+
+const hari = 3;
+switch (hari) {
+  case 1: console.log("Senin"); break;
+  case 2: console.log("Selasa"); break;
+  case 3: console.log("Rabu"); break;      // tercetak, lalu break
+  default: console.log("Hari lain");
+}
+
+let n = 1;
+while (n <= 3) {
+  console.log(n);   // 1, 2, 3
+  n++;              // tanpa baris ini loop tidak pernah berhenti
+}`, "Ternary dipakai bila hasilnya sebuah nilai; untuk menjalankan beberapa perintah, tetap pakai if-else.", "Ternary, switch, dan while"),
+    A("Method String dan Array yang Sering Dipakai", `<p>➕ Dua kelompok method ini hampir selalu dipakai saat memproses input form dan data tabel. String itu <em>tidak bisa diubah</em> di tempat: method seperti ${c("trim()")} mengembalikan string baru, jadi hasilnya harus ditampung.</p>`, "Bagian 5 • ➕ Tambahan"),
+    { type: "table", label: "➕ Tambahan • Tabel Interaktif", title: "Method yang Perlu Dikenal", headers: ["Method", "Hasil", "Contoh"],
+      rows: [["str.trim()", "membuang spasi di awal dan akhir", "\" Ani \".trim() → \"Ani\""], ["str.toUpperCase() / toLowerCase()", "mengubah huruf besar / kecil", "\"ani\".toUpperCase() → \"ANI\""], ["str.includes(x)", "true jika mengandung x", "\"Budi\".includes(\"ud\") → true"], ["str.split(pemisah)", "memecah menjadi array", "\"a,b\".split(\",\") → [\"a\", \"b\"]"], ["arr.includes(x)", "true jika ada x di array", "[1, 2].includes(2) → true"], ["arr.find(fn)", "elemen pertama yang cocok (atau undefined)", "[5, 8].find(n => n > 6) → 8"], ["arr.filter(fn)", "array baru berisi semua yang cocok", "[5, 8, 9].filter(n => n > 6) → [8, 9]"], ["arr.indexOf(x)", "indeks pertama x, atau -1", "[\"a\", \"b\"].indexOf(\"b\") → 1"]],
+      modes: [{ label: "find vs filter", target: "row", row: 6, title: "Satu hasil atau banyak hasil", text: "<code>find</code> berhenti di elemen pertama yang cocok dan mengembalikan elemennya. <code>filter</code> mengembalikan <strong>array</strong> berisi semua yang cocok (kosong <code>[]</code> jika tidak ada)." },
+        { label: "String tidak berubah", target: "none", title: "Tampung hasilnya", text: "<code>nama.trim();</code> saja tidak mengubah <code>nama</code>. Tulis <code>nama = nama.trim();</code> atau simpan ke variabel baru." },
+        { label: "indexOf", target: "row", row: 7, title: "-1 artinya tidak ditemukan", text: "Indeks pertama adalah 0, jadi memeriksa dengan <code>if (arr.indexOf(x))</code> keliru. Pakai <code>arr.includes(x)</code> atau bandingkan dengan <code>!== -1</code>." }] },
+    ex("Latihan Interaktif • ➕ Tambahan", "Tebak Hasilnya: Ternary, Method, dan Array", ["Ekspresi", "Hasil"], ["\"Lulus\"", "\"Tidak lulus\"", "\"Ani\"", "\"ANI\"", "true", "false", "[8, 9]", "8", "-1", "[\"a\", \"b\"]"], [
+      ["const n = 50; n >= 60 ? \"Lulus\" : \"Tidak lulus\"", "\"Tidak lulus\""],
+      ["\"  Ani  \".trim()", "\"Ani\""],
+      ["\"ani\".toUpperCase()", "\"ANI\""],
+      ["\"a,b\".split(\",\")", "[\"a\", \"b\"]"],
+      ["[5, 8, 9].filter(n => n > 6)", "[8, 9]"],
+      ["[5, 8, 9].find(n => n > 6)", "8", "✓ find mengembalikan elemen pertama saja, bukan array."],
+      ["[\"a\", \"b\"].indexOf(\"z\")", "-1"],
+      ["[1, 2, 3].includes(2)", "true"]
+    ]),
     eventFlow,
     code("event.html", `<input id="nim" placeholder="NIM">
 <button id="cek">Cek</button>
@@ -853,6 +891,46 @@ const barisHTML = mahasiswa
       ["Menambah satu baris HTML tanpa menghapus isi lama", "isi.insertAdjacentHTML(\"beforeend\", html)", "✓ innerHTML = html akan menimpa semuanya.", ["isi.innerHTML = html", "isi.insertAdjacentHTML(\"beforeend\", html)"]],
       ["Satu listener untuk semua tombol Hapus, termasuk baris baru", "listener di tbody + e.target.closest(\"button\")", "✓ Event delegation: listener di induk.", ["listener di tiap tombol, dipasang sekali saat halaman dimuat", "listener di tbody + e.target.closest(\"button\")"]],
       ["Data baru harus muncul di tabel", "ubah array dulu, lalu gambar ulang", "✓ Array adalah sumber data; tabel hanya tampilannya.", ["ubah tabel saja", "ubah array dulu, lalu gambar ulang"]]
+    ]),
+    A("Timer: setTimeout dan setInterval", `<p>➕ ${c("setTimeout(fungsi, ms)")} menjalankan fungsi <strong>sekali</strong> setelah jeda (dalam milidetik; 1000 = 1 detik). ${c("setInterval(fungsi, ms)")} menjalankannya <strong>berulang</strong> setiap jeda itu. Keduanya mengembalikan nomor timer yang dipakai untuk membatalkan: ${c("clearTimeout(id)")} dan ${c("clearInterval(id)")}. Contoh pemakaian: pesan "Tersimpan" yang hilang sendiri setelah 2 detik, atau jam digital. Fungsi diberikan <em>tanpa kurung</em>, sama seperti pada ${c("addEventListener")}.</p>`, "Bagian 5 • ➕ Tambahan"),
+    code("timer.html", `<p id="pesan"></p>
+<p id="jam"></p>
+<button id="stop">Hentikan jam</button>
+
+<script>
+  const pesan = document.getElementById("pesan");
+  pesan.textContent = "Tersimpan!";
+  setTimeout(() => { pesan.textContent = ""; }, 2000);   // hilang setelah 2 detik
+
+  const jam = document.getElementById("jam");
+  const id = setInterval(() => {                           // berulang tiap 1 detik
+    jam.textContent = new Date().toLocaleTimeString("id-ID");
+  }, 1000);
+
+  document.getElementById("stop").addEventListener("click", () => clearInterval(id));
+</script>`, "Nomor timer disimpan di variabel (id) supaya bisa dibatalkan dengan clearInterval.", "setTimeout dan setInterval"),
+    A("localStorage: Menyimpan Data di Browser", `<p>➕ Data di array hilang begitu halaman di-refresh. ${c("localStorage")} menyimpan pasangan kunci dan nilai di browser dan tetap ada setelah ditutup. Nilainya hanya boleh <strong>string</strong>, jadi array atau object diubah dulu dengan ${c("JSON.stringify()")} saat menyimpan dan dikembalikan dengan ${c("JSON.parse()")} saat membaca.</p>
+<ul><li>${c('localStorage.setItem("kunci", teks)')}: simpan.</li>
+<li>${c('localStorage.getItem("kunci")')}: baca, hasilnya ${c("null")} jika belum ada.</li>
+<li>${c('localStorage.removeItem("kunci")')}: hapus satu kunci.</li></ul>
+<p>Batasnya sekitar 5 MB per situs dan isinya bisa dilihat siapa pun lewat F12 → Application, jadi jangan menyimpan kata sandi. Ini bukan pengganti database: data hanya ada di browser pengguna itu sendiri.</p>`, "Bagian 5 • ➕ Tambahan"),
+    code("simpan-lokal.js", `// Memuat data; jika belum ada, pakai array kosong
+let data = JSON.parse(localStorage.getItem("mahasiswa")) || [];
+
+function simpan() {
+  localStorage.setItem("mahasiswa", JSON.stringify(data));
+}
+
+// Setiap kali array berubah, simpan lalu gambar ulang tabel:
+data.push({ nim: "2401", nama: "Ani" });
+simpan();
+// gambar();   // fungsi gambar dari contoh tabel CRUD`, "Tambahkan JSON.parse(...) || [] di awal dan simpan() setiap data berubah, maka tabel CRUD bertahan setelah refresh.", "Menyimpan Tabel CRUD ke localStorage"),
+    ex("Latihan Interaktif • ➕ Tambahan", "Timer dan localStorage: Pilih yang Tepat", ["Tujuan", "Kode"], [], [
+      ["Menghapus pesan setelah 2 detik, sekali saja", "setTimeout(fn, 2000)", "✓ setTimeout berjalan sekali; setInterval berulang.", ["setInterval(fn, 2000)", "setTimeout(fn, 2000)"]],
+      ["Menjalankan jam setiap detik", "setInterval(fn, 1000)", "✓", ["setTimeout(fn, 1000)", "setInterval(fn, 1000)"]],
+      ["Menyimpan array ke localStorage", "setItem(\"k\", JSON.stringify(arr))", "✓ localStorage hanya menyimpan string.", ["setItem(\"k\", arr)", "setItem(\"k\", JSON.stringify(arr))"]],
+      ["Membaca kembali array yang disimpan", "JSON.parse(getItem(\"k\"))", "✓", ["getItem(\"k\") langsung dipakai sebagai array", "JSON.parse(getItem(\"k\"))"]],
+      ["Menyimpan kata sandi pengguna", "jangan, isinya bisa dilihat lewat F12", "✓", ["boleh, karena tersimpan di browser", "jangan, isinya bisa dilihat lewat F12"]]
     ]),
     ex("Latihan Interaktif", "Kode Mana yang Benar?", ["Tujuan", "Kode"], [], [
       ["Memilih elemen id=\"nim\"", "getElementById(\"nim\")", "✓ Tanpa #.", ["getElementById(\"#nim\")", "getElementById(\"nim\")"]],

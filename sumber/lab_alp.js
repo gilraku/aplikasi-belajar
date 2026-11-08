@@ -422,4 +422,4 @@ const P5 = lab([
   }
 ]);
 
-module.exports = { P3, P4, P5, P6, P7 };
+module.exports = { P3, P4, P5, P6, P7, lab, out };
