@@ -221,7 +221,8 @@ const LAB = `<!DOCTYPE html>
 </body>
 </html>`;
 
-module.exports = fix({
+const LABJS = require("./lab_js.js");
+const MOD = fix({
   id: "p6",
   nomor: 6,
   judul: "Pengenalan JavaScript: Variabel, Tipe Data, Operator & Event",
@@ -471,3 +472,5 @@ module.exports = fix({
 
 6️⃣ *Jebakan:* prompt selalu string ("2"+"3" = "23", pakai Number()) • Cancel → null • isNaN(nim) untuk cek angka.`
 });
+MOD.simulator.unshift({ type: "trace-lab", label: 'Lab JavaScript • Telusuri Kode', title: 'Ikuti Eksekusi Kode Selangkah demi Selangkah', desc: 'Tebak dulu, lalu tekan <strong>Langkah Berikutnya</strong>. Bagian kode yang sedang dijalankan diberi stabilo, dan panel Keadaan menunjukkan nilai variabel serta output.', tip: "Ini penelusuran yang sudah disiapkan, bukan JavaScript yang dijalankan di browser.", cases: LABJS.P6 });
+module.exports = MOD;

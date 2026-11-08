@@ -235,7 +235,8 @@ const XSS = `<!DOCTYPE html>
 </body>
 </html>`;
 
-module.exports = fix({
+const LABJS = require("./lab_js.js");
+const MOD = fix({
   id: "p7",
   nomor: 7,
   judul: "Manipulasi DOM: Seleksi, Ubah, Tambah & Hapus Elemen",
@@ -473,3 +474,5 @@ module.exports = fix({
 
 6️⃣ *Penting:* input pengguna → textContent (cegah XSS) • error "null" = id salah / script jalan sebelum elemen ada.`
 });
+MOD.simulator.unshift({ type: "trace-lab", label: 'Lab JavaScript • Telusuri Array dan Loop', title: 'Menyaring Data dengan for dan if', desc: 'Tebak dulu, lalu tekan <strong>Langkah Berikutnya</strong>. Perhatikan kapan kondisi dicek dan kapan penghitung bertambah.', tip: "Ini penelusuran yang sudah disiapkan, bukan JavaScript yang dijalankan di browser.", cases: LABJS.P7 });
+module.exports = MOD;
