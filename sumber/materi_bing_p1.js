@@ -22,7 +22,7 @@ const sentence = diagram({
     { id: "n2", label: "Noun", title: "friends = common, concrete noun", text: "Jamak dengan -s. Subjek menjadi jamak (Andi and his friends = they), maka verb tanpa -s: <em>study</em>." },
     { id: "vb", label: "Adverb + Verb", title: "always (adverb of frequency) + study (verb)", text: "<em>always</em> diletakkan <strong>sebelum</strong> verb utama. <em>study</em> = intransitive di kalimat ini (tidak ada objek)." },
     { id: "pp", label: "Preposition", title: "in = preposition of place", text: "Menghubungkan aksi dengan tempat." },
-    { id: "ar", label: "Article", title: "the = article", text: "➕ Article (a/an/the) tidak masuk 7 kelas di slide; banyak tata bahasa memasukkannya ke adjective/determiner. Dibahas lagi di P2 dan P6." },
+    { id: "ar", label: "Article", title: "the = article", text: "➕ Article (a/an/the): banyak tata bahasa memasukkannya ke adjective/determiner. Dibahas lagi di P2 dan P6." },
     { id: "n3", label: "Noun", title: "library = noun", text: "<em>in the library</em> secara keseluruhan berfungsi sebagai keterangan tempat (adverbial)." }
   ]
 });

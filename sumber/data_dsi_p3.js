@@ -87,7 +87,7 @@ module.exports = {
     {
       type: "cards",
       label: "➕ Tambahan • Komponen SI & Beda SI–TI",
-      title: "Sering Ditanyakan Walau Tidak di Modul Ini",
+      title: "Sering Ditanyakan di Soal",
       cols: 2,
       items: [
         { badge: "5 sumber daya SI (O’Brien)", tone: "indigo", title: "People, Hardware, Software, Data, Network", text: "Akan dibahas lagi sebagai <strong>elemen CBIS</strong> di P5." },

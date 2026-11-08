@@ -44,7 +44,7 @@ const dikw = diagram({
     { id: "d", label: "Data", title: "Data", text: "Fakta/simbol mentah, belum bermakna. Contoh: 80, 65, 90." },
     { id: "i", label: "Informasi", title: "Informasi", text: "Data yang sudah diolah lewat <strong>5K</strong> (kondensasi, kontekstualisasi, kalkulasi, kategorisasi, koreksi) sehingga bermakna dalam konteks. Contoh: “rata-rata kelas 78, satu orang di bawah KKM”." },
     { id: "k", label: "Knowledge", title: "Knowledge (pengetahuan)", text: "Informasi yang diolah dengan pengalaman, persepsi, dan pendapat sehingga bermanfaat. Contoh: “materi P3 perlu diulang karena banyak yang salah di bagian itu”." },
-    { id: "w", label: "➕ Wisdom", title: "➕ Wisdom (kebijaksanaan)", text: "Tidak ada di modul. Kemampuan memakai pengetahuan untuk keputusan yang tepat dan etis. Contoh: membuat kelas tutor sebaya sebelum CPMK." }
+    { id: "w", label: "➕ Wisdom", title: "➕ Wisdom (kebijaksanaan)", text: "Kemampuan memakai pengetahuan untuk keputusan yang tepat dan etis. Contoh: membuat kelas tutor sebaya sebelum CPMK." }
   ]
 });
 
@@ -213,7 +213,7 @@ const generasi = diagram({
     { id: "g2", label: "Gen 2", title: "Generasi 2: transistor", text: "Lebih kecil, 1000× lebih cepat, lebih andal, lebih murah." },
     { id: "g3", label: "Gen 3", title: "Generasi 3: Integrated Circuit", text: "Ratusan transistor dalam satu silicon chip; ukuran & biaya turun drastis." },
     { id: "g4", label: "Gen 4", title: "Generasi 4: mikroprosesor", text: "Perubahan radikal ukuran, kemampuan, kecepatan, harga; lahir PC. Dibagi mainframe, minicomputer, microcomputer." },
-    { id: "g5", label: "➕ Gen 5", title: "➕ Generasi 5", text: "Tidak ada di modul: kecerdasan buatan, pemrosesan paralel, bahasa alami." }
+    { id: "g5", label: "➕ Gen 5", title: "➕ Generasi 5", text: "Kecerdasan buatan, pemrosesan paralel, bahasa alami." }
   ]
 });
 

@@ -100,7 +100,7 @@ module.exports = fix({
   hero: {
     badge: "Materi 5 • Pemrograman Web Dinamis",
     title: "Satu Halaman, Rapi di HP, Tablet, dan Laptop",
-    text: "Pahami <strong>prinsip desain responsif</strong>, <strong>media queries</strong> & breakpoint, serta <strong>unit relatif</strong> (%, vw, vh, rem, em). Coba langsung dengan tombol ukuran layar 📱 di editor. ➕ Termasuk <strong>meta viewport</strong> yang tidak ada di modul, padahal tanpanya media query tidak bekerja di HP."
+    text: "Pahami <strong>prinsip desain responsif</strong>, <strong>media queries</strong> & breakpoint, serta <strong>unit relatif</strong> (%, vw, vh, rem, em). Coba langsung dengan tombol ukuran layar 📱 di editor. ➕ Termasuk <strong>meta viewport</strong>, karena tanpanya media query tidak bekerja di HP."
   },
   cheatsheet: [
     {
@@ -123,7 +123,7 @@ module.exports = fix({
       label: "➕ Tambahan • Wajib Ada!",
       tone: "danger",
       heading: "Tanpa meta viewport, media query “tidak jalan” di HP",
-      html: "Contoh HTML di modul belum memakai baris ini. Tanpanya, browser HP berpura-pura layarnya ±980px lalu memperkecil halaman, sehingga <code>@media (max-width: 600px)</code> tidak pernah aktif. Taruh di dalam <code><head></code>:<br><code><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></code>"
+      html: "Tanpa baris ini, browser HP berpura-pura layarnya ±980px lalu memperkecil halaman, sehingga <code>@media (max-width: 600px)</code> tidak pernah aktif. Taruh di dalam <code><head></code>:<br><code><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></code>"
     },
     {
       type: "row",

@@ -77,7 +77,7 @@ module.exports = {
         ] },
         { label: "Gen 4", blocks: [
           { type: "callout", tone: "emerald", heading: "Mikroprosesor", html: "70-an – sekarang. Perubahan sangat radikal pada ukuran, kemampuan, kecepatan, harga. Dikelompokkan menjadi <strong>Mainframe</strong> (terbesar, multi-user, data skala besar), <strong>Minicomputer</strong> (midrange), <strong>Microcomputer</strong> (PC)." },
-          { type: "callout", tone: "tip", heading: "➕ Generasi 5", html: "Banyak buku menambahkan generasi kelima: <strong>kecerdasan buatan (AI)</strong>, pemrosesan paralel, dan komputasi berbasis pengetahuan. Tidak ada di modul." }
+          { type: "callout", tone: "tip", heading: "➕ Generasi 5", html: "Banyak buku menambahkan generasi kelima: <strong>kecerdasan buatan (AI)</strong>, pemrosesan paralel, dan komputasi berbasis pengetahuan." }
         ] }
       ]
     },
