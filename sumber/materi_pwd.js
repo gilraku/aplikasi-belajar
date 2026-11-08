@@ -788,7 +788,7 @@ const barisHTML = mahasiswa
       modes: [{ label: "closest", target: "row", row: 4, title: "Paling praktis untuk tabel", text: "Dari tombol Hapus, <code>tombol.closest(\"tr\")</code> langsung memberi baris yang memuatnya, berapa pun lapisan tag di antaranya." },
         { label: "Element vs node", target: "none", title: "Kenapa ada kata Element", text: "<code>parentNode</code> dan <code>childNodes</code> ikut menghitung node teks (spasi dan baris baru). Properti berakhiran <code>Element</code> hanya menghitung tag, jadi lebih mudah dipakai." }] },
     A("Menempel di Posisi Tertentu", `<p>${c("appendChild")} selalu menempel di <strong>akhir</strong> anak. Untuk posisi lain: ${c("parent.prepend(el)")} di awal, ${c("parent.insertBefore(el, pembanding)")} tepat sebelum elemen pembanding, dan ${c("el.insertAdjacentHTML(\"beforeend\", html)")} untuk menyisipkan string HTML tanpa menghapus isi lama (posisi: ${c("beforebegin")}, ${c("afterbegin")}, ${c("beforeend")}, ${c("afterend")}). ${c("el.innerHTML += ...")} sebaiknya dihindari karena membangun ulang semua isi dan menghapus listener yang sudah terpasang di dalamnya.</p>`, "Bagian 3 • ➕ Tambahan"),
-    A("Dari Array ke Tabel: Pola CRUD", `<p>➕ Aplikasi CRUD di proyek akhir menyimpan data di array, lalu menggambar tabel dari array itu. Polanya selalu sama: <strong>ubah array → panggil fungsi gambar ulang</strong>. Listener untuk tombol Hapus dipasang sekali di ${c("<tbody>")} memakai ${c("e.target")} dan ${c("closest")} (disebut <em>event delegation</em>), sehingga baris yang dibuat belakangan tetap berfungsi tanpa memasang listener baru.</p>`, "Bagian 4 • ➕ Tambahan"),
+    A("Dari Array ke Tabel: Pola CRUD", `<p>➕ Aplikasi CRUD di proyek akhir menyimpan data di array, lalu menggambar tabel dari array itu. Polanya selalu sama: <strong>ubah array → panggil fungsi gambar ulang</strong> (sel dibuat dengan textContent agar aman). Listener untuk tombol Hapus dipasang sekali di ${c("<tbody>")} memakai ${c("e.target")} dan ${c("closest")} (disebut <em>event delegation</em>), sehingga baris yang dibuat belakangan tetap berfungsi tanpa memasang listener baru.</p>`, "Bagian 4 • ➕ Tambahan"),
     code("crud-tabel.html", `<form id="form">
   <input id="nim" placeholder="NIM">
   <input id="nama" placeholder="Nama">
@@ -804,10 +804,22 @@ const barisHTML = mahasiswa
   const isi = document.getElementById("isi");
 
   function gambar() {                           // READ: gambar ulang dari array
-    isi.innerHTML = data.map((m, i) =>
-      "<tr><td>" + m.nim + "</td><td>" + m.nama + "</td>" +
-      "<td><button data-i='" + i + "'>Hapus</button></td></tr>"
-    ).join("");
+    isi.textContent = "";                       // kosongkan dulu
+    data.forEach((m, i) => {
+      const tr = document.createElement("tr");
+      [m.nim, m.nama].forEach(teks => {
+        const td = document.createElement("td");
+        td.textContent = teks;                  // aman dari XSS
+        tr.appendChild(td);
+      });
+      const aksi = document.createElement("td");
+      const hapus = document.createElement("button");
+      hapus.textContent = "Hapus";
+      hapus.dataset.i = i;
+      aksi.appendChild(hapus);
+      tr.appendChild(aksi);
+      isi.appendChild(tr);
+    });
   }
 
   document.getElementById("form").addEventListener("submit", (e) => {
@@ -828,7 +840,7 @@ const barisHTML = mahasiswa
   });
 
   gambar();
-</script>`, "Contoh ini memakai innerHTML dengan data buatan sendiri agar singkat. Jika isinya dari input pengguna, buat elemen dengan createElement + textContent supaya aman dari XSS. Nilai data-i dibaca lewat tombol.dataset.i dan selalu berupa string, sehingga diubah dengan Number().", "Tabel CRUD dari Array"),
+</script>`, "Sel dibuat dengan createElement + textContent, jadi input pengguna tampil apa adanya dan tidak dijalankan sebagai HTML. Nilai data-i dibaca lewat tombol.dataset.i dan selalu berupa string, sehingga diubah dengan Number().", "Tabel CRUD dari Array"),
     ex("Latihan Interaktif • ➕ Tambahan", "Menelusuri dan Menyisipkan: Pilih yang Tepat", ["Tujuan", "Kode"], [], [
       ["Dari tombol Hapus, ambil baris tabelnya", "tombol.closest(\"tr\")", "✓ closest naik ke induk terdekat yang cocok.", ["tombol.children", "tombol.closest(\"tr\")"]],
       ["Menempel item baru di urutan paling atas daftar", "daftar.prepend(li)", "✓ appendChild menempel di akhir.", ["daftar.appendChild(li)", "daftar.prepend(li)"]],
