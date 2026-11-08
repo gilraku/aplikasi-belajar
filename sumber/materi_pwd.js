@@ -572,6 +572,12 @@ console.log(matkul[0]);           // "PWD"
 console.log(mhs.ipk);             // 3.75
 console.log(typeof semester);     // "number"
 console.log(\`Halo \${nama}, semester \${semester}\`); // template literal ➕`, "Template literal memakai backtick (`) dan ${…} untuk menyisipkan nilai, lebih rapi daripada menyambung dengan +.", "Contoh Variabel & Tipe Data"),
+    { type: "table", label: "➕ Tambahan • Tabel Interaktif", title: "Semua Tipe Data dalam Satu Tabel", headers: ["Tipe", "Contoh nilai", "typeof", "Isi / kegunaan"],
+      rows: [["String", "\"Gilang\", 'SI'", "\"string\"", "teks, selalu di dalam kutip"], ["Number", "20, 3.14, -5", "\"number\"", "bilangan bulat dan pecahan sama-sama number"], ["Boolean", "true, false", "\"boolean\"", "hasil perbandingan, penentu if"], ["Array", "[\"PWD\", \"AIK\"]", "\"object\"", "daftar berurutan, indeks mulai 0"], ["Object", "{ nim: \"2401\" }", "\"object\"", "pasangan nama: nilai"], ["undefined ➕", "let x;", "\"undefined\"", "variabel dibuat tetapi belum diisi"], ["null ➕", "let y = null;", "\"object\"", "sengaja dikosongkan"]],
+      modes: [{ label: "typeof null", target: "row", row: 6, title: "Bug lama JavaScript", text: "<code>typeof null</code> bernilai <code>\"object\"</code>. Ini kekeliruan sejak awal bahasa ini dan tidak diperbaiki. Cek null dengan <code>nilai === null</code>." },
+        { label: "typeof array", target: "row", row: 3, title: "Array juga \"object\"", text: "<code>typeof [1, 2]</code> bernilai <code>\"object\"</code>. Untuk memastikan sebuah array, pakai <code>Array.isArray(x)</code>." },
+        { label: "NaN", target: "none", title: "NaN bertipe number", text: "<code>typeof NaN</code> bernilai <code>\"number\"</code> walaupun artinya \"bukan angka\". Cek dengan <code>isNaN(x)</code>." },
+        { label: "Primitif vs object", target: "none", title: "Dua kelompok besar", text: "String, number, boolean, undefined, dan null adalah nilai tunggal (primitif). Array dan object menyimpan banyak nilai, dan isinya boleh diubah walaupun dideklarasi dengan <code>const</code>." }] },
     ex("Latihan Interaktif", "Tebak Hasilnya", ["Ekspresi", "Hasil"], ["true", "false", "\"23\"", "5", "1", "\"number\"", "\"object\""], [
       ["5 === \"5\"", "false"],
       ["5 == \"5\"", "true"],
