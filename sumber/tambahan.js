@@ -191,6 +191,27 @@ module.exports = {
       },
       {
         type: "table",
+        label: "➕ Tambahan • Ringkasan Tipe Data",
+        title: "Tipe, Contoh, dan Hasil typeof",
+        desc: "Klik tombol untuk tiga jebakan typeof yang paling sering keluar.",
+        headers: ["Tipe", "Contoh", "typeof"],
+        rows: [
+          ["String", "<code>\"Ani\"</code>", "<code>\"string\"</code>"],
+          ["Number", "<code>20</code>, <code>3.14</code>", "<code>\"number\"</code>"],
+          ["Boolean", "<code>true</code>", "<code>\"boolean\"</code>"],
+          ["Array", "<code>[1, 2]</code>", "<code>\"object\"</code>"],
+          ["Object", "<code>{ a: 1 }</code>", "<code>\"object\"</code>"],
+          ["undefined", "<code>let x;</code>", "<code>\"undefined\"</code>"],
+          ["null", "<code>null</code>", "<code>\"object\"</code>"]
+        ],
+        modes: [
+          { label: "Array", target: "row", row: 3, title: "typeof array = object", text: "Cek array dengan <code>Array.isArray(x)</code>." },
+          { label: "null", target: "row", row: 6, title: "typeof null = object", text: "Kekeliruan lama JavaScript. Cek dengan <code>x === null</code>." },
+          { label: "NaN", target: "none", title: "typeof NaN = number", text: "Cek dengan <code>isNaN(x)</code>, bukan <code>=== NaN</code>." }
+        ]
+      },
+      {
+        type: "table",
         label: "➕ Tambahan • Konversi Tipe",
         title: "Input Selalu String: Ubah Dulu Sebelum Dihitung",
         desc: "Nilai dari <code>prompt()</code> dan <code>.value</code> berupa string. Klik tombol untuk jebakannya.",
