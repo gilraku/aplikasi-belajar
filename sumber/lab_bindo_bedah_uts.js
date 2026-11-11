@@ -6,30 +6,29 @@ const Pel = (t, pasif, nya, why) => ({ t, f: "Pel", pasif, nya, why });
 const K = (t, k, why) => (k ? { t, f: "K", k, why } : { t, f: "K", why });
 const S = (t, why) => ({ t, f: "S", why });
 const P = (t, why) => ({ t, f: "P", why });
-const teman = (label) => `<br><strong>Label di lembar teman:</strong> ${label}`;
 
 const soal = [
-  { src: "Soal UTS no. 1", note: "Predikat kopulatif <em>adalah</em> membawa pelengkap. Unsur yang didahului kata depan (<em>di samping</em>) tidak pernah menjadi objek. Sebagian buku membaca <em>di samping hukum positif</em> sebagai bagian dari pelengkap; yang jelas, bagian itu bukan objek. Ejaan: <em>di samping</em> ditulis terpisah." + teman("hukum positif = O."),
+  { src: "Soal UTS no. 1", note: "Predikat kopulatif <em>adalah</em> membawa pelengkap. Unsur yang didahului kata depan (<em>di samping</em>) tidak pernah menjadi objek. Sebagian buku membaca <em>di samping hukum positif</em> sebagai bagian dari pelengkap; yang jelas, bagian itu bukan objek. Ejaan: <em>di samping</em> ditulis terpisah.",
     chunks: [S("Salah satu ciri khas sistem hukum Indonesia", "Apa yang adalah pengakuan …? Salah satu ciri khas sistem hukum Indonesia."),
       P("adalah", "Verba kopulatif."),
       Pel("pengakuan terhadap eksistensi hukum adat", "*Pengakuan terhadap eksistensi hukum adat diadalah …", "*Salah satu ciri khas sistem hukum Indonesia adalahnya.", "Sesudah adalah selalu pelengkap. Kata terhadap di dalamnya hanya bagian frasa nomina pengakuan terhadap …"),
       K("di samping hukum positif.", null, "Di samping di sini berarti “selain”. Diawali kata depan, jadi bukan objek.")] },
-  { src: "Soal UTS no. 2", note: "Frasa yang diawali <em>berdasarkan</em> menyatakan dasar atau acuan tindakan, dan bisa dipindah ke depan: <em>Berdasarkan analisis …, perusahaan multinasional itu menyusun …</em>. Karena itu keterangan, bukan pelengkap." + teman("berdasarkan analisis … = Pel."),
+  { src: "Soal UTS no. 2", note: "Frasa yang diawali <em>berdasarkan</em> menyatakan dasar atau acuan tindakan, dan bisa dipindah ke depan: <em>Berdasarkan analisis …, perusahaan multinasional itu menyusun …</em>. Karena itu keterangan, bukan pelengkap.",
     chunks: [S("Perusahaan multinasional itu"), P("menyusun", "Verba me-, transitif."),
       O("strategi investasi jangka panjang", "Strategi investasi jangka panjang disusun perusahaan multinasional itu.", "Perusahaan multinasional itu menyusunnya di Asia Tenggara."),
       K("di Asia Tenggara", "tempat"),
       K("berdasarkan analisis demografi dan daya beli masyarakat lokal.", null, "Keterangan dasar atau acuan: menjawab “atas dasar apa?”. Bisa dihapus dan dipindah.")] },
-  { src: "Soal UTS no. 3", note: "Klausa <em>yang secara signifikan memengaruhi …</em> menempel pada <em>faktor eksternal</em>, jadi seluruhnya satu pelengkap. Di dalam klausa itu memang ada P (memengaruhi), O (biaya logistik dan produksi), dan K (di dalam negeri), tetapi itu fungsi di tingkat klausa, bukan di tingkat kalimat. Kalau soal meminta bedah sampai ke dalam klausa, label teman masuk akal, hanya <em>memengaruhi</em> = P, bukan Pel. Ejaan: <em>memengaruhi</em>, bukan <em>mempengaruhi</em>. <em>K</em> dan <em>Ket</em> sama-sama singkatan keterangan." + teman("memengaruhi = Pel, biaya logistik dan produksi = O, di dalam negeri = Ket."),
+  { src: "Soal UTS no. 3", note: "Klausa <em>yang secara signifikan memengaruhi …</em> menempel pada <em>faktor eksternal</em>, jadi seluruhnya satu pelengkap. Di dalam klausa itu memang ada P (memengaruhi), O (biaya logistik dan produksi), dan K (di dalam negeri), tetapi itu fungsi di tingkat klausa, bukan di tingkat kalimat. Kalau soal meminta bedah sampai ke dalam klausa, pembagian P-O-K itu bisa dipakai, asal <em>memengaruhi</em> = P, bukan Pel. Ejaan: <em>memengaruhi</em>, bukan <em>mempengaruhi</em>. <em>K</em> dan <em>Ket</em> sama-sama singkatan keterangan.",
     chunks: [S("Kenaikan harga minyak dunia"), P("merupakan", "Verba kopulatif."),
       Pel("faktor eksternal yang secara signifikan memengaruhi biaya logistik dan produksi di dalam negeri.", "*Faktor eksternal … dirupakan kenaikan harga minyak dunia.", "*Kenaikan harga minyak dunia merupakannya.", "Sesudah merupakan selalu pelengkap, termasuk klausa yang … yang menempel padanya.")] },
-  { src: "Soal UTS no. 4 (di lembar teman tertulis 3 lagi)", note: "<em>Akan</em> hanya penanda waktu dan menjadi bagian predikat. <em>Bertemu</em> verba ber- yang intransitif, jadi tidak ada objek. <em>Dalam konferensi …</em> diawali kata depan dan bisa dipindah, jadi keterangan. Padanan <em>startup</em> dalam tulisan resmi: <em>perusahaan rintisan</em>." + teman("akan = P, bertemu = O, dalam konferensi … = Pel, besok = K."),
+  { src: "Soal UTS no. 4", note: "<em>Akan</em> hanya penanda waktu dan menjadi bagian predikat. <em>Bertemu</em> verba ber- yang intransitif, jadi tidak ada objek. <em>Dalam konferensi …</em> diawali kata depan dan bisa dipindah, jadi keterangan. Padanan <em>startup</em> dalam tulisan resmi: <em>perusahaan rintisan</em>.",
     chunks: [S("Para investor dan startup lokal"), P("akan bertemu", "Akan + verba ber-. Kata akan ikut menjadi bagian predikat."),
       K("dalam konferensi teknologi tahunan", "tempat", "Penanda dalam = tempat (di dalam acara itu)."), K("besok.", "waktu")] },
-  { src: "Soal UTS no. 5 (di lembar teman tertulis 4)", note: "Predikatnya pasif (<em>harus diterapkan</em>), jadi kalimat ini tidak punya objek. <em>Keamanan dan ketahanan struktur bangunan bertingkat</em> adalah objek dari <em>menjamin</em> di dalam keterangan tujuan, bukan objek kalimat." + teman("harus = P, diterapkan … ketahanan = Pel, struktur bangunan bertingkat = O."),
+  { src: "Soal UTS no. 5", note: "Predikatnya pasif (<em>harus diterapkan</em>), jadi kalimat ini tidak punya objek. <em>Keamanan dan ketahanan struktur bangunan bertingkat</em> adalah objek dari <em>menjamin</em> di dalam keterangan tujuan, bukan objek kalimat.",
     chunks: [S("Prinsip-prinsip teknik sipil"), P("harus diterapkan", "Harus + verba di- (pasif). Harus ikut menjadi bagian predikat."),
       K("secara ketat", "cara", "Menjawab “bagaimana?”."),
       K("untuk menjamin keamanan dan ketahanan struktur bangunan bertingkat.", "tujuan", "Penanda untuk = tujuan. Seluruh frasa sampai bertingkat satu keterangan.")] },
-  { src: "Soal UTS no. 6 (di lembar teman tertulis 5)", note: "<em>Berdasar</em> selalu menuntut <em>pada …</em>: <em>Laporan itu berdasar.</em> menggantung. Karena wajib hadir, frasa itu dianggap pelengkap (tutor juga mengunci <em>kepada tamu</em> sebagai pelengkap di Latihan 7). Buku yang ketat memakai uji preposisi akan menyebutnya keterangan, jadi nomor ini paling mungkin beda kunci. Yang pasti salah di lembar teman: <em>kajian mendalam</em> bukan bagian predikat. Ejaan: <em>risiko</em>, bukan <em>resiko</em>." + teman("berdasar pada kajian mendalam = P, terhadap risiko … = Pel."),
+  { src: "Soal UTS no. 6", note: "<em>Berdasar</em> selalu menuntut <em>pada …</em>: <em>Laporan itu berdasar.</em> menggantung. Karena wajib hadir, frasa itu dianggap pelengkap (tutor juga mengunci <em>kepada tamu</em> sebagai pelengkap di Latihan 7). Buku yang ketat memakai uji preposisi akan menyebutnya keterangan, jadi nomor ini paling mungkin beda kunci. Yang pasti: <em>kajian mendalam</em> bukan bagian predikat. Ejaan: <em>risiko</em>, bukan <em>resiko</em>.",
     chunks: [S("Laporan stabilitas keuangan Bank Indonesia"), P("berdasar", "Verba ber-."),
       Pel("pada kajian mendalam terhadap risiko kredit, pasar modal, dan sektor perbankan.", "*Kajian mendalam … diberdasar laporan itu.", "*Laporan stabilitas keuangan Bank Indonesia berdasarnya.", "Tanpa bagian ini kalimat menggantung, jadi tidak bebas dihapus.")] }
 ];
@@ -66,6 +65,6 @@ const tambahan = [
 
 module.exports = {
   type: "lab-bedah", label: "Lab Bahasa • Bedah Kalimat Soal UTS", title: "Bedah Kalimat Panjang ala Soal UTS",
-  desc: "Enam kalimat pertama dari soal UTS yang beredar di kelas, sisanya latihan tambahan dengan gaya yang sama. Kalimat panjang tetap dibedah dengan tangga yang sama: predikat, subjek, lalu uji bagian sesudah predikat. Setelah selesai, catatan di bawah membandingkan dengan label di lembar jawaban teman.",
+  desc: "Enam kalimat pertama dari soal UTS, sisanya latihan tambahan dengan gaya yang sama. Kalimat panjang tetap dibedah dengan tangga yang sama: predikat, subjek, lalu uji bagian sesudah predikat. Setelah selesai, catatan di bawah menjelaskan jebakannya.",
   items: soal.concat(tambahan)
 };
