@@ -118,6 +118,8 @@ P5.cheatsheet.push(
   { type: "callout", tone: "warn", heading: "⚠️ Catatan kecil untuk slide tutor", html: "<ol><li><strong>Latihan 4 nomor 7 dan 8, kuncinya tertukar.</strong> Menurut aturan tutor sendiri (verba memberi: unsur pertama = objek, berikutnya = pelengkap) dan Demo 1, pada <em>Ayah membelikan adik sepeda</em>: <strong>adik = O</strong>, <strong>sepeda = Pel</strong>. Jadi no. 7 (sepeda) = Pel dan no. 8 (adik) = O.</li><li><strong>Latihan 2</strong> bilang ada satu kalimat tanpa subjek, padahal kedelapan kalimatnya punya subjek. Nomor 4 (<em>Telah hadir seluruh peserta pelatihan</em>) hanya inversi: subjeknya <em>seluruh peserta pelatihan</em>.</li><li>Di lembar 3 halaman, contoh “salah” pertama pada <strong>keparalelan</strong> (<em>Pasien yang mengalami demam tinggi dirawat di ruang IGD</em>) adalah salah tempel dari bagian kesepadanan. Contoh yang dimaksud: <em>Tugas mahasiswa meliputi membaca, menulis, dan analisis data</em> → <em>… dan menganalisis data</em>.</li><li>Latihan 7 no. 7 (<em>mengirim undangan <strong>kepada tamu</strong></em>) dikunci pelengkap oleh tutor. Banyak buku tata bahasa menggolongkan bagian berpreposisi seperti ini sebagai keterangan, jadi untuk kuis tutor ikuti kunci tutor, tetapi di ujian mata kuliah lihat juga cara modul.</li></ol>" }
 );
 P5.simulator.unshift(require("./lab_bindo_bedah.js"));
+const BEDAH_UTS = require("./lab_bindo_bedah_uts.js");
+P5.simulator.splice(1, 0, BEDAH_UTS);
 LAB3.BINDO_KALIMAT.items.push(
   { tokens: ["Bagi", "mahasiswa", "wajib", "mengikuti", "ujian."], syarat: "Kesepadanan", why: "Kata depan di awal kalimat membuat subjek hilang. (Contoh tutor)",
     accept: [{ text: "Mahasiswa wajib mengikuti ujian." }],
@@ -154,6 +156,17 @@ P8.cheatsheet.splice(1, 0, { type: "table", label: `${tag} • Jadwal Tutorial S
   modes: [{ label: "UTS", target: "row", row: 6, title: "Sabtu, 14 November 2026", text: "Menurut slide tutor. Cocokkan lagi dengan pengumuman resmi di LMS." }],
   defaultNote: "Ini jadwal sesi tutorial dari slide tutor. Penomoran pertemuan tutorial tidak selalu sama dengan penomoran modul di LMS." });
 P8.simulator.unshift(P3.simulator[P3.simulator.length - 1]);
+P8.simulator.unshift(BEDAH_UTS);
+P8.cheatsheet.splice(2, 0, { type: "table", label: "Bedah Kalimat • Soal UTS", title: "Koreksi Label pada Soal UTS yang Beredar", headers: ["No.", "Label di lembar teman", "Seharusnya", "Alasan"],
+  rows: [
+    ["1", "di samping hukum positif = O", "K", "Diawali kata depan, jadi tidak mungkin objek"],
+    ["2", "berdasarkan analisis … = Pel", "K", "Bisa dipindah ke depan dan dihapus"],
+    ["3", "memengaruhi = Pel, biaya … = O, di dalam negeri = Ket", "seluruh “faktor eksternal yang … negeri” = Pel", "Klausa yang … menempel pada faktor eksternal. Di dalam klausa itu memengaruhi = P, bukan Pel"],
+    ["4", "akan = P, bertemu = O, dalam konferensi … = Pel", "akan bertemu = P; dalam konferensi … = K; besok = K", "Akan bagian predikat; ber- intransitif; ada kata depan dalam"],
+    ["5", "harus = P, diterapkan … = Pel, struktur … = O", "harus diterapkan = P; secara ketat = K; untuk menjamin … = K", "Kalimat pasif tidak punya objek"],
+    ["6", "berdasar pada kajian mendalam = P, terhadap risiko … = Pel", "berdasar = P; pada kajian … perbankan = Pel", "Kajian mendalam bukan predikat. Pel atau K bisa beda kunci; lihat catatan di simulator"]
+  ],
+  defaultNote: "Penomoran mengikuti urutan kalimat; di lembar teman nomor 3 tertulis dua kali. Coba bedah sendiri di tab Simulator sebelum membaca tabel ini." });
 
 // soal tutorial ikut masuk bank UTS
 const n0 = P8.quiz.length;
