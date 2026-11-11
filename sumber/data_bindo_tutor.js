@@ -157,7 +157,7 @@ P8.cheatsheet.splice(1, 0, { type: "table", label: `${tag} • Jadwal Tutorial S
   defaultNote: "Ini jadwal sesi tutorial dari slide tutor. Penomoran pertemuan tutorial tidak selalu sama dengan penomoran modul di LMS." });
 P8.simulator.unshift(P3.simulator[P3.simulator.length - 1]);
 P8.simulator.unshift(BEDAH_UTS);
-P8.cheatsheet.splice(2, 0, { type: "table", label: "Bedah Kalimat • Soal UTS", title: "Koreksi Label pada Soal UTS yang Beredar", headers: ["No.", "Label di lembar teman", "Seharusnya", "Alasan"],
+P8.cheatsheet.splice(2, 0, { type: "table", label: "Bedah Kalimat • Soal UTS", title: "Jebakan Label pada Soal UTS", headers: ["No.", "Jawaban yang keliru", "Seharusnya", "Alasan"],
   rows: [
     ["1", "di samping hukum positif = O", "K", "Diawali kata depan, jadi tidak mungkin objek"],
     ["2", "berdasarkan analisis … = Pel", "K", "Bisa dipindah ke depan dan dihapus"],
@@ -166,7 +166,7 @@ P8.cheatsheet.splice(2, 0, { type: "table", label: "Bedah Kalimat • Soal UTS",
     ["5", "harus = P, diterapkan … = Pel, struktur … = O", "harus diterapkan = P; secara ketat = K; untuk menjamin … = K", "Kalimat pasif tidak punya objek"],
     ["6", "berdasar pada kajian mendalam = P, terhadap risiko … = Pel", "berdasar = P; pada kajian … perbankan = Pel", "Kajian mendalam bukan predikat. Pel atau K bisa beda kunci; lihat catatan di simulator"]
   ],
-  defaultNote: "Penomoran mengikuti urutan kalimat; di lembar teman nomor 3 tertulis dua kali. Coba bedah sendiri di tab Simulator sebelum membaca tabel ini." });
+  defaultNote: "Nomor sama dengan urutan kalimat di Simulator. Coba bedah sendiri di tab Simulator sebelum membaca tabel ini." });
 
 // soal tutorial ikut masuk bank UTS
 const n0 = P8.quiz.length;
