@@ -2,7 +2,7 @@
 
 Aplikasi belajar yang dibangun dengan [Astro](https://astro.build). Materinya diambil dari `../sumber/` lewat `build.js`, jadi cara menambah materi **tidak berubah**.
 
-- Diterbitkan otomatis oleh `.github/workflows/astro-pages.yml` setiap ada push ke `main` → https://gilraku.github.io/aplikasi-belajar/
+- Diterbitkan otomatis oleh **Vercel** setiap ada push ke `main` → https://sinau-ten.vercel.app/ (GitHub Pages tidak dipakai lagi).
 - Alamat lama `/beta/` dialihkan ke alamat utama.
 - Bisa juga diterbitkan di **Vercel** (alamat `https://<nama-proyek>.vercel.app/`). Pengaturannya ada di `vercel.json` di akar repo; saat build di Vercel, base otomatis jadi `/` dan alamat situs mengikuti domain Vercel. Lihat bagian [Deploy ke Vercel](#deploy-ke-vercel).
 - Progres memakai kunci localStorage yang sama dengan versi lama (`belajar:progress:v1`), jadi progres yang sudah ada tetap terbaca.
@@ -41,13 +41,13 @@ Kalau versi Playwright tidak cocok dengan browser yang terpasang, jalankan tes d
 
 ## Pengaman sebelum terbit
 
-Workflow `.github/workflows/astro-pages.yml` (di setiap PR dan push ke `main`):
+Workflow `.github/workflows/cek.yml` (di setiap PR dan push ke `main`):
 
 1. `npm audit --audit-level=high`: gagal kalau ada paket dengan kerentanan tingkat tinggi.
 2. `npm run build`: sekaligus **validasi data** (`src/lib/validate.mjs`, Zod). Contoh pesan: `AIK › P4 › quiz[4].ans: ans = 7, padahal opsinya hanya 4`. Dicek: referensi (`https://`, `bagian` cocok), kunci jawaban di dalam jumlah opsi, `optExp` sepanjang `opts`, opsi kembar, flashcard kosong, jenis blok dikenal, jawaban latihan ada di pilihannya, id pertemuan/matkul unik.
 3. `npm test` (`tests/smoke.mjs`, Playwright): membuka semua tab semua pertemuan, menjawab kuis, mengecek Back browser, progres tersimpan, referensi tampil, aplikasi terbuka saat offline (service worker), dan pengalihan `/beta/`.
 
-Kalau salah satu gagal, situs **tidak** diterbitkan (versi sebelumnya tetap tayang). Dependabot (`.github/dependabot.yml`) membuka PR otomatis untuk update paket.
+Kalau salah satu gagal, PR ditandai merah; jangan di-merge sebelum hijau. Dependabot (`.github/dependabot.yml`) membuka PR otomatis untuk update paket.
 
 ## Struktur
 

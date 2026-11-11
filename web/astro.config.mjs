@@ -1,7 +1,7 @@
 import { defineConfig } from 'astro/config';
 
 // Situs ini bisa diterbitkan di dua tempat dari kode yang sama:
-// - GitHub Pages: https://gilraku.github.io/aplikasi-belajar/ (.github/workflows/astro-pages.yml), base /aplikasi-belajar/
+// - Tanpa VERCEL (build lokal dan tes di GitHub Actions): base /aplikasi-belajar/, seperti GitHub Pages dulu
 // - Vercel: https://<nama-proyek>.vercel.app/ (vercel.json di akar repo), base /
 // Vercel mengisi variabel VERCEL=1 saat build, jadi base dan alamat situs otomatis menyesuaikan.
 // ASTRO_BASE / ASTRO_SITE tetap bisa dipakai untuk memaksa nilai tertentu (misalnya domain sendiri).
