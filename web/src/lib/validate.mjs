@@ -69,8 +69,8 @@ const Block = z.lazy(() => z.looseObject({
     if (!Array.isArray(b.items) || !b.items.length) ctx.addIssue({ code: 'custom', path: ['items'], message: 'lab-bedah butuh minimal 1 kalimat di items[]' });
     else b.items.forEach((it, ii) => {
       const ch = it && it.chunks;
-      if (!Array.isArray(ch) || ch.filter(x => x.f === 'P').length !== 1 || ch.filter(x => x.f === 'S').length !== 1 || !ch.every(x => typeof x.t === 'string' && ['S', 'P', 'O', 'Pel', 'K'].includes(x.f) && (x.f !== 'K' || ['waktu', 'tempat', 'cara', 'alat', 'tujuan', 'sebab', 'penyerta'].includes(x.k))))
-        ctx.addIssue({ code: 'custom', path: ['items', ii], message: 'setiap item lab-bedah butuh chunks[] {t, f} dengan tepat satu S dan satu P; K wajib punya k (jenis)' });
+      if (!Array.isArray(ch) || ch.filter(x => x.f === 'P').length !== 1 || ch.filter(x => x.f === 'S').length !== 1 || !ch.every(x => typeof x.t === 'string' && ['S', 'P', 'O', 'Pel', 'K'].includes(x.f) && (x.f !== 'K' || x.k === undefined || ['waktu', 'tempat', 'cara', 'alat', 'tujuan', 'sebab', 'penyerta'].includes(x.k))))
+        ctx.addIssue({ code: 'custom', path: ['items', ii], message: 'setiap item lab-bedah butuh chunks[] {t, f} dengan tepat satu S dan satu P; k (jenis) pada K harus dari daftar tombol atau dikosongkan' });
     });
   }
   if (b.type === 'lab-rute' && !(typeof b.start === 'number' && typeof b.money === 'number' && typeof b.due === 'number' && Array.isArray(b.routes) && b.routes.length && b.routes.every(r => r && typeof r.label === 'string' && typeof r.cost === 'number' && typeof r.mins === 'number' && typeof r.say === 'string')))

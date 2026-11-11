@@ -575,7 +575,7 @@ const LAB_BEDAH = {
       const it = d.items[s.c], st = bedahSt(s, s.c), i = st.sel; if (i == null) return; const x = it.chunks[i];
       if (f !== x.f) { st.msg = { ok: false, text: x.no2 || `Belum tepat. ${f === 'O' ? 'Objek harus lolos uji pasif dan uji -nya.' : f === 'Pel' ? 'Pelengkap tidak lolos uji pasif, tetapi juga tidak bebas dihapus atau dipindah.' : 'Keterangan bebas dihapus atau dipindah tanpa merusak kalimat.'} Coba tombol uji dulu.` }; return; }
       st.lab[i] = f;
-      if (f === 'K') { st.msg = { ok: true, text: '✓ Keterangan. Sekarang pilih jenisnya.' }; return; }
+      if (f === 'K' && x.k) { st.msg = { ok: true, text: '✓ Keterangan. Sekarang pilih jenisnya.' }; return; }
       st.msg = { ok: true, text: `✓ <strong>${esc(x.t.replace(/[,.]$/, ''))}</strong> = ${BEDAH_F[f].name.toLowerCase()}. ${x.why || ''}` }; st.sel = null; st.test = null;
     },
     jenis(d, s, k) {
