@@ -1086,11 +1086,19 @@ function ddHtml(id, placeholder, items, selected, cls) {
     <ul id="${id}-list" role="listbox" aria-label="${esc(placeholder)}" class="dd-list" hidden>${rows}</ul></div>`;
 }
 function ddClose(root, focusBtn) { if (!root) return; const l = root.querySelector('.dd-list'), b = root.querySelector('.dd-btn'); if (l.hidden) return; l.hidden = true; b.setAttribute('aria-expanded', 'false'); if (focusBtn) b.focus(); }
+// Daftar pilihan bisa lebih lebar dari tombolnya. Di HP, dropdown pertemuan ada di sebelah kanan, jadi daftarnya
+// bisa keluar layar dan halaman ikut bergeser ke samping. Geser daftar ke kiri secukupnya agar tetap di dalam layar.
+function ddFit(list) {
+  list.style.left = '';
+  const gap = 8, vw = document.documentElement.clientWidth, r = list.getBoundingClientRect();
+  const over = r.right - (vw - gap);
+  if (over > 0) list.style.left = -Math.min(over, Math.max(0, r.left - gap)) + 'px';
+}
 function ddWire(id, onPick) {
   const btn = $(id); if (!btn) return;
   const root = btn.closest('.dd'), list = root.querySelector('.dd-list'), opts = () => [...list.querySelectorAll('.dd-opt')];
-  const open = () => { document.querySelectorAll('.dd').forEach(d => d !== root && ddClose(d)); list.hidden = false; btn.setAttribute('aria-expanded', 'true');
-    const sel = list.querySelector('[aria-selected="true"]') || opts()[0]; if (sel) { sel.focus(); sel.scrollIntoView({ block: 'nearest' }); } };
+  const open = () => { document.querySelectorAll('.dd').forEach(d => d !== root && ddClose(d)); list.hidden = false; btn.setAttribute('aria-expanded', 'true'); ddFit(list);
+    const sel = list.querySelector('[aria-selected="true"]') || opts()[0]; if (sel) { sel.focus({ preventScroll: true }); sel.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } };
   const pick = el => { const it = DD[id][+el.dataset.i]; ddClose(root); if (it) onPick(it.value); };
   btn.onclick = () => list.hidden ? open() : ddClose(root);
   btn.onkeydown = e => { if (['ArrowDown', 'ArrowUp'].includes(e.key)) { e.preventDefault(); open(); } };
@@ -1102,6 +1110,7 @@ function ddWire(id, onPick) {
     else if (e.key === 'Escape') { e.preventDefault(); ddClose(root, true); }
     else if (e.key === 'Tab') ddClose(root); };
 }
+window.addEventListener('resize', () => document.querySelectorAll('.dd-list:not([hidden])').forEach(ddFit));
 document.addEventListener('click', e => { document.querySelectorAll('.dd').forEach(d => { if (!d.contains(e.target)) ddClose(d); }); });
 function renderHeader() {
   const c = S.course, m = S.meeting;
