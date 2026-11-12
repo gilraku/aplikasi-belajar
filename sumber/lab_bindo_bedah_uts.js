@@ -28,9 +28,9 @@ const soal = [
     chunks: [S("Prinsip-prinsip teknik sipil"), P("harus diterapkan", "Harus + verba di- (pasif). Harus ikut menjadi bagian predikat."),
       K("secara ketat", "cara", "Menjawab “bagaimana?”."),
       K("untuk menjamin keamanan dan ketahanan struktur bangunan bertingkat.", "tujuan", "Penanda untuk = tujuan. Seluruh frasa sampai bertingkat satu keterangan.")] },
-  { src: "Soal UTS no. 6", note: "<em>Berdasar</em> selalu menuntut <em>pada …</em>: <em>Laporan itu berdasar.</em> menggantung. Karena wajib hadir, frasa itu dianggap pelengkap (tutor juga mengunci <em>kepada tamu</em> sebagai pelengkap di Latihan 7). Buku yang ketat memakai uji preposisi akan menyebutnya keterangan, jadi nomor ini paling mungkin beda kunci. Yang pasti: <em>kajian mendalam</em> bukan bagian predikat. Ejaan: <em>risiko</em>, bukan <em>resiko</em>.",
+  { src: "Soal UTS no. 6", note: "<em>Berdasar pada …</em> sama polanya dengan <em>bergantung pada …</em> di simulasi UTS no. 2, yang kuncinya S-P-K. Jadi frasa <em>pada …</em> sesudah verba ber- dihitung keterangan. Yang pasti: <em>kajian mendalam</em> bukan bagian predikat. Ejaan: <em>risiko</em>, bukan <em>resiko</em>.",
     chunks: [S("Laporan stabilitas keuangan Bank Indonesia"), P("berdasar", "Verba ber-."),
-      Pel("pada kajian mendalam terhadap risiko kredit, pasar modal, dan sektor perbankan.", "*Kajian mendalam … diberdasar laporan itu.", "*Laporan stabilitas keuangan Bank Indonesia berdasarnya.", "Tanpa bagian ini kalimat menggantung, jadi tidak bebas dihapus.")] }
+      K("pada kajian mendalam terhadap risiko kredit, pasar modal, dan sektor perbankan.", null, "Diawali kata depan pada, sama seperti bergantung pada … di kunci simulasi.")] }
 ];
 
 const tambahan = [
@@ -65,6 +65,6 @@ const tambahan = [
 
 module.exports = {
   type: "lab-bedah", label: "Lab Bahasa • Bedah Kalimat Soal UTS", title: "Bedah Kalimat Panjang ala Soal UTS",
-  desc: "Enam kalimat pertama dari soal UTS, sisanya latihan tambahan dengan gaya yang sama. Kalimat panjang tetap dibedah dengan tangga yang sama: predikat, subjek, lalu uji bagian sesudah predikat. Setelah selesai, catatan di bawah menjelaskan jebakannya.",
-  items: soal.concat(tambahan)
+  desc: "Enam kalimat pertama dari soal UTS, lalu kalimat dari simulasi UTS, sisanya latihan tambahan dengan gaya yang sama. Kalimat panjang tetap dibedah dengan tangga yang sama: predikat, subjek, lalu uji bagian sesudah predikat. Setelah selesai, catatan di bawah menjelaskan jebakannya.",
+  items: soal.concat(require("./data_bindo_simulasi.js").bedah, tambahan)
 };

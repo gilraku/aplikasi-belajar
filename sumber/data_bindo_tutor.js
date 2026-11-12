@@ -157,14 +157,14 @@ P8.cheatsheet.splice(1, 0, { type: "table", label: `${tag} • Jadwal Tutorial S
   defaultNote: "Ini jadwal sesi tutorial dari slide tutor. Penomoran pertemuan tutorial tidak selalu sama dengan penomoran modul di LMS." });
 P8.simulator.unshift(P3.simulator[P3.simulator.length - 1]);
 P8.simulator.unshift(BEDAH_UTS);
-P8.cheatsheet.splice(2, 0, { type: "table", label: "Bedah Kalimat • Soal UTS", title: "Jebakan Label pada Soal UTS", headers: ["No.", "Jawaban yang keliru", "Seharusnya", "Alasan"],
+P8.cheatsheet.splice(4, 0, { type: "table", label: "Bedah Kalimat • Soal UTS", title: "Jebakan Label pada Soal UTS", headers: ["No.", "Jawaban yang keliru", "Seharusnya", "Alasan"],
   rows: [
     ["1", "di samping hukum positif = O", "K", "Diawali kata depan, jadi tidak mungkin objek"],
     ["2", "berdasarkan analisis … = Pel", "K", "Bisa dipindah ke depan dan dihapus"],
     ["3", "memengaruhi = Pel, biaya … = O, di dalam negeri = Ket", "seluruh “faktor eksternal yang … negeri” = Pel", "Klausa yang … menempel pada faktor eksternal. Di dalam klausa itu memengaruhi = P, bukan Pel"],
     ["4", "akan = P, bertemu = O, dalam konferensi … = Pel", "akan bertemu = P; dalam konferensi … = K; besok = K", "Akan bagian predikat; ber- intransitif; ada kata depan dalam"],
     ["5", "harus = P, diterapkan … = Pel, struktur … = O", "harus diterapkan = P; secara ketat = K; untuk menjamin … = K", "Kalimat pasif tidak punya objek"],
-    ["6", "berdasar pada kajian mendalam = P, terhadap risiko … = Pel", "berdasar = P; pada kajian … perbankan = Pel", "Kajian mendalam bukan predikat. Pel atau K bisa beda kunci; lihat catatan di simulator"]
+    ["6", "berdasar pada kajian mendalam = P, terhadap risiko … = Pel", "berdasar = P; pada kajian … perbankan = K", "Kajian mendalam bukan predikat. Pola sama dengan bergantung pada … (simulasi no. 2, kunci S-P-K)"]
   ],
   defaultNote: "Nomor sama dengan urutan kalimat di Simulator. Coba bedah sendiri di tab Simulator sebelum membaca tabel ini." });
 

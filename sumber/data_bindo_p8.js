@@ -1,15 +1,17 @@
 // Bahasa Indonesia — Pertemuan 8: UTS (materi P1–P7; P4 disusun mandiri karena LMS tidak punya modulnya).
 // Bank soal = gabungan kuis tiap pertemuan, diberi label. Latihan, bukan soal ujian asli.
-const bank = [1, 2, 3, 4, 5, 6, 7].flatMap(n => JSON.parse(JSON.stringify(require(`./data_bindo_p${n}.js`).quiz)).map(q => Object.assign(q, { q: `[P${n}] ${q.q}` })));
+const SIM = require("./data_bindo_simulasi.js");
+const bank = SIM.quiz.concat([1, 2, 3, 4, 5, 6, 7].flatMap(n => JSON.parse(JSON.stringify(require(`./data_bindo_p${n}.js`).quiz)).map(q => Object.assign(q, { q: `[P${n}] ${q.q}` }))));
 module.exports = {
   id: "p8", nomor: 8, judul: "UTS: Ulasan Materi P1–P7", ujian: "UTS",
   hero: {
     badge: "Materi 8 • Bahasa Indonesia",
     title: "Satu Halaman untuk Semua Materi UTS",
-    text: "Ulasan <strong>sejarah & ragam bahasa</strong>, <strong>ejaan</strong>, <strong>pembentukan kata, kata baku & diksi</strong>, <strong>kalimat efektif</strong>, dan <strong>teks argumentasi</strong>. Tab Kuis berisi <strong>" + bank.length + " soal latihan</strong> gabungan (bukan soal ujian asli)."
+    text: "Ulasan <strong>sejarah & ragam bahasa</strong>, <strong>ejaan</strong>, <strong>pembentukan kata, kata baku & diksi</strong>, <strong>kalimat efektif</strong>, dan <strong>teks argumentasi</strong>. Tab Kuis dibuka dengan <strong>" + SIM.quiz.length + " soal simulasi UTS</strong>, disusul soal latihan gabungan P1–P7 (total " + bank.length + " soal)."
   },
   cheatsheet: [
     { type: "callout", tone: "warn", heading: "Strategi UTS", html: "Kerjakan Kuis sampai skor penuh, lalu baca pembahasan tiap soal. Soal Bahasa Indonesia sering berbentuk “manakah yang <strong>benar/baku/efektif</strong>”: periksa satu per satu pilihan dengan daftar jebakan di bawah, jangan langsung memilih yang terdengar enak." },
+    ...SIM.cheatsheet,
     { type: "table", label: "Interaktif 1 • Peta Materi", title: "Apa yang Wajib Dikuasai", headers: ["P", "Topik", "Inti"],
       rows: [["1", "Sejarah, kedudukan, fungsi, ragam", "Prasasti Melayu kuno, 1928 & 1945, bahasa nasional vs negara, ragam bahasa"], ["2", "Ejaan (EYD V)", "Huruf kapital, miring/tebal, tanda baca, singkatan, angka"], ["3", "Pembentukan kata & diksi", "Serapan (adopsi, adaptasi, penerjemahan, kreasi), afiks, peluluhan KTSP, syarat diksi"], ["4", "Pendalaman kata & diksi (disusun mandiri)", "Kata ulang, gabungan kata pisah/serangkai, pemendekan, ragam baku, homofon & pasangan kata"], ["5", "Kalimat efektif", "Pola S-P-O-Pel-K, objek vs pelengkap, jenis kalimat, 7 syarat"], ["6", "Kalimat efektif lanjutan", "Transitif/intransitif, tunggal/majemuk, KMB perluasan S/O/K, koma anak kalimat"], ["7", "Tugas 1 argumentasi", "Tesis, argumen, penegasan ulang"]] },
     { type: "table", label: "Interaktif 2 • Jebakan Baku", title: "Bentuk yang Sering Diujikan", headers: ["Tidak baku", "Baku", "P"],
