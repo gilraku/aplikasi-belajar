@@ -94,7 +94,7 @@ const quiz = [
   { q: "“Fenomena hukum di Indonesia adalah cerminan dari pergulatan antara cita-cita hukum dengan realitas praktik dalam konteks sosial politik yang dinamis.” Pola/struktur kalimat tersebut adalah …",
     opts: ["S-P-O", "S-P-O-K", "S-P-Pelengkap-K", "S-P", "S-P-K"], ans: 2,
     exp: "P = <em>adalah</em> (kopulatif) selalu membawa pelengkap: <em>cerminan dari pergulatan … realitas praktik</em>. <em>Dalam konteks sosial politik yang dinamis</em> = K." }
-].map((s, i) => Object.assign(s, { q: T + "No. " + (i + 1) + ". " + s.q }));
+].map(s => Object.assign(s, { q: T + s.q }));
 
 const cheatsheet = [
   { type: "table", label: "Simulasi UTS • Pola Kalimat", title: "Cara Kunci Simulasi Melabeli Fungsi", headers: ["Ciri bagian kalimat", "Fungsi", "No."],
@@ -107,7 +107,7 @@ const cheatsheet = [
       ["Anak kalimat di depan (<em>Meskipun …,</em>)", "K, jadi polanya diawali K", "5"],
       ["Mencari kalimat berpola sama", "Samakan urutan fungsi (mis. K-S-P-O), bukan panjang atau topiknya", "29"]
     ],
-    defaultNote: "Diambil dari kunci kuis simulasi UTS. Kerjakan soalnya di tab Kuis (berlabel [Simulasi UTS]) sebelum membaca tabel ini." },
+    defaultNote: "Diambil dari kunci kuis simulasi UTS. Nomor sama dengan urutan soal [Simulasi UTS] di tab Kuis. Kerjakan soalnya dulu sebelum membaca tabel ini." },
   { type: "table", label: "Simulasi UTS • Kalimat Efektif", title: "Jebakan yang Muncul di Simulasi", headers: ["Salah", "Benar", "No."],
     rows: [
       ["Menurut Siregar (2020) menyatakan …", "Siregar (2020) menyatakan …", "1"],
