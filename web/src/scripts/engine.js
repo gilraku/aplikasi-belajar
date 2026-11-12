@@ -1480,11 +1480,11 @@ function renderQuiz() {
   const exDone = ex ? Object.keys(ex.ans).length : 0;
   const controls = ex
     ? `<div class="p-3 rounded-xl bg-amber-50 border border-amber-200 flex flex-wrap items-center gap-2">
-        <span class="text-xs font-bold text-amber-900 flex-1 min-w-[10rem]">📝 ${ex.quick ? 'Simulasi Cepat' : 'Mode ujian'} • terjawab ${exDone}/${sessionTotal}</span>
+        <span class="text-xs font-bold text-amber-900 flex-1 min-w-[10rem]">📝 ${examName(ex)} • terjawab ${exDone}/${sessionTotal}</span>
         <button onclick="cancelExam()" class="${btn} bg-white border border-slate-300 text-slate-700 hover:bg-slate-50">Batal</button>
         <button onclick="finishExam()" class="${btn} bg-indigo-600 hover:bg-indigo-700 text-white">Selesai & lihat nilai</button></div>`
     : review
-      ? `<div class="rounded-xl bg-indigo-50 p-3 text-sm flex flex-wrap items-center gap-2"><strong>${review.quick ? 'Simulasi Cepat' : 'Mode ujian'} • ${review.score}/${sessionTotal} benar</strong><button onclick="closeExamReview()" class="${btn} bg-white border border-slate-300">Kembali ke latihan</button></div>`
+      ? `<div class="rounded-xl bg-indigo-50 p-3 text-sm flex flex-wrap items-center gap-2"><strong>${examName(review)} • ${review.score}/${sessionTotal} benar</strong><button onclick="closeExamReview()" class="${btn} bg-white border border-slate-300">Kembali ke latihan</button></div>`
       : `<div class="space-y-2">
         <div class="flex items-center gap-2 overflow-x-auto pb-0.5 [&>*]:shrink-0">
           <span class="${btn} bg-indigo-100 text-indigo-800">Skor: ${score} / ${total}</span>
@@ -1492,6 +1492,7 @@ function renderQuiz() {
         <div class="flex flex-wrap items-center gap-2">
           ${st.wrong.length ? `<button onclick="retryWrong()" class="${btn} bg-rose-50 text-rose-700 hover:bg-rose-100">🔁 Ulangi yang salah (${st.wrong.length})</button>` : ''}
           <button onclick="startExam()" class="${btn} bg-amber-50 text-amber-800 hover:bg-amber-100">📝 Mode ujian</button>
+          ${simIdx(m).length ? `<button onclick="startExam('sim')" class="${btn} bg-emerald-50 text-emerald-800 hover:bg-emerald-100">🎯 Simulasi UTS · ${simIdx(m).length} soal</button>` : ''}
           ${m.nomor === 8 && total > 25 ? `<button onclick="startExam(true)" class="${btn} bg-indigo-50 text-indigo-800">Simulasi Cepat · 25 soal</button>` : ''}
           ${lastResult ? `<button onclick="openExamReview()" class="${btn} bg-slate-100 text-slate-700">Hasil simulasi terakhir</button>` : ''}
           <button onclick="resetQuiz()" class="${btn} bg-slate-100 hover:bg-slate-200 text-slate-700">↺ Ulangi kuis</button></div></div>`;
@@ -1567,16 +1568,21 @@ function sampleExam(quiz, limit = 25, random = Math.random) {
   }
   return selected;
 }
+// Soal berlabel [Simulasi UTS] (salinan kuis simulasi LMS), dikerjakan berurutan seperti di LMS.
+const simIdx = m => (m.quiz || []).map((q, i) => /^\[Simulasi UTS\]/.test(q.q) ? i : -1).filter(i => i >= 0);
+const examName = x => x.sim ? 'Simulasi UTS' : x.quick ? 'Simulasi Cepat' : 'Mode ujian';
 function startExam(quick = false) {
-  openModal(`<h3 class="text-lg font-extrabold text-slate-900">${quick ? 'Mulai Simulasi Cepat?' : '📝 Mulai mode ujian?'}</h3>
-    <ul class="text-sm text-slate-600 mt-2 list-disc pl-5 space-y-1"><li>${quick ? 'Kerjakan 25 soal yang diambil dari berbagai topik.' : `Kerjakan semua ${S.meeting.quiz.length} soal.`}</li><li>Jawaban tersimpan di browser ini dan pembahasan muncul setelah selesai.</li></ul>
+  const sim = quick === 'sim';
+  openModal(`<h3 class="text-lg font-extrabold text-slate-900">${sim ? '🎯 Mulai Simulasi UTS?' : quick ? 'Mulai Simulasi Cepat?' : '📝 Mulai mode ujian?'}</h3>
+    <ul class="text-sm text-slate-600 mt-2 list-disc pl-5 space-y-1"><li>${sim ? `Kerjakan ${simIdx(S.meeting).length} soal simulasi UTS berurutan, seperti kuis simulasi di LMS.` : quick ? 'Kerjakan 25 soal yang diambil dari berbagai topik.' : `Kerjakan semua ${S.meeting.quiz.length} soal.`}</li><li>Jawaban tersimpan di browser ini dan pembahasan muncul setelah selesai.</li></ul>
     <div class="flex justify-end gap-2 mt-5"><button onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200">Batal</button>
-    <button onclick="beginExam(${!!quick})" class="px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700">Mulai</button></div>`, 'max-w-md');
+    <button onclick="beginExam(${sim ? "'sim'" : !!quick})" class="px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700">Mulai</button></div>`, 'max-w-md');
 }
 function beginExam(quick = false) {
   closeModal();
   S.examReview = false;
-  S.exam = loadExam() || { quick, indices: quick ? sampleExam(S.meeting.quiz) : S.meeting.quiz.map((_, i) => i), ans: {}, start: Date.now(), id: Math.random().toString(36).slice(2) };
+  const sim = quick === 'sim'; if (sim) quick = false;
+  S.exam = loadExam() || { quick, sim, indices: sim ? simIdx(S.meeting) : quick ? sampleExam(S.meeting.quiz) : S.meeting.quiz.map((_, i) => i), ans: {}, start: Date.now(), id: Math.random().toString(36).slice(2) };
   S.examPersisted = store.set(examKey('active'), S.exam);
   renderQuiz(); window.scrollTo({ top: 0 });
 }

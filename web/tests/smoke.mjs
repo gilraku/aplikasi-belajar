@@ -148,6 +148,16 @@ try {
   await page.getByRole('button', { name: 'Hasil simulasi terakhir' }).click();
   if (!(await page.getByText('Simulasi Cepat •', { exact: false }).count())) fail('hasil Simulasi Cepat tidak dapat ditinjau setelah reload');
 
+  cur = 'simulasi UTS BIndo P8: 30 soal berurutan';
+  await visit('bahasa-indonesia', 'p8', 'quiz');
+  await page.getByRole('button', { name: 'Simulasi UTS · 30 soal' }).click();
+  await page.getByRole('button', { name: 'Mulai', exact: true }).click();
+  await page.getByText('Simulasi UTS • terjawab 0/30').waitFor();
+  if (await page.evaluate(() => S.exam.indices.join(',')) !== Array.from({ length: 30 }, (_, i) => i).join(',')) fail('Simulasi UTS harus berisi soal [Simulasi UTS] sesuai urutan');
+  await page.getByRole('button', { name: 'Selesai & lihat nilai', exact: true }).click();
+  await page.getByRole('button', { name: 'Selesai', exact: true }).click();
+  await page.getByText('Simulasi UTS • 0/30 benar').waitFor();
+
   cur = 'lab SQL P6–P8';
   await visit(basis, 'p6', 'simulator');
   const click = name => page.getByRole('button', { name, exact: true }).click();
