@@ -480,7 +480,7 @@ const M = {
 <li>Ada CSS <strong>inline</strong> (atribut ${c("style")})? Inline menang atas internal dan external.</li>
 <li>Bandingkan <strong>kespesifikan selector</strong>: id lebih kuat dari class, class lebih kuat dari tag. Selector yang lebih spesifik (lebih tepat menunjuk elemen) menang.</li>
 <li>Masih sama kuat? Aturan yang <strong>ditulis atau dimuat paling akhir</strong> menang.</li></ol>
-<p>Perhatikan langkah 4: internal dan external <strong>tidak punya urutan kekuatan tetap</strong>. Jika ${c("<link>")} ditulis sebelum ${c("<style>")}, aturan internal yang menang karena dibaca belakangan; jika urutannya dibalik, external yang menang. Karena itu jawaban yang benar untuk soal "prioritas tertinggi" adalah <strong>inline</strong>, bukan internal atau external.</p>`, "➕ Penjelasan"),
+<p>Perhatikan langkah 4: internal dan external <strong>tidak punya urutan kekuatan tetap</strong>. Jika kedua aturan memakai selector yang sama kuat (misalnya sama-sama ${c("p")}) dan ${c("<link>")} ditulis sebelum ${c("<style>")}, aturan internal yang menang karena dibaca belakangan; jika urutannya dibalik, external yang menang. Urutan baru menentukan setelah langkah 1–3 seri: ${c("#info")} di file external tetap mengalahkan ${c("p")} di ${c("<style>")} yang ditulis belakangan. Karena itu jawaban yang benar untuk soal "prioritas tertinggi" adalah <strong>inline</strong>, bukan internal atau external.</p>`, "➕ Penjelasan"),
     specificity,
     ex("Latihan Interaktif", "Warna Apa yang Tampil?", ["Situasi (elemen &lt;p id=\"info\" class=\"teks\"&gt;)", "Warna"], ["merah", "biru", "hijau"], [
       ["p { color: merah } lalu .teks { color: biru }", "biru", "✓ class mengalahkan tag."],

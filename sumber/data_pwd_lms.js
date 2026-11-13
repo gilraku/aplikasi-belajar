@@ -104,7 +104,7 @@ const P5 = [
     "Inline = atribut `style=\"properti: nilai;\"` di tag pembuka. Atribut `css` tidak ada, nilai tanpa nama properti tidak berarti apa-apa, dan `class` berisi nama class, bukan CSS."],
   // 16
   ["Manakah sintaks yang benar untuk media query di CSS?", ["`@media max-width: 600px { ... }`", "`@media screen and (max-width: 600px) { ... }`", "`@media (width: 600px) { ... }`", "`@query screen (width: 600px) { ... }`", "`@screen (max-width: 600px) { ... }`"], 1,
-    "Kondisi wajib di dalam kurung dan diawali `@media`. Opsi c sebenarnya sintaks yang sah, tetapi hanya berlaku untuk lebar tepat 600px, jadi bukan bentuk media query yang dimaksud soal. `@query` dan `@screen` tidak ada."],
+    "<strong>Ambigu.</strong> Kondisi wajib di dalam kurung dan diawali `@media`, jadi a, d, dan e pasti salah. Opsi c (`(width: 600px)`) sebenarnya juga sintaks yang sah, hanya saja berlaku untuk lebar tepat 600px. Kunci ini memilih b karena itu bentuk lengkap yang diajarkan modul (jenis media + `and` + syarat `max-width`)."],
   // 17
   ["Manakah pernyataan yang benar tentang Flexbox?", ["Flexbox dirancang untuk layout satu dimensi", "Flexbox tidak mendukung responsivitas", "Flexbox hanya digunakan untuk tabel", "Flexbox tidak dapat digunakan dengan Grid", "Flexbox digunakan untuk layout dua dimensi"], 0,
     "Flexbox menyusun item dalam satu arah: satu baris atau satu kolom. Baris dan kolom sekaligus (dua dimensi) adalah tugas Grid. Keduanya sering dipakai bersama."],
