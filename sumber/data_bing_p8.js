@@ -15,7 +15,20 @@ const lintas = [
   Q("[Lintas] Respon yang benar untuk “Would you like some coffee?”", ["Yes, please.", "Yes, I would like any.", "Yes, I like.", "Yes, I do coffee."], 0, "P5 + P7."),
   Q("[Lintas] <em>Andi and Rina ___ from Bali. ___ live in Denpasar.</em>", ["are / They", "is / They", "are / Them", "is / Their"], 0, "P1 + P2 + P3."),
   Q("[Lintas] <em>Excuse me. ___ the bill, please.</em>", ["I'd like", "I like", "I liking", "I want to liking"], 0, "P5."),
-  Q("[Lintas] Kata <em>quickly</em> dalam <em>She can speak English quickly</em> adalah…", ["Adverb of manner", "Adjective", "Modal verb", "Noun"], 0, "P1 + P6.")
+  Q("[Lintas] Kata <em>quickly</em> dalam <em>She can speak English quickly</em> adalah…", ["Adverb of manner", "Adjective", "Modal verb", "Noun"], 0, "P1 + P6."),
+  Q("[Kisi UTS] <em>When I was five, I ___ ride a bicycle, but now I can.</em>", ["couldn't", "can't", "don't", "wasn't"], 0, "P6: keterangan lampau (when I was five) → could/couldn't + V1."),
+  Q("[Kisi UTS] <em>My grandfather ___ speak Dutch when he was young.</em>", ["could", "can", "coulds", "could to"], 0, "P6: lampau → could; tanpa -s, tanpa to."),
+  Q("[Kisi UTS] <em>___ you swim when you were a child?</em>", ["Could", "Can", "Did", "Were"], 0, "P6: pertanyaan kemampuan lampau → Could + S + V1."),
+  Q("[Kisi UTS] <em>My sister likes ___ to music in the evening.</em>", ["listening", "listen", "listens", "to listening"], 0, "P5: like + gerund (V-ing)."),
+  Q("[Kisi UTS] <em>He doesn't like ___ early on Sundays.</em>", ["getting up", "get up", "gets up", "got up"], 0, "P5: like + gerund tetap -ing di kalimat negatif."),
+  Q("[Kisi UTS] <em>I don't have ___ money, so I can't buy ___ books.</em>", ["much / many", "many / much", "much / much", "many / many"], 0, "P7: money uncountable → much; books countable → many."),
+  Q("[Kisi UTS] <em>How ___ students are there in your class?</em>", ["many", "much", "any", "some"], 0, "P7: students countable jamak → How many."),
+  Q("[Kisi UTS] <em>___ shoes over there are very expensive.</em>", ["Those", "This", "That", "These"], 0, "P1: jauh (over there) + jamak (shoes) → Those."),
+  Q("[Kisi UTS] <em>Look at ___ book in my hand. It's new.</em>", ["this", "these", "those", "that"], 0, "P1: dekat (in my hand) + tunggal → this."),
+  Q("[Kisi UTS] <em>There ___ a lot of rice, but there ___ any vegetables.</em>", ["is / aren't", "are / isn't", "is / isn't", "are / aren't"], 0, "P7: rice uncountable → is; vegetables jamak → aren't."),
+  Q("[Kisi UTS] <em>She's ___ honest girl and she studies at ___ university in Jakarta.</em>", ["an / a", "a / an", "an / an", "a / a"], 0, "P2/P6: honest dibaca tanpa bunyi h (vokal) → an; university berbunyi /ju:/ (konsonan) → a."),
+  Q("[Kisi UTS] Bacaan: <em>Rudi lives in Bandung. He works in a bank. He usually drives to work, but today his car is broken, so he is taking the bus.</em> How does Rudi usually go to work?", ["By car", "By bus", "On foot", "By train"], 0, "Reading: usually drives → by car. Hari ini naik bus hanya pengecualian."),
+  Q("[Kisi UTS] Dari bacaan yang sama: kalimat yang BENAR adalah…", ["Rudi works in a bank.", "Rudi lives in Jakarta.", "Rudi always takes the bus.", "Rudi doesn't have a car."], 0, "Reading: tertulis He works in a bank. Ia punya mobil (his car is broken).")
 ];
 const bank = [1, 2, 3, 5, 6, 7].flatMap(n => clone(require(`./data_bing_p${n}.js`).quiz).map(q => Object.assign(q, { q: `[P${n}] ${q.q}` }))).concat(lintas);
 module.exports = {
