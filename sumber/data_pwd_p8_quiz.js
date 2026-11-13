@@ -93,7 +93,10 @@ const S = [
   L(1), L(11), L(13), L(15), L(19), L(22), L(24), L(25), L(27), L(28), L(29),
 
   // ===== Kuis LMS P5 yang belum ada di atas =====
-  L5(1), L5(2), L5(3), L5(4), L5(5), L5(6), L5(7), L5(8), L5(10), L5(12), L5(13), L5(14), L5(15), L5(16), L5(17), L5(18), L5(20), L5(21), L5(22), L5(23), L5(24), L5(25), L5(26), L5(27), L5(28), L5(29), L5(30)
+  L5(1), L5(2), L5(3), L5(4), L5(5), L5(6), L5(7), L5(8), L5(10), L5(12), L5(13), L5(14), L5(15), L5(16), L5(17), L5(18), L5(20), L5(21), L5(22), L5(23), L5(24), L5(25), L5(26), L5(27), L5(28), L5(29), L5(30),
+
+  // ===== Tambahan P7 (ditaruh di akhir agar progres soal lama tidak bergeser) =====
+  [7, "Fungsi metode `classList.replace()` adalah …", ["Menambahkan kelas baru ke elemen", "Menghapus semua kelas dari elemen", "Mengganti satu kelas dengan kelas lain", "Mengecek apakah elemen memiliki kelas tertentu", "Membalik ada atau tidaknya sebuah kelas"], 2, "Contoh `el.classList.replace(\"lama\", \"baru\")`. add = menambah, contains = mengecek, toggle = membalik."]
 ];
 
 module.exports = S.map(x => {

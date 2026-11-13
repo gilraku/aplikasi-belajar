@@ -295,12 +295,13 @@ const MOD = fix({
         ["Ubah isi HTML", "`el.innerHTML = \"<p>Teks Baru</p>\";`"],
         ["Ubah style", "`el.style.color = \"blue\";` • `el.style.backgroundColor = \"#f0f0f0\";`"],
         ["Atur atribut", "`el.setAttribute(\"placeholder\", \"Masukkan teks\");`"],
-        ["Baca atribut", "`let ph = el.getAttribute(\"placeholder\");`"]
+        ["Baca atribut", "`let ph = el.getAttribute(\"placeholder\");`"],
+        ["Atur class", "`el.classList.add(\"x\")` • `remove(\"x\")` • `toggle(\"x\")` • `contains(\"x\")` • `replace(\"lama\", \"baru\")`"]
       ],
       modes: [
         { label: "textContent vs innerHTML", target: "row", row: 1, title: "Bedanya", text: "<code>textContent</code> menampilkan teks apa adanya (tag ikut tampil sebagai tulisan). <code>innerHTML</code> membaca tag sebagai HTML. Modul: “hati-hati dengan keamanan”. Lihat demo di bawah." },
         { label: "➕ camelCase", target: "row", row: 2, title: "Nama properti style", text: "CSS <code>background-color</code> → JS <code>style.backgroundColor</code>; <code>font-size</code> → <code>style.fontSize</code>. Nilai berupa string, termasuk satuan: <code>style.width = \"50%\"</code>." },
-        { label: "➕ classList", target: "row", row: 2, title: "Lebih rapi: ganti class", text: "Simpan gaya di CSS (<code>.dark { ... }</code>) lalu <code>document.body.classList.toggle(\"dark\")</code>. Ada juga <code>classList.add</code>, <code>remove</code>, <code>contains</code>." }
+        { label: "➕ classList", target: "row", row: 2, title: "Lebih rapi: ganti class", text: "Simpan gaya di CSS (<code>.dark { ... }</code>) lalu <code>document.body.classList.toggle(\"dark\")</code>. Ada juga <code>classList.add</code>, <code>remove</code>, <code>contains</code>, dan <code>replace(\"lama\", \"baru\")</code> untuk mengganti satu class dengan class lain." }
       ]
     },
     {
@@ -412,7 +413,8 @@ const MOD = fix({
     { tag: "CRUD", q: "Hubungan materi ini dengan proyek akhir?", a: "Menambah baris tabel = fungsi Create; menghapus baris = fungsi Delete; ganti tema = peningkatan UX." },
     { tag: "➕ Keamanan", q: "Apa itu XSS dan cara mencegahnya di sini?", a: "Cross-Site Scripting: input pengguna berisi tag/script ikut dijalankan karena dimasukkan via innerHTML. Cegah dengan `textContent` untuk data dari pengguna." },
     { tag: "➕ Error", q: "Arti “Cannot read properties of null”?", a: "Elemen tidak ditemukan: id salah, memakai #, atau script jalan sebelum elemen ada." },
-    { tag: "➕ classList", q: "Cara rapi membuat ganti tema?", a: "Tulis gaya `.dark` di CSS, lalu `document.body.classList.toggle(\"dark\")`." }
+    { tag: "➕ classList", q: "Cara rapi membuat ganti tema?", a: "Tulis gaya `.dark` di CSS, lalu `document.body.classList.toggle(\"dark\")`." },
+    { tag: "classList", q: "Fungsi `classList.replace()`?", a: "Mengganti satu kelas dengan kelas lain: `el.classList.replace(\"lama\", \"baru\")`. Jika class lama tidak ada, tidak terjadi apa-apa (hasil `false`)." }
   ],
   quiz: [
     { q: "DOM merepresentasikan dokumen HTML dalam bentuk …",
@@ -454,7 +456,11 @@ const MOD = fix({
     { q: "Muncul error “Cannot read properties of null (reading 'addEventListener')”. Penyebab yang PALING mungkin adalah …",
       opts: ["Browser tidak mendukung JavaScript", "Elemen tidak ditemukan karena id salah atau script dijalankan sebelum elemen ada", "Terlalu banyak event listener", "CSS belum dihubungkan"], ans: 1,
       exp: "➕ Periksa ejaan id dan posisi &lt;script&gt; (akhir body / defer).",
-      optExp: ["Semua browser modern mendukung.", "Benar.", "Tidak menyebabkan null.", "Tidak terkait."] }
+      optExp: ["Semua browser modern mendukung.", "Benar.", "Tidak menyebabkan null.", "Tidak terkait."] },
+    { q: "Fungsi metode `classList.replace()` adalah …",
+      opts: ["Menambahkan kelas baru ke elemen", "Menghapus semua kelas dari elemen", "Mengganti satu kelas dengan kelas lain", "Mengecek apakah elemen memiliki kelas tertentu"], ans: 2,
+      exp: "Contoh: `el.classList.replace(\"lama\", \"baru\")`: class lama dilepas, class baru dipasang.",
+      optExp: ["Itu classList.add().", "Tidak ada method classList untuk itu; className = \"\" mengosongkan semua.", "Benar.", "Itu classList.contains()."] }
   ],
   ringkasan: `*RANGKUMAN KILAT UTS PEMROGRAMAN WEB DINAMIS — PERTEMUAN 7*
 📚 *Manipulasi DOM*
@@ -466,7 +472,8 @@ const MOD = fix({
 • querySelector("#id / .class / tag / [atribut]") → elemen pertama
 • querySelectorAll("li") → NodeList, loop dengan forEach
 
-3️⃣ *Ubah:* el.textContent = "..." • el.innerHTML = "<p>..</p>" (hati-hati) • el.style.backgroundColor = "..." (camelCase) • setAttribute / getAttribute
+3️⃣ *Ubah:* el.textContent = "..." • el.innerHTML = "<p>..</p>" (hati-hati) • el.style.backgroundColor = "..." (camelCase) • setAttribute / getAttribute / removeAttribute
+• classList: add • remove • toggle • contains • replace("lama", "baru") = ganti satu class dengan class lain
 
 4️⃣ *Tambah/Hapus:* createElement("tr") → isi → parent.appendChild(el) • el.remove() • tbody.innerHTML = ""
 
