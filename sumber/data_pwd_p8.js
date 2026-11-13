@@ -149,7 +149,7 @@ module.exports = fix({
   hero: {
     badge: "Pertemuan 8 • UTS Pemrograman Web Dinamis",
     title: "Siap Ujian CPMK: Ulang Semua Materi, Lalu Coba Proyek Latihan",
-    text: "Ujian CPMK diambil dari materi pertemuan 1–8, hanya <strong>1 kali kesempatan</strong>, dan bisa berbentuk <strong>proyek</strong>. Halaman ini berisi peta materi P1–P7, bank soal UTS 68 soal pilihan ganda 5 opsi (seperti format Penugasan 1), dan <strong>latihan proyek gabungan</strong> HTML + CSS + JavaScript. Latihan ini <strong>bukan soal ujian asli</strong>, hanya pemanasan."
+    text: "Ujian CPMK diambil dari materi pertemuan 1–8, hanya <strong>1 kali kesempatan</strong>, dan bisa berbentuk <strong>proyek</strong>. Halaman ini berisi peta materi P1–P7, bank soal UTS " + require("./data_pwd_p8_quiz.js").length + " soal pilihan ganda 5 opsi (termasuk soal kuis LMS bertanda <strong>[Kuis LMS]</strong>, yang bisa dikerjakan berurutan lewat tombol 🎯 Kuis LMS), dan <strong>latihan proyek gabungan</strong> HTML + CSS + JavaScript. Latihan ini <strong>bukan soal ujian asli</strong>, hanya pemanasan."
   },
   cheatsheet: [
     {

@@ -88,7 +88,7 @@ module.exports = fix({
   hero: {
     badge: "Materi 1 • Pemrograman Web Dinamis",
     title: "Dari Ketik URL sampai Halaman Muncul, lalu Bikin Halaman HTML Pertamamu!",
-    text: "Pahami <strong>internet, web, HTTP, URL/URI</strong>, <strong>web statis vs dinamis</strong>, <strong>client side vs server side</strong>, <strong>domain, DNS & hosting</strong>, lalu praktik <strong>HTML dasar</strong> langsung di editor live. Kotak bertanda <strong>➕ Tambahan</strong> adalah materi penting di luar modul."
+    text: "Pahami <strong>internet, web, HTTP, URL/URI</strong>, <strong>web statis vs dinamis</strong>, <strong>client side vs server side</strong>, <strong>domain, DNS & hosting</strong>, lalu praktik <strong>HTML dasar</strong> langsung di editor live. Kotak bertanda <strong>➕ Tambahan</strong> adalah materi penting di luar modul. Tab Kuis juga memuat <strong>30 soal kuis LMS</strong> (tombol 🎯 Kuis LMS)."
   },
   cheatsheet: [
     {
@@ -527,6 +527,9 @@ module.exports = fix({
       opts: ["HTML tidak bersifat case sensitive", "`<head>` berisi metadata seperti `<title>`", "HTML adalah bahasa pemrograman yang dieksekusi server", "`<br>` tidak memerlukan tag penutup"], ans: 2,
       exp: "HTML adalah bahasa markup (bukan bahasa pemrograman) dan diproses browser di sisi client.",
       optExp: ["Benar adanya (`<BODY>` = `<body>`).", "Benar adanya.", "Ini yang salah, jadi ini jawabannya.", "Benar adanya, `<br>` adalah void element."] }
+ ,
+    // Soal kuis LMS P1 (30 soal yang sudah muncul), ditaruh di akhir agar progres soal lama tidak bergeser.
+    ...require("./data_pwd_lms.js").p1
   ],
   ringkasan: `*RANGKUMAN KILAT UTS PEMROGRAMAN WEB DINAMIS — PERTEMUAN 1*
 📚 *Konsep Dasar Web & Pengenalan HTML*
