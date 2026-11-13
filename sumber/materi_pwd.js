@@ -727,6 +727,43 @@ console.log(\`Halo \${nama}, semester \${semester}\`); // template literal ➕`,
         { label: "typeof array", target: "row", row: 3, title: "Array juga \"object\"", text: "<code>typeof [1, 2]</code> bernilai <code>\"object\"</code>. Untuk memastikan sebuah array, pakai <code>Array.isArray(x)</code>." },
         { label: "NaN", target: "none", title: "NaN bertipe number", text: "<code>typeof NaN</code> bernilai <code>\"number\"</code> walaupun artinya \"bukan angka\". Cek dengan <code>isNaN(x)</code>." },
         { label: "Primitif vs object", target: "none", title: "Dua kelompok besar", text: "String, number, boolean, undefined, dan null adalah nilai tunggal (primitif). Array dan object menyimpan banyak nilai, dan isinya boleh diubah walaupun dideklarasi dengan <code>const</code>." }] },
+    A("Membuat Array: Kurung Siku [ ]", `<p><strong>Array</strong> adalah satu variabel yang menyimpan <strong>banyak nilai berurutan</strong>, misalnya daftar nilai ujian atau daftar nama mahasiswa. Daripada membuat ${c("nilai1")}, ${c("nilai2")}, ${c("nilai3")}, cukup satu variabel: ${c("let nilai = [80, 75, 90];")}</p>
+<p>Cara menulisnya: buka dengan kurung siku ${c("[")}, tulis isinya dipisah koma, tutup dengan ${c("]")}. Isi boleh angka, teks, boolean, bahkan object. Array kosong ditulis ${c("[]")}, lalu diisi belakangan dengan ${c("push()")}.</p>
+<p>Setiap isi punya nomor urut yang disebut <strong>indeks</strong>, dimulai dari <strong>0</strong>, bukan 1. Pada ${c("let arr = [1, 2, 3]")}, ${c("arr[0]")} bernilai 1 dan ${c("arr[2]")} bernilai 3. Jumlah isinya dibaca dengan ${c("arr.length")} (hasilnya 3), jadi isi terakhir selalu ada di indeks ${c("arr.length - 1")}.</p>
+<p>Kapan dipakai: setiap kali datanya berupa <em>daftar</em> yang akan diulang, dihitung, atau ditampilkan satu per satu, misalnya baris tabel di P7–P8. Kalau datanya justru satu benda dengan beberapa keterangan (nim, nama, ipk), pakai <strong>object</strong> dengan kurung kurawal.</p>`, "Bagian 2 • ➕ Tambahan"),
+    { type: "table", label: "Tabel Interaktif", title: "Kurung Mana Membuat Apa?", headers: ["Kode", "Hasilnya", "Keterangan"],
+      rows: [
+        ["`let arr = [1, 2, 3];`", "Array berisi 3 angka", "✓ Cara benar membuat array"],
+        ["`let mhs = { nim: \"2401\", nama: \"Ani\" };`", "Object", "Kurung kurawal membuat object: pasangan nama: nilai"],
+        ["`let arr = {1, 2, 3};`", "Error (SyntaxError)", "Kurung kurawal butuh pasangan nama: nilai, bukan daftar angka"],
+        ["`let arr = (1, 2, 3);`", "Angka 3 saja", "Kurung biasa bukan array; koma di dalamnya mengambil nilai terakhir"],
+        ["`let arr = 1, 2, 3;`", "Error (SyntaxError)", "Tanpa kurung, JavaScript tidak tahu bahwa ini satu daftar"],
+        ["`let arr = <1, 2, 3>;`", "Error (SyntaxError)", "Kurung sudut tidak dipakai untuk apa pun di JavaScript (itu tanda tag HTML)"]
+      ],
+      modes: [
+        { label: "Siku vs kurawal", target: "row", row: 1, title: "[ ] untuk daftar, { } untuk satu benda", text: "Array <code>[ ]</code> diakses dengan nomor: <code>arr[0]</code>. Object <code>{ }</code> diakses dengan nama: <code>mhs.nama</code>. Data tabel biasanya gabungan keduanya: array berisi object, <code>[{ nama: \"Ani\" }, { nama: \"Budi\" }]</code>." },
+        { label: "Kurung biasa", target: "row", row: 3, title: "( ) tidak pernah membuat array", text: "Kurung biasa dipakai untuk mengelompokkan hitungan <code>(2 + 3) * 4</code> dan memanggil fungsi <code>alert(\"Hai\")</code>. <code>(1, 2, 3)</code> hanya menghasilkan nilai terakhir, yaitu 3." }
+      ] },
+    code("array.js", `let nilai = [80, 75, 90];        // array berisi 3 angka
+console.log(nilai[0]);            // 80  (indeks pertama = 0)
+console.log(nilai[2]);            // 90
+console.log(nilai.length);        // 3
+console.log(nilai[3]);            // undefined: indeks 3 tidak ada
+
+nilai[1] = 85;                    // mengganti isi indeks 1
+nilai.push(70);                   // menambah di akhir → [80, 85, 90, 70]
+
+let kosong = [];                  // array kosong, diisi belakangan
+kosong.push("PWD");               // ["PWD"]
+
+let campur = ["Ani", 20, true];   // isi boleh beda tipe
+console.log(Array.isArray(campur)); // true`, "Indeks dimulai dari 0, jadi array berisi 3 nilai punya indeks 0, 1, dan 2.", "Membuat dan Membaca Array"),
+    tip("Kesalahan yang sering terjadi dengan array", `<ul class="list-disc pl-5 space-y-1">
+<li>Memakai kurung kurawal: ${c("let arr = {1, 2, 3};")}. Kurung kurawal membuat object dan hasilnya error. Array selalu memakai kurung siku ${c("[ ]")}.</li>
+<li>Mengira indeks dimulai dari 1. ${c("arr[1]")} adalah isi <strong>kedua</strong>, bukan pertama.</li>
+<li>Mengambil ${c("arr[arr.length]")} untuk isi terakhir. Hasilnya ${c("undefined")}; yang benar ${c("arr[arr.length - 1]")}.</li>
+<li>Lupa koma di antara isi: ${c("[1 2 3]")} menghasilkan error.</li>
+<li>Mengira ${c("const")} membuat isi array tidak bisa diubah. ${c("const arr = [1]; arr.push(2);")} tetap boleh; yang dilarang hanya mengganti variabelnya dengan array lain (${c("arr = [5]")}).</li></ul>`, "warn"),
     A("Operator: Aritmatika, Perbandingan, dan Logika", `<p><strong>Operator</strong> adalah simbol yang mengolah nilai. Ada tiga kelompok yang wajib dikuasai, ditambah operator penugasan ${c("=")} yang hanya <em>mengisi</em> variabel, bukan membandingkan.</p>
 <p><strong>Aritmatika</strong> menghitung: ${c("+")} ${c("-")} ${c("*")} ${c("/")}, dan ${c("%")} (modulus = <em>sisa</em> bagi: ${c("10 % 3")} = 1, ${c("8 % 2")} = 0). Hati-hati dengan ${c("+")}: jika salah satu nilainya string, ${c("+")} <strong>menyambung teks</strong> (${c('"2" + 3')} = ${c('"23"')}), sedangkan ${c("-")} ${c("*")} ${c("/")} tetap mengubah string menjadi angka (${c('"8" - 3')} = 5).</p>
 <p><strong>Perbandingan</strong> selalu menghasilkan ${c("true")} atau ${c("false")}, dan hasil inilah yang dipakai ${c("if")}. Yang paling sering ditanyakan adalah beda ${c("==")} dan ${c("===")}:</p>
@@ -978,10 +1015,45 @@ while (n <= 3) {
   p7: [
     A("DOM: Halaman sebagai Pohon Objek", `<p>Saat memuat HTML, browser membangun <strong>DOM (Document Object Model)</strong>: representasi halaman berbentuk pohon, tiap tag menjadi <strong>node</strong> berupa objek yang punya properti dan method. JavaScript tidak mengubah file HTML; ia mengubah DOM di memori, dan browser langsung menggambar ulang.</p>`, "Bagian 1"),
     domTree,
-    { type: "table", label: "Tabel Interaktif", title: "Metode Seleksi", headers: ["Metode", "Argumen", "Hasil jika tidak ada"],
-      rows: [["getElementById(\"nim\")", "id tanpa #", "null"], ["querySelector(\"#nim\")", "selector CSS", "null"], ["querySelectorAll(\".item\")", "selector CSS", "NodeList kosong (length 0)"], ["getElementsByClassName(\"item\") ➕", "nama class tanpa titik", "HTMLCollection kosong"]],
+    A("1a. Memilih Elemen (Seleksi)", `<p>Sebelum bisa mengubah apa pun, JavaScript harus <strong>menemukan</strong> elemennya dulu. Langkah ini disebut <strong>seleksi</strong>. Hasilnya disimpan di variabel, lalu variabel itu yang diubah: ${c("const judul = document.getElementById(\"judul\");")}</p>
+<p>Ada dua pertanyaan untuk memilih metode yang tepat: <em>mencari berdasarkan apa?</em> (id, class, nama tag, atau selector CSS bebas) dan <em>butuh satu elemen atau semua yang cocok?</em></p>
+<ul class="list-disc pl-5 space-y-1">
+<li>${c("getElementById(\"nim\")")}: mencari <strong>satu</strong> elemen berdasarkan id. Id ditulis <strong>tanpa #</strong>. Paling sering dipakai untuk tombol, input, dan kotak hasil yang punya id unik.</li>
+<li>${c("querySelector(\"#nim\")")}: menerima <strong>selector CSS</strong> apa pun (${c("#id")}, ${c(".class")}, ${c("p")}, ${c("nav a.aktif")}), tetapi hanya mengembalikan elemen <strong>pertama</strong> yang cocok. Karena selector CSS, tanda ${c("#")} dan ${c(".")} wajib ditulis.</li>
+<li>${c("querySelectorAll(\".item\")")}: sama-sama menerima selector CSS, tetapi mengembalikan <strong>semua</strong> elemen yang cocok dalam sebuah daftar (NodeList). Inilah jawaban untuk "memilih semua elemen yang cocok dengan selektor CSS".</li>
+<li>${c("getElementsByClassName(\"item\")")} ➕: mengambil semua elemen dengan class tertentu. Nama class ditulis <strong>tanpa titik</strong>, dan tidak bisa memakai selector gabungan.</li>
+<li>${c("getElementsByTagName(\"p\")")} ➕: mengambil semua elemen dengan nama tag tertentu, misalnya semua ${c("<p>")}. Nama tag ditulis tanpa ${c("< >")}.</li></ul>
+<p>Perhatikan nama metodenya: yang mengambil satu elemen memakai <strong>Element</strong> (tunggal), yang mengambil banyak memakai <strong>Elements</strong> (jamak) atau berakhiran <strong>All</strong>. Hasil yang berupa daftar tidak bisa langsung diubah; ambil satu dengan indeks (${c("[0]")}) atau ulangi dengan ${c("forEach")}.</p>
+<p>Kapan pakai yang mana: satu elemen ber-id → ${c("getElementById")}. Satu elemen dengan selector yang lebih rumit → ${c("querySelector")}. Banyak elemen sekaligus, misalnya semua baris tabel atau semua tombol hapus → ${c("querySelectorAll")}.</p>`),
+    { type: "table", label: "Tabel Interaktif", title: "Metode Seleksi", headers: ["Metode", "Argumen", "Mengambil", "Hasil jika tidak ada"],
+      rows: [["getElementById(\"nim\")", "id tanpa #", "1 elemen", "null"], ["querySelector(\"#nim\")", "selector CSS", "1 elemen (yang pertama cocok)", "null"], ["querySelectorAll(\".item\")", "selector CSS", "semua yang cocok (NodeList)", "NodeList kosong (length 0)"], ["getElementsByClassName(\"item\") ➕", "nama class tanpa titik", "semua dengan class itu", "HTMLCollection kosong"], ["getElementsByTagName(\"p\") ➕", "nama tag tanpa < >", "semua dengan tag itu", "HTMLCollection kosong"]],
       modes: [{ label: "Error paling sering", target: "row", row: 0, title: "Cannot read properties of null", text: "Muncul jika id salah ketik, ada tanda #, atau skrip berjalan sebelum elemen ada (letakkan script di akhir body atau pakai defer)." },
-        { label: "NodeList", target: "row", row: 2, title: "Tidak bisa langsung .style", text: "Ulangi dengan <code>forEach</code>; untuk map/filter ubah dulu dengan <code>Array.from()</code>." }] },
+        { label: "NodeList", target: "row", row: 2, title: "Tidak bisa langsung .style", text: "Ulangi dengan <code>forEach</code>; untuk map/filter ubah dulu dengan <code>Array.from()</code>." },
+        { label: "Satu atau semua?", target: "row", row: 2, title: "Hanya querySelectorAll yang memakai selector CSS dan mengambil SEMUA", text: "<code>querySelector</code> memakai selector CSS tetapi hanya mengambil elemen <strong>pertama</strong> yang cocok. <code>querySelectorAll</code> memakai selector CSS dan mengambil <strong>semua</strong> yang cocok. <code>getElementById</code> mencari satu id saja, sedangkan <code>getElementsByClassName</code> dan <code>getElementsByTagName</code> memang mengambil banyak elemen, tetapi hanya berdasarkan nama class atau nama tag, bukan selector CSS lengkap seperti <code>\"nav a.aktif\"</code>." },
+        { label: "getElementsByTagName", target: "row", row: 4, title: "Memilih berdasarkan nama tag", text: "<code>document.getElementsByTagName(\"p\")</code> mengambil semua elemen &lt;p&gt;. Nama tag ditulis tanpa tanda &lt; &gt;. Hasilnya daftar, jadi elemen pertama diambil dengan <code>[0]</code>. Cara modern yang setara: <code>document.querySelectorAll(\"p\")</code>." }] },
+    code("seleksi.html", `<h1 id="judul">Daftar Tugas</h1>
+<ul>
+  <li class="item">Laporan</li>
+  <li class="item penting">Kuis PWD</li>
+</ul>
+
+<script>
+  const judul = document.getElementById("judul");        // 1 elemen, id tanpa #
+  const pertama = document.querySelector(".item");        // hanya <li> "Laporan"
+  const semua = document.querySelectorAll(".item");       // 2 elemen
+  const penting = document.querySelector("li.penting");   // selector gabungan
+  const semuaLi = document.getElementsByTagName("li");    // 2 elemen
+
+  judul.style.color = "navy";                             // 1 elemen: langsung bisa diubah
+  semua.forEach(li => li.style.fontWeight = "bold");      // daftar: ulangi satu per satu
+  console.log(semua.length, semuaLi[0].textContent);      // 2 "Laporan"
+</script>`, "Satu elemen bisa langsung diubah. Hasil berupa daftar harus diulang dengan forEach atau diambil satu dengan indeks."),
+    tip("Kesalahan yang sering terjadi saat seleksi", `<ul class="list-disc pl-5 space-y-1">
+<li>Menulis ${c("getElementById(\"#nim\")")}. Tanda # hanya untuk selector CSS; hasilnya ${c("null")}.</li>
+<li>Menulis ${c("querySelector(\"nim\")")} untuk id. Tanpa #, browser mencari tag bernama ${c("<nim>")}. Yang benar ${c("querySelector(\"#nim\")")}.</li>
+<li>Memakai ${c("querySelector")} padahal butuh semua elemen. Hanya elemen pertama yang berubah.</li>
+<li>Langsung menulis ${c("document.querySelectorAll(\".item\").style.color = \"red\"")}. Daftar tidak punya ${c("style")}; ulangi dengan ${c("forEach")}.</li>
+<li>Salah huruf: ${c("getElementByID")} atau ${c("getElementsById")}. Yang benar ${c("getElementById")} (Id, tunggal).</li></ul>`, "warn"),
     A("Mengubah Konten, Style, Atribut, dan Class", `<p>Setelah elemen dipilih (Bagian 1), ada empat hal yang biasa diubah. Semuanya memakai pola yang sama: <strong>elemen, titik, properti atau method</strong>.</p>
 <ul class="list-disc pl-5 space-y-1">
 <li><strong>Konten</strong>: tulisan atau isi di dalam elemen → ${c("textContent")}, ${c("innerHTML")}, ${c("value")}.</li>
@@ -990,16 +1062,19 @@ while (n <= 3) {
 <li><strong>Class</strong>: memasang atau melepas class yang gayanya sudah ditulis di CSS → ${c("classList")}.</li></ul>`, "Bagian 2"),
     A("2a. Mengubah Konten", `<p>${c("textContent")} membaca atau mengisi <strong>teks</strong> di dalam elemen. Kalau isinya mengandung tag, tag itu ikut tampil sebagai tulisan biasa. ${c("innerHTML")} membaca isi sebagai <strong>HTML</strong>, jadi ${c("<b>")} benar-benar menebalkan huruf. ${c("value")} khusus untuk kolom form: isi yang diketik atau dipilih pengguna, selalu berupa string.</p>
 <p>Kapan pakai yang mana: teks biasa dan semua data dari pengguna → ${c("textContent")}. Potongan HTML yang kamu tulis sendiri, misalnya baris tabel → ${c("innerHTML")}. Membaca atau mengosongkan kolom input → ${c("value")}.</p>
+<p>➕ Ada juga ${c("innerText")}. Mirip ${c("textContent")} (tag tetap tampil sebagai tulisan), bedanya ${c("innerText")} hanya mengambil teks yang <strong>terlihat</strong> di layar: teks yang disembunyikan CSS (${c("display: none")}) tidak ikut. Untuk soal "mengubah konten HTML" (isi yang mengandung tag dan harus dirender), jawabannya tetap ${c("innerHTML")}. Properti ${c(".html")}, ${c(".content")}, atau ${c(".text")} tidak ada pada elemen.</p>
 <p>➕ Jangan pernah memasukkan input pengguna ke innerHTML: jika pengguna mengetik ${c("<img src=x onerror=alert(1)>")}, kodenya akan berjalan. Serangan ini disebut <strong>XSS (Cross-Site Scripting)</strong>.</p>`),
     { type: "table", label: "Tabel Interaktif", title: "textContent, innerHTML, atau value?", headers: ["Properti", "Dipakai pada", "Isinya", "Contoh"],
       rows: [
         ["`textContent`", "Elemen biasa (`p`, `h1`, `td`, `li`)", "Teks di dalam elemen, tag dianggap teks biasa", "`hasil.textContent = \"Lulus\"`"],
         ["`innerHTML`", "Elemen biasa", "Isi elemen sebagai HTML, tag ikut dijalankan", "`daftar.innerHTML = \"<li>A</li>\"`"],
-        ["`value`", "Kolom form (`input`, `textarea`, `select`)", "Isi yang diketik/dipilih pengguna (string)", "`const nim = inputNim.value`"]
+        ["`value`", "Kolom form (`input`, `textarea`, `select`)", "Isi yang diketik/dipilih pengguna (string)", "`const nim = inputNim.value`"],
+        ["`innerText` ➕", "Elemen biasa", "Teks yang terlihat di layar (teks tersembunyi tidak ikut), tag dianggap teks biasa", "`hasil.innerText = \"Lulus\"`"]
       ],
       modes: [
         { label: "Jebakan", target: "row", row: 2, title: "Input tidak punya textContent", text: "Isi kolom input dibaca dengan <code>.value</code>. <code>input.textContent</code> selalu kosong. Sebaliknya, <code>p.value</code> tidak ada." },
-        { label: "Keamanan", target: "row", row: 1, title: "innerHTML hanya untuk HTML buatanmu", text: "Teks dari pengguna dimasukkan dengan <code>textContent</code>. Memakai <code>innerHTML</code> untuk input pengguna membuka celah XSS." }
+        { label: "Keamanan", target: "row", row: 1, title: "innerHTML hanya untuk HTML buatanmu", text: "Teks dari pengguna dimasukkan dengan <code>textContent</code>. Memakai <code>innerHTML</code> untuk input pengguna membuka celah XSS." },
+        { label: "Isi berisi tag", target: "row", row: 1, title: "\"<p>Teks Baru</p>\": siapa yang merender?", text: "Hanya <code>innerHTML</code> yang mengubah string itu menjadi paragraf sungguhan. <code>textContent</code> dan <code>innerText</code> menampilkannya apa adanya, termasuk tanda &lt;p&gt;-nya." }
       ] },
     tip("Catatan tentang innerHTML", `<ul class="list-disc pl-5 space-y-1">
 <li>${c("el.innerHTML = \"\"")} mengosongkan isi elemen. Ini cara singkat menghapus semua baris di ${c("tbody")} sebelum tabel diisi ulang.</li>
@@ -1076,6 +1151,40 @@ while (n <= 3) {
 <li>Mengira ${c("replace")} tetap memasang class baru walaupun class lama tidak ada. Tidak: hasilnya ${c("false")} dan elemen tidak berubah.</li>
 <li>Tertukar dengan ${c("String.replace()")}. ${c("\"abc\".replace(\"a\", \"x\")")} mengganti teks di dalam string, sedangkan ${c("el.classList.replace()")} mengganti class pada elemen.</li>
 <li>Memakai ${c("el.className = \"selesai\"")} untuk mengganti satu class. Cara itu menimpa <strong>semua</strong> class elemen, jadi class lain seperti ${c("tugas")} ikut hilang.</li></ul>`, "warn"),
+    A("2e. className: Seluruh Class sebagai Satu Teks", `<p>${c("el.className")} adalah properti yang berisi <strong>seluruh</strong> isi atribut ${c("class")} sebuah elemen dalam bentuk <strong>satu string</strong>. Untuk ${c("<p class=\"tugas tertunda\">")}, nilai ${c("p.className")} adalah ${c("\"tugas tertunda\"")}: semua nama class, dipisah spasi.</p>
+<p>Membaca ${c("className")} memberi string itu. <strong>Mengisi</strong> ${c("className")} mengganti string itu seluruhnya: ${c("p.className = \"selesai\"")} membuat elemen hanya punya class ${c("selesai")}, sedangkan ${c("tugas")} dan ${c("tertunda")} hilang. Jadi ${c("className")} bekerja pada <em>semua class sekaligus</em>, sedangkan ${c("classList")} (Bagian 2d) bekerja pada <em>satu class</em> tanpa mengganggu yang lain.</p>
+<p>Kenapa namanya ${c("className")}, bukan ${c("class")}? Karena ${c("class")} adalah kata kunci khusus di JavaScript (dipakai untuk membuat kelas objek), sehingga properti DOM-nya diberi nama lain. ${c("el.class")} tidak ada dan hasilnya ${c("undefined")}.</p>
+<p>Kapan dipakai: saat ingin menetapkan ulang semua class sekaligus, misalnya ${c("kotak.className = \"pesan sukses\"")}, atau mengosongkan semua class dengan ${c("kotak.className = \"\"")}. Untuk menambah, melepas, atau mengganti satu class saja, pakai ${c("classList")}. Keduanya sama-sama mengubah class elemen, jadi kalau soal bertanya "properti untuk mengubah kelas CSS elemen", ${c("className")} dan ${c("classList")} dua-duanya benar.</p>`),
+    { type: "table", label: "Tabel Interaktif", title: "className atau classList?", headers: ["Kode", "Class sebelum", "Class sesudah", "Penjelasan"],
+      rows: [
+        ["`el.className`", "`tugas tertunda`", "(tidak berubah)", "Membaca: hasilnya string `\"tugas tertunda\"`"],
+        ["`el.className = \"selesai\"`", "`tugas tertunda`", "`selesai`", "Menimpa semua class; `tugas` ikut hilang"],
+        ["`el.className += \" penting\"`", "`tugas tertunda`", "`tugas tertunda penting`", "Menambah lewat string; spasi di depan wajib"],
+        ["`el.classList.add(\"penting\")`", "`tugas tertunda`", "`tugas tertunda penting`", "Menambah satu class, yang lain aman"],
+        ["`el.classList.replace(\"tertunda\", \"selesai\")`", "`tugas tertunda`", "`tugas selesai`", "Mengganti satu class, `tugas` tetap ada"],
+        ["`el.className = \"\"`", "`tugas tertunda`", "(kosong)", "Menghapus semua class"]
+      ],
+      modes: [
+        { label: "Menimpa semua", target: "row", row: 1, title: "Mengisi className = mengganti seluruh atribut class", text: "Hasilnya sama dengan <code>el.setAttribute(\"class\", \"selesai\")</code>. Semua class lama dibuang. Jika yang dimaksud hanya mengganti <code>tertunda</code>, pakai <code>classList.replace</code>." },
+        { label: "Lupa spasi", target: "row", row: 2, title: "+= tanpa spasi menyambung nama class", text: "<code>el.className += \"penting\"</code> menghasilkan <code>\"tugas tertundapenting\"</code>: satu nama class baru yang tidak cocok dengan CSS mana pun. Karena gampang keliru begini, <code>classList.add</code> lebih aman." }
+      ] },
+    code("classname.html", `<p id="info" class="pesan tertunda">Menunggu</p>
+
+<script>
+  const info = document.getElementById("info");
+
+  console.log(info.className);          // "pesan tertunda"  (satu string)
+  console.log(info.classList.length);   // 2                 (dua class)
+
+  info.classList.add("tebal");          // class: pesan tertunda tebal
+  info.className = "pesan sukses";      // class: pesan sukses  (tertunda & tebal hilang)
+  console.log(info.class);              // undefined: properti class tidak ada
+</script>`, "className cocok untuk menetapkan ulang semua class; classList untuk mengubah satu class tanpa menyentuh yang lain."),
+    tip("Kesalahan yang sering terjadi dengan className", `<ul class="list-disc pl-5 space-y-1">
+<li>Menulis ${c("el.class = \"aktif\"")}. Properti ${c("class")} tidak ada di DOM; yang benar ${c("el.className")} atau ${c("el.classList")}.</li>
+<li>Mengira ${c("el.className = \"aktif\"")} hanya menambah class. Sebenarnya semua class lama ikut terhapus.</li>
+<li>Memakai titik: ${c("el.className = \".aktif\"")}. Sama seperti classList, nama class ditulis tanpa titik.</li>
+<li>Huruf kecil semua: ${c("el.classname")}. JavaScript membedakan huruf besar dan kecil; tulis ${c("className")} dengan N kapital.</li></ul>`, "warn"),
     crudDom,
     code("todo.html", `<input id="tugas" placeholder="Tugas baru">
 <button id="tambah">Tambah</button>
