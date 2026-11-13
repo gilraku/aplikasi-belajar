@@ -699,7 +699,13 @@ h1, h2 { color: #1e40af; }
     tigaLapis,
     A("Mengenal JavaScript", `<p>JavaScript adalah bahasa pemrograman yang berjalan di browser untuk membuat halaman <strong>interaktif</strong>. ➕ Diciptakan Brendan Eich (1995) dan distandarkan sebagai ECMAScript; versi modern (ES6/2015 ke atas) memperkenalkan ${c("let")}, ${c("const")}, dan arrow function. Meski namanya mirip, JavaScript tidak berhubungan dengan Java.</p>
 <p>Cara memasang: di dalam ${c("<script>")}, atau file eksternal ${c('<script src="app.js"></script>')} yang diletakkan sebelum ${c("</body>")} (atau di head dengan atribut ${c("defer")} ➕) agar elemen HTML sudah ada saat skrip berjalan.</p>`, "Bagian 1"),
-    A("Variabel dan Tipe Data", `<p>Gunakan ${c("const")} sebagai pilihan pertama, ${c("let")} jika nilainya akan berubah, dan hindari ${c("var")} (scope-nya bocor keluar blok dan bisa dideklarasi ulang). Lima tipe data modul: <strong>String</strong>, <strong>Number</strong>, <strong>Boolean</strong>, <strong>Array</strong>, <strong>Object</strong>. ➕ Ditambah ${c("undefined")} (belum diisi) dan ${c("null")} (sengaja kosong).</p>`, "Bagian 2"),
+    A("Variabel dan Tipe Data", `<p><strong>Variabel</strong> adalah nama untuk menyimpan sebuah nilai supaya bisa dipakai lagi, misalnya ${c('const nama = "Ani";')}. Ada tiga kata kunci untuk membuatnya, dan bedanya ada pada dua pertanyaan: <em>boleh diisi ulang?</em> dan <em>berlaku sampai mana?</em></p>
+<ul class="list-disc pl-5 space-y-1">
+<li>${c("const")}: tidak boleh diisi ulang (${c("x = 5")} setelahnya menghasilkan error). Pakai sebagai pilihan pertama untuk nilai yang tetap, termasuk elemen hasil ${c("getElementById")}.</li>
+<li>${c("let")}: boleh diisi ulang. Pakai untuk penghitung, total, atau nilai yang berubah di dalam loop.</li>
+<li>${c("var")}: cara lama. Boleh diisi ulang <em>dan</em> dibuat ulang dengan nama yang sama, serta tetap berlaku di luar blok ${c("{ }")} tempat ia dibuat, sehingga mudah menimpa variabel lain tanpa sadar. Kenali saja saat membaca kode lama, jangan dipakai.</li></ul>
+<p>${c("let")} dan ${c("const")} berlaku hanya di dalam blok ${c("{ }")} tempat dibuat (<strong>block scope</strong>): variabel yang dibuat di dalam ${c("if")} tidak dikenal di luarnya.</p>
+<p>Lima tipe data modul: <strong>String</strong>, <strong>Number</strong>, <strong>Boolean</strong>, <strong>Array</strong>, <strong>Object</strong>. ➕ Ditambah ${c("undefined")} (belum diisi) dan ${c("null")} (sengaja kosong).</p>`, "Bagian 2"),
     code("tipe.js", `const nama = "Gilang";            // String
 let semester = 1;                 // Number
 const aktif = true;               // Boolean
@@ -717,6 +723,31 @@ console.log(\`Halo \${nama}, semester \${semester}\`); // template literal ➕`,
         { label: "typeof array", target: "row", row: 3, title: "Array juga \"object\"", text: "<code>typeof [1, 2]</code> bernilai <code>\"object\"</code>. Untuk memastikan sebuah array, pakai <code>Array.isArray(x)</code>." },
         { label: "NaN", target: "none", title: "NaN bertipe number", text: "<code>typeof NaN</code> bernilai <code>\"number\"</code> walaupun artinya \"bukan angka\". Cek dengan <code>isNaN(x)</code>." },
         { label: "Primitif vs object", target: "none", title: "Dua kelompok besar", text: "String, number, boolean, undefined, dan null adalah nilai tunggal (primitif). Array dan object menyimpan banyak nilai, dan isinya boleh diubah walaupun dideklarasi dengan <code>const</code>." }] },
+    A("Operator: Aritmatika, Perbandingan, dan Logika", `<p><strong>Operator</strong> adalah simbol yang mengolah nilai. Ada tiga kelompok yang wajib dikuasai, ditambah operator penugasan ${c("=")} yang hanya <em>mengisi</em> variabel, bukan membandingkan.</p>
+<p><strong>Aritmatika</strong> menghitung: ${c("+")} ${c("-")} ${c("*")} ${c("/")}, dan ${c("%")} (modulus = <em>sisa</em> bagi: ${c("10 % 3")} = 1, ${c("8 % 2")} = 0). Hati-hati dengan ${c("+")}: jika salah satu nilainya string, ${c("+")} <strong>menyambung teks</strong> (${c('"2" + 3')} = ${c('"23"')}), sedangkan ${c("-")} ${c("*")} ${c("/")} tetap mengubah string menjadi angka (${c('"8" - 3')} = 5).</p>
+<p><strong>Perbandingan</strong> selalu menghasilkan ${c("true")} atau ${c("false")}, dan hasil inilah yang dipakai ${c("if")}. Yang paling sering ditanyakan adalah beda ${c("==")} dan ${c("===")}:</p>
+<ul class="list-disc pl-5 space-y-1">
+<li>${c("==")} (sama dengan <em>longgar</em>): sebelum membandingkan, JavaScript mencoba <strong>menyamakan tipe</strong> dulu. Akibatnya ${c('5 == "5"')} bernilai ${c("true")} karena string "5" diubah menjadi angka 5.</li>
+<li>${c("===")} (sama dengan <em>ketat</em>): nilai <strong>dan tipe</strong> harus sama, tanpa konversi. ${c('5 === "5"')} bernilai ${c("false")} karena number ≠ string.</li>
+<li>${c("!=")} dan ${c("!==")} adalah kebalikannya, dengan aturan longgar/ketat yang sama.</li></ul>
+<p>Aturan praktis: <strong>selalu pakai ${c("===")} dan ${c("!==")}</strong>. Konversi otomatis pada ${c("==")} sering memberi hasil mengejutkan, misalnya ${c('"" == 0')} dan ${c('"0" == 0')} sama-sama ${c("true")}. Jika memang perlu membandingkan input (string) dengan angka, ubah dulu secara jelas: ${c("Number(input.value) === 5")}.</p>
+<p><strong>Logika</strong> menggabungkan beberapa kondisi: ${c("&&")} (dan) bernilai true hanya jika <em>semua</em> kondisi true; ${c("||")} (atau) bernilai true jika <em>salah satu</em> true; ${c("!")} (bukan) membalik nilai.</p>`, "Bagian 2 • ➕ Penjelasan"),
+    { type: "table", label: "Tabel Interaktif", title: "Operator Perbandingan dan Logika", headers: ["Operator", "Arti", "Contoh", "Hasil"],
+      rows: [
+        ["`===`", "sama nilai <strong>dan</strong> tipe", "`5 === \"5\"`", "`false`"],
+        ["`==`", "sama nilai setelah tipe disamakan", "`5 == \"5\"`", "`true`"],
+        ["`!==`", "tidak sama (ketat)", "`5 !== \"5\"`", "`true`"],
+        ["`!=`", "tidak sama (longgar)", "`5 != \"5\"`", "`false`"],
+        ["`>` `<` `>=` `<=`", "lebih besar / kecil (atau sama dengan)", "`nilai >= 60`", "`true` jika nilai 60 ke atas"],
+        ["`&&`", "dan: semua harus true", "`umur >= 17 && punyaKTP`", "true hanya jika keduanya true"],
+        ["`||`", "atau: cukup salah satu true", "`hari === 6 || hari === 7`", "true jika Sabtu atau Minggu"],
+        ["`!`", "bukan: membalik", "`!true`", "`false`"]
+      ],
+      modes: [
+        { label: "== vs ===", target: "row", row: 0, title: "Pilih === sebagai kebiasaan", text: "<code>===</code> tidak mengubah tipe, jadi hasilnya bisa ditebak. Ingat: nilai dari <code>input.value</code> dan <code>prompt()</code> selalu string, jadi <code>input.value === 5</code> selalu false. Ubah dulu: <code>Number(input.value) === 5</code>." },
+        { label: "= vs ===", target: "none", title: "Satu sama dengan bukan perbandingan", text: "<code>if (x = 5)</code> <em>mengisi</em> x dengan 5 (dan selalu dianggap true). Untuk membandingkan, tulis <code>if (x === 5)</code>." },
+        { label: "&& vs ||", target: "row", row: 5, title: "Syarat ganda", text: "\"Nilai 0 sampai 100\" ditulis <code>nilai >= 0 && nilai <= 100</code> (keduanya harus benar). \"Input kosong atau bukan angka\" ditulis <code>teks === \"\" || isNaN(teks)</code> (cukup salah satu)." }
+      ] },
     ex("Latihan Interaktif", "Tebak Hasilnya", ["Ekspresi", "Hasil"], ["true", "false", "\"23\"", "5", "1", "\"number\"", "\"object\""], [
       ["5 === \"5\"", "false"],
       ["5 == \"5\"", "true"],
@@ -727,6 +758,14 @@ console.log(\`Halo \${nama}, semester \${semester}\`); // template literal ➕`,
       ["typeof [1, 2]", "\"object\"", "✓ Array termasuk object; pakai Array.isArray()."],
       ["true && false", "false"]
     ]),
+    { type: "table", label: "Tabel Interaktif", title: "Empat Cara Input dan Output Sederhana", headers: ["Perintah", "Yang terjadi", "Hasil yang dikembalikan"],
+      rows: [
+        ["`alert(\"Halo\")`", "Kotak pesan dengan tombol OK", "tidak ada (`undefined`)"],
+        ["`prompt(\"Nama?\")`", "Kotak berisi kolom isian", "teks yang diketik (selalu <strong>string</strong>), atau `null` jika Batal"],
+        ["`confirm(\"Hapus?\")`", "Kotak OK / Batal", "`true` (OK) atau `false` (Batal)"],
+        ["`console.log(x)`", "Mencetak ke tab Console (F12), tidak terlihat pengguna", "tidak ada; dipakai untuk memeriksa isi variabel"]
+      ],
+      modes: [{ label: "Jebakan prompt", target: "row", row: 1, title: "Hasil prompt selalu string", text: "Mengetik 5 di prompt menghasilkan <code>\"5\"</code>. <code>prompt() + 1</code> menjadi <code>\"51\"</code>. Ubah dulu dengan <code>Number()</code>." }] },
     A("Input dan Output Sederhana", `<p>${c("alert()")} menampilkan pesan, ${c("prompt()")} meminta input (hasilnya <strong>selalu string</strong>, ubah dengan ${c("Number()")}), ${c("confirm()")} meminta OK/Batal (hasil boolean), dan ${c("console.log()")} mencetak ke Console (F12) untuk debugging. Untuk aplikasi nyata, input diambil dari form dengan ${c("elemen.value")}.</p>`, "Bagian 3"),
     A("Konversi Tipe, NaN, dan Nilai Falsy", `<p>➕ Nilai dari ${c("prompt()")} dan ${c("elemen.value")} <strong>selalu string</strong>, sedangkan hitungan butuh angka. Di sinilah kebanyakan bug pemula muncul. Tiga alat yang perlu dikenal:</p>
 <ul><li>${c("Number(\"25\")")} mengubah string menjadi angka (${c("Number(\"\")")} = 0, ${c("Number(\"abc\")")} = NaN).</li>
@@ -758,7 +797,9 @@ if ("0") console.log("tampil");      // "0" = truthy`, "Urutan aman untuk input 
       ["Boolean(\"0\")", "true", "✓ Hanya string kosong yang falsy; \"0\" berisi karakter sehingga truthy."],
       ["Boolean(\"\")", "false"]
     ]),
-    A("Percabangan dan Perulangan", `<p>➕ Validasi form hampir selalu butuh ${c("if")}. Perulangan dipakai untuk memproses array.</p>`, "Bagian 4 • ➕ Tambahan"),
+    A("Percabangan dan Perulangan", `<p>➕ Validasi form hampir selalu butuh ${c("if")}, dan perulangan dipakai untuk memproses isi array.</p>
+<p><strong>if / else if / else</strong> memeriksa kondisi <strong>dari atas ke bawah</strong> dan hanya menjalankan blok pertama yang kondisinya true; sisanya dilewati. Karena itu urutan penting: pada contoh di bawah, ${c("nilai >= 85")} harus diperiksa sebelum ${c("nilai >= 70")}. Jika dibalik, nilai 90 sudah tertangkap oleh ${c(">= 70")} dan tidak pernah mendapat A.</p>
+<p><strong>for</strong> punya tiga bagian di dalam kurung, dipisah titik koma: ${c("for (let i = 0; i < daftar.length; i++)")} = <em>mulai</em> dari 0; <em>ulangi selama</em> i kurang dari panjang array; setiap putaran <em>tambah</em> i satu. Memakai ${c("<")} (bukan ${c("<=")}) karena indeks terakhir adalah ${c("length - 1")}. ${c("forEach")} adalah cara singkat untuk mengulang setiap isi array tanpa mengurus ${c("i")}.</p>`, "Bagian 4 • ➕ Tambahan"),
     code("logika.js", `const nilai = 82;
 if (nilai >= 85) {
   console.log("A");
@@ -939,6 +980,16 @@ while (n <= 3) {
         { label: "NodeList", target: "row", row: 2, title: "Tidak bisa langsung .style", text: "Ulangi dengan <code>forEach</code>; untuk map/filter ubah dulu dengan <code>Array.from()</code>." }] },
     A("Mengubah Konten, Style, Atribut, dan Class", `<p>${c("textContent")} mengisi teks apa adanya, sedangkan ${c("innerHTML")} membaca tag sebagai HTML. ➕ Jangan pernah memasukkan input pengguna ke innerHTML: jika pengguna mengetik ${c("<img src=x onerror=alert(1)>")}, kodenya akan berjalan. Serangan ini disebut <strong>XSS (Cross-Site Scripting)</strong>. Untuk teks dari pengguna, selalu gunakan textContent.</p>
 <p>Style diubah lewat ${c("el.style.namaProperti")} dengan camelCase (${c("backgroundColor")}). Cara yang lebih rapi: simpan gaya di CSS lalu ganti class dengan ${c("classList.add/remove/toggle/contains")}. Atribut diatur dengan ${c("setAttribute")} dan dibaca dengan ${c("getAttribute")}.</p>`, "Bagian 2"),
+    { type: "table", label: "Tabel Interaktif", title: "textContent, innerHTML, atau value?", headers: ["Properti", "Dipakai pada", "Isinya", "Contoh"],
+      rows: [
+        ["`textContent`", "Elemen biasa (`p`, `h1`, `td`, `li`)", "Teks di dalam elemen, tag dianggap teks biasa", "`hasil.textContent = \"Lulus\"`"],
+        ["`innerHTML`", "Elemen biasa", "Isi elemen sebagai HTML, tag ikut dijalankan", "`daftar.innerHTML = \"<li>A</li>\"`"],
+        ["`value`", "Kolom form (`input`, `textarea`, `select`)", "Isi yang diketik/dipilih pengguna (string)", "`const nim = inputNim.value`"]
+      ],
+      modes: [
+        { label: "Jebakan", target: "row", row: 2, title: "Input tidak punya textContent", text: "Isi kolom input dibaca dengan <code>.value</code>. <code>input.textContent</code> selalu kosong. Sebaliknya, <code>p.value</code> tidak ada." },
+        { label: "Keamanan", target: "row", row: 1, title: "innerHTML hanya untuk HTML buatanmu", text: "Teks dari pengguna dimasukkan dengan <code>textContent</code>. Memakai <code>innerHTML</code> untuk input pengguna membuka celah XSS." }
+      ] },
     crudDom,
     code("todo.html", `<input id="tugas" placeholder="Tugas baru">
 <button id="tambah">Tambah</button>
