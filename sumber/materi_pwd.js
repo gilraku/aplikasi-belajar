@@ -982,8 +982,15 @@ while (n <= 3) {
       rows: [["getElementById(\"nim\")", "id tanpa #", "null"], ["querySelector(\"#nim\")", "selector CSS", "null"], ["querySelectorAll(\".item\")", "selector CSS", "NodeList kosong (length 0)"], ["getElementsByClassName(\"item\") ➕", "nama class tanpa titik", "HTMLCollection kosong"]],
       modes: [{ label: "Error paling sering", target: "row", row: 0, title: "Cannot read properties of null", text: "Muncul jika id salah ketik, ada tanda #, atau skrip berjalan sebelum elemen ada (letakkan script di akhir body atau pakai defer)." },
         { label: "NodeList", target: "row", row: 2, title: "Tidak bisa langsung .style", text: "Ulangi dengan <code>forEach</code>; untuk map/filter ubah dulu dengan <code>Array.from()</code>." }] },
-    A("Mengubah Konten, Style, Atribut, dan Class", `<p>${c("textContent")} mengisi teks apa adanya, sedangkan ${c("innerHTML")} membaca tag sebagai HTML. ➕ Jangan pernah memasukkan input pengguna ke innerHTML: jika pengguna mengetik ${c("<img src=x onerror=alert(1)>")}, kodenya akan berjalan. Serangan ini disebut <strong>XSS (Cross-Site Scripting)</strong>. Untuk teks dari pengguna, selalu gunakan textContent.</p>
-<p>Style diubah lewat ${c("el.style.namaProperti")} dengan camelCase (${c("backgroundColor")}). Cara yang lebih rapi: simpan gaya di CSS lalu ganti class dengan ${c("classList.add/remove/toggle/contains")}. Atribut diatur dengan ${c("setAttribute")} dan dibaca dengan ${c("getAttribute")}.</p>`, "Bagian 2"),
+    A("Mengubah Konten, Style, Atribut, dan Class", `<p>Setelah elemen dipilih (Bagian 1), ada empat hal yang biasa diubah. Semuanya memakai pola yang sama: <strong>elemen, titik, properti atau method</strong>.</p>
+<ul class="list-disc pl-5 space-y-1">
+<li><strong>Konten</strong>: tulisan atau isi di dalam elemen → ${c("textContent")}, ${c("innerHTML")}, ${c("value")}.</li>
+<li><strong>Style</strong>: tampilan satu elemen langsung dari JavaScript → ${c("el.style.namaProperti")}.</li>
+<li><strong>Atribut</strong>: nilai di dalam tag pembuka, seperti ${c("src")}, ${c("href")}, ${c("placeholder")}, ${c("disabled")} → ${c("setAttribute")}, ${c("getAttribute")}, ${c("removeAttribute")}.</li>
+<li><strong>Class</strong>: memasang atau melepas class yang gayanya sudah ditulis di CSS → ${c("classList")}.</li></ul>`, "Bagian 2"),
+    A("2a. Mengubah Konten", `<p>${c("textContent")} membaca atau mengisi <strong>teks</strong> di dalam elemen. Kalau isinya mengandung tag, tag itu ikut tampil sebagai tulisan biasa. ${c("innerHTML")} membaca isi sebagai <strong>HTML</strong>, jadi ${c("<b>")} benar-benar menebalkan huruf. ${c("value")} khusus untuk kolom form: isi yang diketik atau dipilih pengguna, selalu berupa string.</p>
+<p>Kapan pakai yang mana: teks biasa dan semua data dari pengguna → ${c("textContent")}. Potongan HTML yang kamu tulis sendiri, misalnya baris tabel → ${c("innerHTML")}. Membaca atau mengosongkan kolom input → ${c("value")}.</p>
+<p>➕ Jangan pernah memasukkan input pengguna ke innerHTML: jika pengguna mengetik ${c("<img src=x onerror=alert(1)>")}, kodenya akan berjalan. Serangan ini disebut <strong>XSS (Cross-Site Scripting)</strong>.</p>`),
     { type: "table", label: "Tabel Interaktif", title: "textContent, innerHTML, atau value?", headers: ["Properti", "Dipakai pada", "Isinya", "Contoh"],
       rows: [
         ["`textContent`", "Elemen biasa (`p`, `h1`, `td`, `li`)", "Teks di dalam elemen, tag dianggap teks biasa", "`hasil.textContent = \"Lulus\"`"],
@@ -994,6 +1001,81 @@ while (n <= 3) {
         { label: "Jebakan", target: "row", row: 2, title: "Input tidak punya textContent", text: "Isi kolom input dibaca dengan <code>.value</code>. <code>input.textContent</code> selalu kosong. Sebaliknya, <code>p.value</code> tidak ada." },
         { label: "Keamanan", target: "row", row: 1, title: "innerHTML hanya untuk HTML buatanmu", text: "Teks dari pengguna dimasukkan dengan <code>textContent</code>. Memakai <code>innerHTML</code> untuk input pengguna membuka celah XSS." }
       ] },
+    tip("Catatan tentang innerHTML", `<ul class="list-disc pl-5 space-y-1">
+<li>${c("el.innerHTML = \"\"")} mengosongkan isi elemen. Ini cara singkat menghapus semua baris di ${c("tbody")} sebelum tabel diisi ulang.</li>
+<li>${c("el.innerHTML += \"<li>Baru</li>\"")} memang menambah item, tetapi seluruh isi lama dibuat ulang. Event listener yang dipasang pada isi lama ikut hilang. Untuk menambah satu elemen, pola ${c("createElement")} + ${c("appendChild")} (lihat contoh todo.html di bawah) lebih aman.</li>
+<li>${c("value")} selalu string. ${c("\"5\" + 1")} hasilnya ${c("\"51\"")}; ubah dulu dengan ${c("Number(input.value)")} sebelum dihitung.</li></ul>`, "warn"),
+    A("2b. Mengubah Style", `<p>Setiap elemen punya objek ${c("style")} yang berisi gaya <strong>inline</strong>-nya, yaitu gaya yang menempel langsung di tag seperti ${c("<p style=\"color: red\">")}. Mengisi ${c("el.style.color = \"red\"")} sama dengan menulis atribut style itu lewat JavaScript, sehingga gaya ini menang atas aturan di file CSS.</p>
+<p>Nama properti CSS yang memakai tanda hubung ditulis dalam <strong>camelCase</strong> di JavaScript: tanda hubung dibuang dan huruf setelahnya menjadi kapital. ${c("background-color")} → ${c("backgroundColor")}, ${c("font-size")} → ${c("fontSize")}. Alasannya, di JavaScript tanda ${c("-")} berarti pengurangan. Nilainya selalu string lengkap dengan satuan: ${c("el.style.width = \"50%\"")}.</p>
+<p>Kapan dipakai: untuk nilai yang dihitung saat program berjalan, misalnya lebar progress bar ${c("bar.style.width = persen + \"%\"")}. Untuk gaya yang sudah pasti (mode gelap, tanda error), lebih rapi pakai class (Bagian 2d).</p>`),
+    { type: "table", label: "Tabel Interaktif", title: "CSS → style di JavaScript", headers: ["CSS", "JavaScript", "Contoh"],
+      rows: [
+        ["`color`", "`style.color`", "`judul.style.color = \"navy\"`"],
+        ["`background-color`", "`style.backgroundColor`", "`header.style.backgroundColor = \"#f0f0f0\"`"],
+        ["`font-size`", "`style.fontSize`", "`teks.style.fontSize = \"1.2rem\"`"],
+        ["`display`", "`style.display`", "`menu.style.display = \"none\"` (sembunyikan)"],
+        ["`width`", "`style.width`", "`bar.style.width = nilai + \"%\"`"]
+      ],
+      modes: [
+        { label: "Lupa satuan", target: "row", row: 4, title: "Angka tanpa satuan diabaikan", text: "<code>bar.style.width = 50</code> tidak berpengaruh. Tulis <code>\"50%\"</code> atau <code>\"50px\"</code>." },
+        { label: "Menghapus gaya", target: "row", row: 3, title: "Kembalikan ke CSS", text: "Mengisi string kosong, misalnya <code>menu.style.display = \"\"</code>, menghapus gaya inline sehingga elemen kembali mengikuti aturan di file CSS." },
+        { label: "Membaca style", target: "row", row: 1, title: "el.style hanya membaca gaya inline", text: "Jika warna diatur di file CSS, <code>el.style.backgroundColor</code> berisi string kosong. Untuk membaca gaya yang benar-benar tampil, pakai <code>getComputedStyle(el).backgroundColor</code>." }
+      ] },
+    A("2c. Mengatur Atribut", `<p>Atribut adalah pasangan nama dan nilai di tag pembuka, misalnya ${c("<input type=\"text\" placeholder=\"NIM\">")}. Tiga method untuk mengaturnya:</p>
+<ul class="list-disc pl-5 space-y-1">
+<li>${c("el.setAttribute(\"nama\", \"nilai\")")} mengisi atau mengganti nilai atribut. Jika atribut belum ada, atribut itu dibuat.</li>
+<li>${c("el.getAttribute(\"nama\")")} membaca nilainya sebagai string, atau ${c("null")} jika atribut tidak ada.</li>
+<li>${c("el.removeAttribute(\"nama\")")} menghapus atribut.</li></ul>
+<p>Atribut umum juga bisa diakses langsung sebagai properti: ${c("gambar.src = \"foto.jpg\"")}, ${c("tautan.href = \"/profil\"")}, ${c("tombol.disabled = true")}. Hasilnya sama untuk atribut seperti ini; ${c("setAttribute")} berguna untuk atribut yang tidak punya properti sendiri, misalnya ${c("data-id")} atau ${c("aria-label")}.</p>`),
+    { type: "table", label: "Tabel Interaktif", title: "Contoh Mengatur Atribut", headers: ["Tujuan", "Kode"],
+      rows: [
+        ["Mengganti petunjuk di kolom input", "`input.setAttribute(\"placeholder\", \"Masukkan NIM\")`"],
+        ["Membaca alamat tautan", "`const url = link.getAttribute(\"href\")`"],
+        ["Mengganti gambar", "`foto.setAttribute(\"src\", \"profil.jpg\")` atau `foto.src = \"profil.jpg\"`"],
+        ["Mematikan tombol", "`tombol.setAttribute(\"disabled\", \"\")` atau `tombol.disabled = true`"],
+        ["Menghidupkan tombol lagi", "`tombol.removeAttribute(\"disabled\")` atau `tombol.disabled = false`"]
+      ],
+      modes: [
+        { label: "Jebakan disabled", target: "row", row: 3, title: "setAttribute(\"disabled\", \"false\") tetap mematikan", text: "Atribut <code>disabled</code> berlaku selama atributnya ada, apa pun nilainya. Untuk menghidupkan tombol, hapus atributnya dengan <code>removeAttribute</code> atau pakai <code>tombol.disabled = false</code>." },
+        { label: "Urutan argumen", target: "row", row: 0, title: "Nama dulu, baru nilai", text: "<code>setAttribute(\"placeholder\", \"Masukkan NIM\")</code>: argumen pertama nama atribut, argumen kedua nilainya. <code>getAttribute</code> hanya butuh nama." }
+      ] },
+    A("2d. classList: Mengatur Class Elemen", `<p>${c("el.classList")} adalah daftar class yang sedang menempel pada sebuah elemen, lengkap dengan method untuk mengubahnya. Gayanya ditulis sekali di CSS (misalnya ${c(".aktif { color: green; }")}), lalu JavaScript cukup memasang atau melepas nama class-nya. Cara ini lebih rapi daripada mengubah ${c("el.style")} satu per satu, karena tampilan tetap diatur di CSS.</p>
+<p>Nama class ditulis <strong>tanpa titik</strong>: ${c("classList.add(\"aktif\")")}, bukan ${c("classList.add(\".aktif\")")}. Titik hanya dipakai di selector CSS dan ${c("querySelector")}.</p>`),
+    { type: "table", label: "Tabel Interaktif", title: "Lima Method classList", headers: ["Method", "Artinya", "Kapan dipakai", "Contoh"],
+      rows: [
+        ["`add(\"x\")`", "Menambah class x", "Menandai sesuatu: baris terpilih, kolom error", "`kolom.classList.add(\"error\")`"],
+        ["`remove(\"x\")`", "Melepas class x", "Membersihkan tanda, misalnya error setelah input benar", "`kolom.classList.remove(\"error\")`"],
+        ["`toggle(\"x\")`", "Pasang jika belum ada, lepas jika sudah ada", "Tombol bolak-balik: mode gelap, buka/tutup menu", "`document.body.classList.toggle(\"dark\")`"],
+        ["`contains(\"x\")`", "Mengecek apakah class x ada (true/false)", "Di dalam if, sebelum memutuskan sesuatu", "`if (menu.classList.contains(\"buka\")) { ... }`"],
+        ["`replace(\"lama\", \"baru\")`", "Mengganti satu class dengan class lain", "Status yang berganti dari satu keadaan ke keadaan lain: tertunda → selesai, info → peringatan", "`el.classList.replace(\"lama\", \"baru\")`"]
+      ],
+      modes: [
+        { label: "replace()", target: "row", row: 4, title: "Mengganti satu class dengan class lain", text: "<code>el.classList.replace(\"tertunda\", \"selesai\")</code> melepas <code>tertunda</code> dan memasang <code>selesai</code> di posisi yang sama, dalam satu langkah. Hasilnya sama dengan <code>remove(\"tertunda\")</code> lalu <code>add(\"selesai\")</code>. Urutan argumennya: class lama dulu, baru class pengganti. Method ini mengembalikan <code>true</code> jika penggantian terjadi." },
+        { label: "Jika class lama tidak ada", target: "row", row: 4, title: "replace() tidak menambah apa pun", text: "Jika elemen tidak punya class <code>tertunda</code>, <code>replace(\"tertunda\", \"selesai\")</code> tidak melakukan apa-apa dan mengembalikan <code>false</code>. Class <code>selesai</code> <strong>tidak</strong> ikut dipasang. Kalau ingin class baru tetap terpasang, pakai <code>add</code>." },
+        { label: "toggle vs replace", target: "row", row: 2, title: "Satu class atau dua class?", text: "<code>toggle</code> bekerja dengan <strong>satu</strong> class: ada atau tidak ada. <code>replace</code> bekerja dengan <strong>dua</strong> class: yang satu diganti yang lain. Mode gelap cukup <code>toggle(\"dark\")</code>; status tugas yang berpindah dari <code>tertunda</code> ke <code>selesai</code> lebih jelas dengan <code>replace</code>." }
+      ] },
+    code("status-tugas.html", `<style>
+  .tertunda { color: #b45309; }
+  .selesai  { color: #15803d; text-decoration: line-through; }
+</style>
+
+<p id="tugas" class="tugas tertunda">Kerjakan laporan</p>
+<button id="beres">Tandai selesai</button>
+
+<script>
+  const tugas = document.getElementById("tugas");
+  document.getElementById("beres").addEventListener("click", () => {
+    const berhasil = tugas.classList.replace("tertunda", "selesai");
+    console.log(berhasil);          // klik pertama: true, klik berikutnya: false
+    console.log(tugas.className);   // "tugas selesai"
+  });
+</script>`),
+    tip("Kesalahan yang sering terjadi dengan classList", `<ul class="list-disc pl-5 space-y-1">
+<li>Menulis titik pada nama class: ${c("classList.add(\".aktif\")")}. Yang benar ${c("classList.add(\"aktif\")")}.</li>
+<li>Membalik urutan argumen ${c("replace")}. Argumen pertama adalah class yang <strong>sudah ada</strong>, argumen kedua class <strong>penggantinya</strong>: ${c("replace(\"lama\", \"baru\")")}.</li>
+<li>Mengira ${c("replace")} tetap memasang class baru walaupun class lama tidak ada. Tidak: hasilnya ${c("false")} dan elemen tidak berubah.</li>
+<li>Tertukar dengan ${c("String.replace()")}. ${c("\"abc\".replace(\"a\", \"x\")")} mengganti teks di dalam string, sedangkan ${c("el.classList.replace()")} mengganti class pada elemen.</li>
+<li>Memakai ${c("el.className = \"selesai\"")} untuk mengganti satu class. Cara itu menimpa <strong>semua</strong> class elemen, jadi class lain seperti ${c("tugas")} ikut hilang.</li></ul>`, "warn"),
     crudDom,
     code("todo.html", `<input id="tugas" placeholder="Tugas baru">
 <button id="tambah">Tambah</button>
