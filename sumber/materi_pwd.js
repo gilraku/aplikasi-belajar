@@ -196,7 +196,7 @@ const gridDg = diagram({
   parts: [
     { id: "fr", label: "fr", title: "Satuan fr (fraction)", text: "Bagian dari sisa ruang. 1fr 2fr 1fr = total 4 bagian: kolom tengah mendapat 2/4 = setengah lebar. ➕ <code>repeat(3, 1fr)</code> = tiga kolom sama besar." },
     { id: "span", label: "Membentang", title: "grid-column", text: "<code>grid-column: 1 / 4;</code> = dari garis 1 sampai garis 4 (membentang 3 kolom). <code>1 / -1</code> = sampai garis terakhir." },
-    { id: "gap", label: "gap", title: "gap", text: "Jarak antar sel (merah muda). Contoh: <code>gap: 12px;</code>" }
+    { id: "gap", label: "gap", title: "gap", text: "Jarak antar sel (merah muda). <code>gap: 12px;</code> = jarak baris dan kolom sama, <code>gap: 10px 20px;</code> = jarak baris 10px, kolom 20px. ➕ <code>grid-gap</code> adalah nama lama properti ini dan masih berfungsi, tetapi nama standar sekarang <code>gap</code> (juga berlaku di Flexbox)." }
   ]
 });
 
@@ -440,9 +440,47 @@ const M = {
       rows: [["Inline", "Atribut style di tag", "Cepat untuk satu elemen", "Bercampur dengan HTML, sulit dirawat"], ["Internal", "`<style>` di dalam `<head>`", "Terpisah dari tag", "Hanya berlaku di satu halaman"], ["External", "File .css + `<link>` di `<head>`", "Satu file untuk banyak halaman; di-cache browser ➕", "Butuh file tambahan"]],
       modes: [{ label: "Paling disarankan", target: "row", row: 2, title: "External", text: "<code>&lt;link rel=\"stylesheet\" href=\"css/style.css\"&gt;</code>. Pastikan path di href sama persis dengan lokasi file." },
         { label: "Paling kuat", target: "row", row: 0, title: "Inline", text: "Mengalahkan aturan internal dan external (kecuali !important)." }] },
+    code("tiga-cara.html", `<!-- 1. External: file terpisah, dihubungkan dengan <link> di <head> -->
+<link rel="stylesheet" href="css/style.css">
+
+<!-- 2. Internal (disebut juga embedded): tag <style> di dalam <head> -->
+<style>
+  p { color: blue; }
+</style>
+
+<!-- 3. Inline: atribut style langsung di tag -->
+<p style="color: blue;">Teks</p>`, "Isi CSS-nya sama persis (<code>color: blue;</code>); yang berbeda hanya tempat menulisnya.", "Tiga Cara dalam Satu Contoh"),
+    A("Membaca Tag &lt;link&gt;", `<p>Tag ${c('<link rel="stylesheet" href="css/style.css">')} punya dua atribut wajib:</p>
+<ul class="list-disc pl-5 space-y-1">
+<li>${c("href")} = <strong>alamat file</strong> CSS, relatif terhadap file HTML. Jika HTML ada di folder utama dan CSS di folder <em>css</em>, tulis ${c("css/style.css")}.</li>
+<li>${c("rel")} = <em>relationship</em>, <strong>hubungan</strong> file itu dengan halaman. Nilai ${c("stylesheet")} memberi tahu browser bahwa file itu berisi gaya untuk halaman ini. Tanpa ${c('rel="stylesheet"')}, file tidak dipakai sama sekali.</li></ul>
+<p>Tag ${c("<link>")} tidak punya tag penutup dan ditulis di dalam ${c("<head>")}.</p>`, "➕ Penjelasan"),
+    tip("Kesalahan yang sering terjadi saat memasang CSS", `<ul class="list-disc pl-5 space-y-1">
+<li>Memakai ${c("src")} di ${c("<link>")}. Yang benar ${c("href")}; ${c("src")} dipakai ${c("<img>")} dan ${c("<script>")}.</li>
+<li>Menulis ${c('<style src="style.css">')} atau ${c("<css>")}. Tag ${c("<style>")} hanya untuk CSS internal, dan tag ${c("<css>")} tidak ada.</li>
+<li>Menulis ${c("color = blue")} atau ${c("p: blue")}. Format yang benar selalu ${c("selektor { properti: nilai; }")}, dan di inline cukup ${c('style="properti: nilai;"')}.</li>
+<li>Mencoba menulis media query di atribut ${c("style")}. Media query hanya bisa di CSS internal atau external.</li></ul>`, "warn"),
     anatomiCss,
+    { type: "table", label: "Tabel Interaktif", title: "Simbol di Depan Selector Menentukan Apa yang Dipilih", headers: ["Ditulis", "Memilih", "Cocok dengan HTML"],
+      rows: [
+        ["`p`", "Semua elemen <strong>tag</strong> p (nama tag tanpa simbol)", "`<p>…</p>`"],
+        ["`.menu`", "Semua elemen dengan <strong>class</strong> menu (titik)", "`<ul class=\"menu\">`, `<div class=\"menu\">`"],
+        ["`#utama`", "Satu elemen dengan <strong>id</strong> utama (pagar)", "`<main id=\"utama\">`"],
+        ["`[type]` / `[type=\"email\"]`", "Elemen yang punya <strong>atribut</strong> itu / atribut dengan nilai tertentu (kurung siku)", "`<input type=\"email\">`"],
+        ["`*`", "<strong>Semua</strong> elemen (universal)", "Semua tag"],
+        ["`h1, h2`", "Beberapa selector sekaligus (koma = \"dan juga\")", "`<h1>` dan `<h2>`"],
+        ["`.kartu p`", "p yang berada <strong>di dalam</strong> .kartu (spasi = keturunan)", "`<div class=\"kartu\"><p>…</p></div>`"]
+      ],
+      modes: [{ label: "Jebakan", target: "none", title: "p, .p, #p, [p] itu berbeda", text: "<code>p</code> = tag p. <code>.p</code> = class bernama p. <code>#p</code> = id bernama p. <code>[p]</code> = elemen yang punya atribut bernama p. <code>*p</code> bukan selector yang sah." }] },
     A("Jenis-jenis Selector", `<p>Selector dasar dari modul: <strong>tag</strong> (${c("p")}), <strong>class</strong> (${c(".judul")}, boleh dipakai banyak elemen), dan <strong>id</strong> (${c("#para1")}, unik satu per halaman). Beberapa selector dipisah koma untuk gaya yang sama (${c("h1, h2")}).</p>
 <p>➕ Selector tambahan yang sering dipakai: <strong>descendant</strong> ${c(".kartu p")} (p di dalam .kartu), <strong>child</strong> ${c("ul > li")} (anak langsung), <strong>atribut</strong> ${c('input[type="email"]')}, <strong>pseudo-class</strong> ${c("a:hover")}, ${c("li:first-child")}, ${c("input:focus")}, dan <strong>universal</strong> ${c("*")}.</p>`, "Bagian 2"),
+    A("Cara Browser Memilih Pemenang (Cascading)", `<p>Jika dua aturan mengatur properti yang sama pada elemen yang sama, browser memeriksa urutan berikut dan berhenti di langkah pertama yang menentukan pemenang:</p>
+<ol class="list-decimal pl-5 space-y-1">
+<li>Ada ${c("!important")}? Aturan itu menang.</li>
+<li>Ada CSS <strong>inline</strong> (atribut ${c("style")})? Inline menang atas internal dan external.</li>
+<li>Bandingkan <strong>kespesifikan selector</strong>: id lebih kuat dari class, class lebih kuat dari tag. Selector yang lebih spesifik (lebih tepat menunjuk elemen) menang.</li>
+<li>Masih sama kuat? Aturan yang <strong>ditulis atau dimuat paling akhir</strong> menang.</li></ol>
+<p>Perhatikan langkah 4: internal dan external <strong>tidak punya urutan kekuatan tetap</strong>. Jika ${c("<link>")} ditulis sebelum ${c("<style>")}, aturan internal yang menang karena dibaca belakangan; jika urutannya dibalik, external yang menang. Karena itu jawaban yang benar untuk soal "prioritas tertinggi" adalah <strong>inline</strong>, bukan internal atau external.</p>`, "➕ Penjelasan"),
     specificity,
     ex("Latihan Interaktif", "Warna Apa yang Tampil?", ["Situasi (elemen &lt;p id=\"info\" class=\"teks\"&gt;)", "Warna"], ["merah", "biru", "hijau"], [
       ["p { color: merah } lalu .teks { color: biru }", "biru", "✓ class mengalahkan tag."],
@@ -451,6 +489,18 @@ const M = {
       ["style=\"color: merah\" di tag, dan #info { color: biru }", "merah", "✓ Inline paling kuat."],
       ["p.teks { color: hijau } lalu .teks { color: biru }", "hijau", "✓ tag+class lebih kuat dari class saja."]
     ]),
+    { type: "table", label: "Tabel Interaktif", title: "Properti Teks dan Warna yang Sering Ditanyakan", headers: ["Properti", "Mengatur", "Contoh nilai", "Sering tertukar dengan"],
+      rows: [
+        ["`color`", "Warna <strong>teks</strong>", "`blue`, `#1e40af`, `rgb(30, 64, 175)`", "`text-color` dan `font-color` (tidak ada di CSS)"],
+        ["`background-color`", "Warna <strong>latar</strong> elemen", "`#f1f5f9`", "`bgcolor` (atribut HTML lama, bukan CSS)"],
+        ["`font-size`", "Ukuran huruf", "`1rem`, `18px`", "`font-height` (tidak ada)"],
+        ["`font-weight`", "Tebal tipis huruf", "`normal`, `bold`, `700`", "`font-bold` (itu nama class Tailwind, bukan CSS)"],
+        ["`line-height`", "Jarak antar<strong>baris</strong> teks", "`1.5` (1,5 × ukuran huruf)", "`line-spacing`, `text-spacing` (tidak ada)"],
+        ["`letter-spacing`", "Jarak antar<strong>huruf</strong>", "`1px`", "`line-height`"],
+        ["`text-align`", "Perataan <strong>mendatar</strong> teks di dalam kotaknya", "`left`, `right`, `center`, `justify`", "`top`, `middle`, `bottom` (itu nilai `vertical-align`)"],
+        ["`text-decoration`", "Garis bawah/coret", "`none`, `underline`", "Dipakai untuk menghapus garis bawah link"]
+      ],
+      modes: [{ label: "Jebakan soal", target: "row", row: 6, title: "text-align hanya mendatar", text: "Nilai <code>text-align</code> yang sah: left, right, center, justify. Untuk menengahkan secara tegak, pakai Flexbox (<code>align-items: center</code>)." }] },
     A("Properti yang Paling Sering Dipakai", `<p>Teks: ${c("color")}, ${c("font-family")}, ${c("font-size")}, ${c("font-weight")}, ${c("text-align")}, ${c("line-height")}, ${c("text-decoration")}. Latar: ${c("background-color")}, ${c("background-image")}. Kotak: ${c("width")}, ${c("height")}, ${c("padding")}, ${c("margin")}, ${c("border")}, ${c("border-radius")} ➕. Warna bisa ditulis nama (${c("red")}), hex (${c("#ff0000")}), atau ${c("rgb(255, 0, 0)")}.</p>`, "Bagian 3"),
     code("style.css", `/* gaya dasar */
 body {
@@ -475,7 +525,13 @@ h1, h2 { color: #1e40af; }
   ],
 
   p4: [
-    A("Setiap Elemen adalah Kotak", `<p>Browser menggambar setiap elemen sebagai kotak dengan empat lapisan: <strong>content, padding, border, margin</strong>. Memahami box model adalah kunci agar layout tidak “meleset”.</p>`, "Bagian 1"),
+    A("Setiap Elemen adalah Kotak", `<p><strong>Box model</strong> adalah cara browser memandang setiap elemen: sebagai kotak yang terdiri dari empat lapisan. Urutannya <strong>dari dalam ke luar</strong>:</p>
+<ol class="list-decimal pl-5 space-y-1">
+<li><strong>Content</strong>: isi elemen (teks, gambar). Ukurannya diatur ${c("width")} dan ${c("height")}.</li>
+<li><strong>Padding</strong>: jarak antara isi dan garis tepi. Ikut berwarna latar elemen.</li>
+<li><strong>Border</strong>: garis tepi. Letaknya <em>di antara</em> padding (di dalam) dan margin (di luar).</li>
+<li><strong>Margin</strong>: jarak kosong di luar garis tepi, memisahkan elemen ini dari elemen lain. Selalu transparan.</li></ol>
+<p>Memahami urutan ini penting karena lebar yang terlihat di layar adalah gabungan beberapa lapisan, bukan hanya angka ${c("width")}. Cara menghitungnya ada di Bagian 2.</p>`, "Bagian 1"),
     boxModel,
     A("content-box vs border-box", `<p>Secara default (${c("box-sizing: content-box")}), ${c("width")} hanya untuk konten; padding dan border <strong>ditambahkan</strong> sehingga kotak menjadi lebih lebar dari yang ditulis. Dengan ${c("box-sizing: border-box")}, padding dan border <strong>sudah termasuk</strong> dalam width, jadi ukuran yang ditulis sama dengan yang tampil. Margin tidak pernah termasuk width di kedua mode.</p>
 <p>➕ Karena box-sizing tidak diwariskan, cara memasang untuk semua elemen adalah ${c("*, *::before, *::after { box-sizing: border-box; }")}.</p>`, "Bagian 2"),
@@ -486,7 +542,14 @@ h1, h2 { color: #1e40af; }
       ["width:200px; padding:10px; margin:25px; (content-box)", "220px", "✓ Margin tidak dihitung dalam lebar tampak."],
       ["width:250px; padding:5px; border:5px; (border-box)", "250px", "✓ border-box: tetap 250."]
     ]),
-    A("Display: block, inline, inline-block", `<p>➕ Sebelum masuk Flexbox, pahami dulu perilaku dasar: elemen <strong>block</strong> (div, p, h1, section) selalu mulai di baris baru dan selebar induknya; elemen <strong>inline</strong> (span, a, strong) mengalir di dalam teks dan mengabaikan width/height; <strong>inline-block</strong> mengalir seperti inline tetapi bisa diberi width/height. ${c("display: none")} menyembunyikan elemen sepenuhnya.</p>`, "Bagian 3 • ➕ Tambahan"),
+    A("Batas Ukuran: min-width, max-width, min-height", `<p>Selain ${c("width")} yang menetapkan satu ukuran, CSS punya properti <strong>batas</strong>. Elemen boleh berubah ukuran (misalnya karena ${c("%")}), tetapi tidak melewati batas itu.</p>
+<ul class="list-disc pl-5 space-y-1">
+<li>${c("max-width")} = <strong>tidak boleh lebih lebar dari</strong>. Contoh: ${c("width: 90%; max-width: 1100px;")} → di HP selebar 90% layar, di monitor besar berhenti di 1100px supaya baris teks tidak terlalu panjang. Juga dipakai untuk gambar: ${c("max-width: 100%")}.</li>
+<li>${c("min-width")} = <strong>tidak boleh lebih sempit dari</strong>. Contoh: ${c("min-width: 120px")} pada tombol agar tombol berteks pendek tetap mudah ditekan.</li>
+<li>${c("min-height")} / ${c("max-height")} = batas yang sama untuk tinggi. ${c("min-height: 100vh")} sering dipakai agar halaman berisi sedikit tetap setinggi layar.</li></ul>
+<p>Jangan tertukar dengan media query ${c("(max-width: 600px)")}: di dalam ${c("@media")}, max-width adalah <em>syarat lebar layar</em>, bukan ukuran elemen.</p>`, "➕ Tambahan"),
+    A("Display: block, inline, inline-block", `<p>➕ Sebelum masuk Flexbox, pahami dulu perilaku dasar: elemen <strong>block</strong> (div, p, h1, section) selalu mulai di baris baru dan selebar induknya; elemen <strong>inline</strong> (span, a, strong) mengalir di dalam teks dan mengabaikan width/height; <strong>inline-block</strong> mengalir seperti inline tetapi bisa diberi width/height. ${c("display: none")} menyembunyikan elemen sepenuhnya.</p>
+<p>Properti ${c("display")} juga yang menyalakan sistem layout: ${c("display: flex")} menjadikan elemen flex container dan ${c("display: grid")} menjadikannya grid container. Jadi ${c("block")}, ${c("inline")}, ${c("inline-block")}, ${c("none")}, ${c("flex")}, dan ${c("grid")} semuanya nilai ${c("display")} yang sah.</p>`, "Bagian 3 • ➕ Tambahan"),
     flexAxes,
     code("flex.css", `.navbar {
   display: flex;
@@ -547,6 +610,25 @@ h1, h2 { color: #1e40af; }
   p5: [
     A("Apa Itu Desain Responsif?", `<p>Lebih dari separuh akses web berasal dari ponsel. Desain responsif membuat <strong>satu halaman</strong> menyesuaikan diri dengan berbagai ukuran layar. Tiga prinsip modul: <strong>fluid layout</strong> (unit relatif), <strong>media queries</strong>, dan <strong>flexible images</strong> (${c("img { max-width: 100%; height: auto; }")}).</p>`, "Bagian 1"),
     tip("Wajib: meta viewport", `Taruh ${c('<meta name="viewport" content="width=device-width, initial-scale=1.0">')} di dalam head. Tanpanya, browser HP menganggap layarnya sekitar 980px lalu memperkecil halaman, dan media query untuk HP tidak pernah aktif.`, "warn"),
+    A("Membaca Sebuah Media Query", `<p>Media query adalah aturan CSS bersyarat: <em>terapkan gaya ini hanya jika perangkatnya memenuhi syarat tertentu</em>. Syaratnya berupa karakteristik perangkat, misalnya lebar layar, tinggi layar, atau orientasi. Bentuk lengkapnya:</p>
+<p>${c("@media screen and (max-width: 768px) { … }")}</p>
+<ul class="list-disc pl-5 space-y-1">
+<li>${c("@media")}: kata kunci pembuka. Bukan ${c("@query")} atau ${c("@screen")}.</li>
+<li>${c("screen")}: jenis media (layar). Jenis lain ${c("print")} untuk saat dicetak. Boleh dihilangkan: ${c("@media (max-width: 768px)")} juga sah.</li>
+<li>${c("and")}: menggabungkan syarat. Bisa lebih dari satu: ${c("(min-width: 601px) and (max-width: 1024px)")}.</li>
+<li>${c("(max-width: 768px)")}: syaratnya, <strong>wajib di dalam kurung</strong>. ${c("max-width")} = lebar layar <strong>paling besar</strong> 768px (768px ke bawah). ${c("min-width")} = paling kecil (ke atas). ${c("(width: 768px)")} hanya cocok untuk lebar tepat 768px, jadi jarang dipakai.</li>
+<li>${c("{ … }")}: aturan CSS biasa yang hanya berlaku saat syaratnya terpenuhi.</li></ul>`, "➕ Penjelasan"),
+    { type: "table", label: "Tabel Interaktif", title: "Syarat Media Query yang Sering Dipakai", headers: ["Ditulis", "Artinya", "Contoh penggunaan"],
+      rows: [
+        ["`(max-width: 600px)`", "Lebar layar 600px ke bawah", "Gaya HP: kolom ditumpuk, menu disembunyikan"],
+        ["`(min-width: 1025px)`", "Lebar layar 1025px ke atas", "Gaya desktop pada pendekatan mobile-first"],
+        ["`(min-width: 601px) and (max-width: 1024px)`", "Di antara keduanya", "Gaya tablet"],
+        ["`(orientation: landscape)`", "Layar lebih lebar daripada tingginya (HP dimiringkan)", "Video atau galeri memenuhi layar"],
+        ["`(orientation: portrait)`", "Layar lebih tinggi daripada lebarnya (HP tegak)", "Tata letak satu kolom"],
+        ["`print`", "Saat halaman dicetak", "Sembunyikan navigasi dan tombol"]
+      ],
+      modes: [{ label: "Jebakan soal", target: "row", row: 3, title: "Nama fiturnya orientation", text: "Bukan <code>mode</code>, <code>direction</code>, atau <code>(landscape)</code> saja. Tulis lengkap <code>(orientation: landscape)</code>." }] },
+    tip("Media query bisa mengubah apa saja", `Media query tidak terbatas pada warna. Di dalamnya boleh ada properti apa pun: ${c("display")}, ${c("flex-direction")}, ${c("font-size")}, ${c("grid-template-columns")}, dan unit relatif seperti ${c("rem")}, ${c("vw")}, ${c("vh")}. Tempat menulisnya di CSS internal atau external; atribut ${c("style")} (inline) tidak bisa berisi media query.`),
     breakpoints,
     code("responsive.css", `/* 1. Aturan umum (desktop) */
 .container { width: 80%; margin: 0 auto; }
