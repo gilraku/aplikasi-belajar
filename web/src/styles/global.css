@@ -54,7 +54,8 @@
   .babak > summary::-webkit-details-marker { display: none; }
   @media (prefers-reduced-motion: reduce) { .peta-cell { transition: none; } .peta-cell:hover { transform: none; } }
   /* Lab Algoritma: penelusur loop */
-  .trc-code, .trc-mono { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
+  /* Ligatur JetBrains Mono mengubah === jadi ≡, >= jadi ≥, <!-- jadi panah. Untuk belajar kode, simbol harus tampil apa adanya. */
+  .trc-code, .trc-mono, code, pre, kbd, samp, textarea, .font-mono { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
   .trc-line { display: flex; gap: .75rem; padding: 0 .75rem 0 .5rem; border-left: 3px solid transparent; white-space: pre; }
   .trc-no { flex-shrink: 0; width: 1.25rem; text-align: right; color: #64748b; user-select: none; }
   .trc-cur { background: rgba(255,225,77,.12); border-left-color: #ffe14d; }
