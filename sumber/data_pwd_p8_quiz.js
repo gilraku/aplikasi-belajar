@@ -4,6 +4,8 @@
 // agar progres latihan soal lama tidak bergeser.
 const LMS = require("./data_pwd_lms.js");
 const L = n => ({ lms: 1, n });
+// L5(n) = soal kuis LMS P5 urutan ke-n di data_pwd_lms.js (kuncinya belum dikonfirmasi LMS).
+const L5 = n => ({ lms: 5, n });
 const S = [
   // ===== P1: Konsep web & HTML dasar =====
   [1, "Protokol yang digunakan untuk mentransfer dokumen di WWW adalah …", ["FTP", "HTTP", "SMTP", "DNS", "SSH"], 1, "HTTP = HyperText Transfer Protocol. FTP untuk file, SMTP untuk email, DNS menerjemahkan domain ke IP, SSH untuk remote login."],
@@ -43,9 +45,9 @@ const S = [
 
   // ===== P3: CSS dasar =====
   [3, "Cara memasang CSS yang paling baik untuk website dengan banyak halaman adalah …", ["Inline", "Internal", "External", "Tag `<font>`", "Atribut bgcolor"], 2, "Satu file .css dipakai semua halaman lewat `<link rel=\"stylesheet\">`."],
-  [3, "Penulisan CSS inline yang benar adalah …", ["`<p css=\"color:red\">`", "`<p style=\"color:red\">`", "`<p style=\"color=red\">`", "`<style p=\"color:red\">`", "`<p font=\"red\">`"], 1, "Atribut style, property: value."],
-  [3, "Kode untuk menghubungkan file CSS eksternal adalah …", ["`<style src=\"style.css\">`", "`<link rel=\"stylesheet\" href=\"style.css\">`", "`<script href=\"style.css\">`", "`<css>style.css</css>`", "`<a href=\"style.css\">`"], 1, "Ditaruh di `<head>`."],
-  [3, "Selector untuk elemen dengan `class=\"menu\"` adalah …", ["#menu", ".menu", "menu", "*menu", "@menu"], 1, "Titik untuk class, pagar untuk id."],
+  L5(11),
+  L5(19),
+  L5(9),
   L(8),
   [3, "Urutan prioritas CSS dari yang paling kuat adalah …", ["tag > class > id > inline", "class > id > inline > tag", "inline > id > class > tag", "id > inline > tag > class", "Semua sama kuat"], 2, "Jika sama kuat, aturan yang ditulis terakhir menang."],
   L(14),
@@ -88,11 +90,14 @@ const S = [
   [7, "Method untuk menghapus satu elemen dari halaman adalah …", ["`el.delete()`", "`el.remove()`", "`el.hide()`", "`el.clear()`", "`el.textContent = null`"], 1, "Mengosongkan semua baris: `tbody.innerHTML = \"\"`."],
 
   // ===== Kuis LMS P1 yang belum ada di atas =====
-  L(1), L(11), L(13), L(15), L(19), L(22), L(24), L(25), L(27), L(28), L(29)
+  L(1), L(11), L(13), L(15), L(19), L(22), L(24), L(25), L(27), L(28), L(29),
+
+  // ===== Kuis LMS P5 yang belum ada di atas =====
+  L5(1), L5(2), L5(3), L5(4), L5(5), L5(6), L5(7), L5(8), L5(10), L5(12), L5(13), L5(14), L5(15), L5(16), L5(17), L5(18), L5(20), L5(21), L5(22), L5(23), L5(24), L5(25), L5(26), L5(27), L5(28), L5(29), L5(30)
 ];
 
 module.exports = S.map(x => {
-  if (!Array.isArray(x)) { const q = LMS["p" + x.lms][x.n - 1]; return { ...q, topic: "P" + x.lms, exp: "<strong>P" + x.lms + " • Kuis LMS</strong> • " + q.exp }; }
+  if (!Array.isArray(x)) { const q = LMS["p" + x.lms][x.n - 1]; return { ...q, topic: "P" + x.lms, exp: "<strong>P" + x.lms + " • Kuis LMS" + (x.lms === 5 ? " (kunci belum dikonfirmasi LMS)" : "") + "</strong> • " + q.exp }; }
   const [p, q, opts, ans, exp] = x;
   return { q, opts, ans, topic: "P" + p, exp: "<strong>P" + p + "</strong> • " + exp };
 });

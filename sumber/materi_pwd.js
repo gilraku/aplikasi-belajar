@@ -501,6 +501,36 @@ h1, h2 { color: #1e40af; }
   gap: 16px;
 }
 .kartu { flex: 1 1 200px; } /* tumbuh, menyusut, lebar dasar 200px */`, "flex: 1 1 200px = flex-grow 1, flex-shrink 1, flex-basis 200px. Pola ini membuat kartu otomatis responsif tanpa media query.", "Pola Flexbox Sehari-hari"),
+    A("Ukuran Item Flex: flex-basis, flex-grow, flex-shrink", `<p>Saat item dimasukkan ke flex container, browser menentukan lebarnya dalam dua langkah. <strong>Langkah 1:</strong> setiap item diberi ukuran awal. <strong>Langkah 2:</strong> browser membandingkan total ukuran awal dengan lebar container. Jika masih ada ruang kosong, ruang itu dibagi ke item yang mau membesar. Jika ruangnya kurang, item yang boleh mengecil dikurangi ukurannya. Tiga properti berikut mengatur kedua langkah itu.</p>
+<ul class="list-disc pl-5 space-y-1">
+<li>${c("flex-basis")} = <strong>ukuran awal</strong> item (langkah 1), misalnya ${c("flex-basis: 200px")}. Bawaannya ${c("auto")}: pakai ${c("width")} item, atau selebar isinya jika width tidak diatur.</li>
+<li>${c("flex-grow")} = <strong>porsi item saat ada ruang sisa</strong>. Bawaannya ${c("0")}: item tidak membesar. Angkanya adalah perbandingan, bukan ukuran: item ber-${c("flex-grow: 2")} mendapat bagian sisa dua kali lipat dari item ber-${c("flex-grow: 1")}.</li>
+<li>${c("flex-shrink")} = <strong>kesediaan item mengecil saat ruang kurang</strong>. Bawaannya ${c("1")}: semua item ikut mengecil. ${c("flex-shrink: 0")} berarti item ini tidak boleh lebih kecil dari flex-basis-nya, cocok untuk logo atau foto profil yang tidak boleh gepeng.</li>
+</ul>
+<p>Ketiganya biasa ditulis sekaligus dengan singkatan ${c("flex: grow shrink basis")}. Contoh: ${c("flex: 1 1 200px")} = mulai dari 200px, boleh membesar, boleh mengecil. ${c("flex: 1")} (yang paling sering dipakai) = ${c("flex: 1 1 0%")}: semua item mulai dari nol lalu membagi ruang sama rata, sehingga lebarnya sama.</p>`, "Bagian 4 • ➕ Tambahan"),
+    { type: "table", label: "Tabel Interaktif", title: "Contoh Hitung: Container 600px, Tiga Item flex-basis 100px", headers: ["Pengaturan", "Item A", "Item B", "Item C", "Cara menghitung"],
+      rows: [
+        ["Tanpa flex-grow (bawaan 0)", "100px", "100px", "100px", "Total 300px, sisa 300px dibiarkan kosong di kanan."],
+        ["flex-grow: 1 pada ketiganya", "200px", "200px", "200px", "Sisa 300px dibagi 3 porsi sama: masing-masing +100px."],
+        ["A flex-grow: 2, B dan C flex-grow: 1", "250px", "175px", "175px", "Sisa 300px dibagi 4 porsi (2+1+1) = 75px per porsi. A mendapat 2 porsi (+150px)."],
+        ["Container dipersempit menjadi 240px (flex-shrink bawaan 1)", "80px", "80px", "80px", "Total 300px, kurang 60px. Kekurangan dibagi rata: masing-masing −20px."],
+        ["Container 240px, A flex-shrink: 0", "100px", "70px", "70px", "A tidak mau mengecil, jadi kekurangan 60px ditanggung B dan C (−30px)."]
+      ],
+      modes: [
+        { label: "grow = sisa, bukan ukuran", target: "row", row: 2, title: "flex-grow: 2 tidak berarti dua kali lebih lebar", text: "Yang dibagi dua kali lipat hanya <strong>ruang sisanya</strong>. A = 100 + 150 = 250px, bukan dua kali C (175px)." },
+        { label: "Kapan pakai shrink 0?", target: "row", row: 4, title: "Mencegah item gepeng", text: "Logo, avatar, atau tombol ikon diberi <code>flex-shrink: 0</code> supaya ukurannya tetap ketika layar sempit; yang mengalah adalah teks di sebelahnya." }
+      ] },
+    { type: "table", label: "Tabel Interaktif", title: "Properti Flex yang Sering Tertukar", headers: ["Properti", "Dipasang di", "Mengatur", "Contoh nilai"],
+      rows: [
+        ["`justify-content`", "Container", "Posisi item di <strong>sumbu utama</strong> (mendatar jika row)", "`flex-start`, `center`, `space-between`"],
+        ["`align-items`", "Container", "Posisi item di <strong>sumbu silang</strong> (tegak jika row), dalam satu baris", "`stretch` (bawaan), `center`, `flex-start`"],
+        ["`align-content`", "Container", "Jarak antar<strong>baris</strong> item, hanya berpengaruh jika item turun baris (`flex-wrap: wrap`)", "`flex-start`, `space-between`"],
+        ["`gap`", "Container", "Jarak antar-item, tanpa perlu margin", "`gap: 16px`"],
+        ["`flex-basis` / `flex-grow` / `flex-shrink`", "Item", "Ukuran awal / porsi membesar / kesediaan mengecil", "`200px` / `1` / `0`"]
+      ],
+      modes: [
+        { label: "Jebakan soal", target: "row", row: 1, title: "align-items vs align-content", text: "Soal \"perataan di sumbu silang\" jawabannya <code>align-items</code>. <code>align-content</code> baru terasa jika item terdiri dari beberapa baris." }
+      ] },
     gridDg,
     code("grid.css", `.halaman {
   display: grid;
@@ -541,7 +571,34 @@ h1, h2 { color: #1e40af; }
       ["1024px", "Tablet", "✓ max-width 1024 berarti ≤ 1024."],
       ["1366px (laptop)", "Desktop"]
     ]),
-    A("Unit Absolut vs Relatif", `<p><strong>px</strong> adalah unit absolut: ukurannya tetap. Unit <strong>relatif</strong> berubah mengikuti patokannya: ${c("%")} (induk), ${c("vw")}/${c("vh")} (1% lebar/tinggi viewport), ${c("rem")} (font-size html), ${c("em")} (font-size induk/diri sendiri).</p>`, "Bagian 2"),
+    A("Unit Absolut vs Relatif", `<p>Setiap ukuran di CSS (lebar, tinggi, jarak, ukuran huruf) ditulis sebagai <strong>angka + unit</strong>, misalnya ${c("16px")} atau ${c("2rem")}. Unit dibagi dua kelompok berdasarkan satu pertanyaan: <em>apakah hasil akhirnya bergantung pada hal lain?</em></p>
+<p><strong>Unit absolut</strong> berarti hasilnya tidak bergantung pada apa pun. ${c("width: 300px")} selalu 300px, baik di HP yang lebarnya 360px maupun di monitor 1920px. Akibatnya di HP kotak itu hampir memenuhi layar, sedangkan di monitor terlihat kecil. Di web, unit absolut yang dipakai adalah ${c("px")}. Unit absolut lain (${c("pt")}, ${c("cm")}, ${c("mm")}) ditujukan untuk hasil cetak dan hampir tidak pernah dipakai untuk layar.</p>
+<p><strong>Unit relatif</strong> berarti nilainya adalah <em>perbandingan</em> terhadap suatu patokan, jadi hasil akhirnya ikut berubah saat patokannya berubah. ${c("width: 50%")} artinya setengah lebar elemen induk: jika induknya 360px hasilnya 180px, jika induknya 1200px hasilnya 600px. Sifat ikut menyesuaikan inilah yang membuat halaman responsif tanpa harus menulis ukuran untuk setiap layar.</p>`, "Bagian 2"),
+    { type: "table", label: "Tabel Interaktif", title: "Patokan Setiap Unit dan Kapan Dipakai", headers: ["Unit", "Patokannya", "Contoh hitung (html 16px, layar 360 × 800)", "Paling cocok untuk"],
+      rows: [
+        ["`px`", "Tidak ada, ukurannya tetap", "`16px` = 16px di layar mana pun", "Garis tepi (`border: 1px`), sudut membulat, bayangan: hal kecil yang memang tidak perlu ikut membesar"],
+        ["`%`", "Ukuran elemen <strong>induk</strong>", "`width: 50%` di induk 360px = 180px", "Lebar wadah dan kolom"],
+        ["`vw`", "1% <strong>lebar</strong> layar browser (viewport)", "`10vw` = 36px", "Elemen yang harus selebar layar, judul besar"],
+        ["`vh`", "1% <strong>tinggi</strong> layar browser", "`100vh` = 800px", "Bagian pembuka setinggi satu layar penuh"],
+        ["`rem`", "font-size elemen <code>&lt;html&gt;</code> (bawaan browser 16px)", "`1.5rem` = 24px", "Ukuran huruf dan jarak umum (padding, margin)"],
+        ["`em`", "font-size elemen induk (untuk font-size) atau elemen itu sendiri (untuk padding/margin)", "`1.5em` di dalam induk 20px = 30px", "Padding tombol supaya ikut besar kecilnya teks tombol"]
+      ],
+      modes: [
+        { label: "Kenapa font pakai rem?", target: "row", row: 4, title: "rem menghormati pengaturan pengguna", text: "Orang yang penglihatannya kurang baik sering memperbesar ukuran huruf di pengaturan browser. Teks ber-<code>rem</code> ikut membesar karena patokannya (font html) berubah, sedangkan teks ber-<code>px</code> tetap kecil." },
+        { label: "% vs vw", target: "row", row: 1, title: "% mengacu ke induk, bukan layar", text: "<code>width: 50%</code> di dalam kartu selebar 300px hasilnya 150px, walaupun layarnya 1920px. Jika yang diinginkan memang setengah layar, pakai <code>50vw</code>." },
+        { label: "Kapan px tetap tepat?", target: "row", row: 0, title: "px tidak dilarang", text: "Garis tepi 1px yang berubah menjadi 1,2px saat font diperbesar justru terlihat kabur. Untuk hal kecil seperti ini px adalah pilihan yang benar." }
+      ] },
+    tip("Aturan praktis memilih unit", `<ul class="list-disc pl-5 space-y-1">
+<li>Ukuran huruf → ${c("rem")}.</li>
+<li>Lebar wadah atau kolom → ${c("%")}, ditambah ${c("max-width")} agar tidak terlalu melebar di monitor besar, misalnya ${c("width: 90%; max-width: 1100px;")}.</li>
+<li>Setinggi atau selebar layar penuh → ${c("vh")} / ${c("vw")}.</li>
+<li>Jarak di dalam tombol → ${c("em")}, supaya tombol berteks besar otomatis punya padding lebih besar.</li>
+<li>Garis tepi, radius, bayangan → ${c("px")}.</li></ul>`),
+    tip("Kesalahan yang sering terjadi", `<ul class="list-disc pl-5 space-y-1">
+<li>Mengira ${c("%")} selalu terhadap layar. Patokan ${c("%")} adalah induknya; yang terhadap layar adalah ${c("vw")} dan ${c("vh")}.</li>
+<li>${c("em")} yang bersarang ikut berlipat: daftar ${c("font-size: 1.2em")} di dalam daftar ${c("1.2em")} menjadi 1,2 × 1,2 = 1,44 kali. ${c("rem")} tidak punya masalah ini karena patokannya selalu html.</li>
+<li>Menulis angka tanpa unit, misalnya ${c("width: 200;")}. Aturan itu diabaikan browser. Hanya ${c("0")} yang boleh tanpa unit.</li>
+<li>${c("width: 100vw")} kadang membuat halaman bisa digeser ke samping karena ikut menghitung lebar scrollbar. Untuk selebar wadah, cukup ${c("width: 100%")}.</li></ul>`, "warn"),
     remEm,
     ex("Latihan Interaktif", "Berapa Pikselnya?", ["Soal (html = 16px)", "Hasil"], ["8px", "18px", "24px", "32px", "40px", "450px"], [
       ["2rem", "32px"],

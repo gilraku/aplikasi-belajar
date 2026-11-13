@@ -100,7 +100,7 @@ module.exports = fix({
   hero: {
     badge: "Materi 5 • Pemrograman Web Dinamis",
     title: "Satu Halaman, Rapi di HP, Tablet, dan Laptop",
-    text: "Pahami <strong>prinsip desain responsif</strong>, <strong>media queries</strong> & breakpoint, serta <strong>unit relatif</strong> (%, vw, vh, rem, em). Coba langsung dengan tombol ukuran layar 📱 di editor. ➕ Termasuk <strong>meta viewport</strong>, karena tanpanya media query tidak bekerja di HP."
+    text: "Pahami <strong>prinsip desain responsif</strong>, <strong>media queries</strong> & breakpoint, serta <strong>unit relatif</strong> (%, vw, vh, rem, em). Coba langsung dengan tombol ukuran layar 📱 di editor. ➕ Termasuk <strong>meta viewport</strong>, karena tanpanya media query tidak bekerja di HP. Tab Kuis juga memuat <strong>30 soal kuis LMS P5</strong> (tombol 🎯 Kuis LMS); kuncinya disusun sendiri karena kuis LMS tidak bisa ditinjau ulang."
   },
   cheatsheet: [
     {
@@ -294,7 +294,9 @@ module.exports = fix({
     { q: "Halaman sudah punya media query `max-width: 600px`, tetapi di HP tampilannya tetap seperti desktop yang diperkecil. Penyebab paling mungkin adalah …",
       opts: ["Belum memakai Flexbox", "Belum ada `<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">`", "Font belum memakai rem", "Tabel belum diberi border"], ans: 1,
       exp: "➕ Tanpa meta viewport, browser HP memakai lebar virtual ±980px, sehingga media query mobile tidak aktif.",
-      optExp: ["Tidak terkait media query.", "Benar.", "Tidak membuat media query mati.", "Tidak terkait."] }
+      optExp: ["Tidak terkait media query.", "Benar.", "Tidak membuat media query mati.", "Tidak terkait."] },
+    // Soal kuis LMS P5 (30 dari 40 soal yang tercatat), ditaruh di akhir agar progres soal lama tidak bergeser.
+    ...require("./data_pwd_lms.js").p5
   ],
   ringkasan: `*RANGKUMAN KILAT UTS PEMROGRAMAN WEB DINAMIS — PERTEMUAN 5*
 📚 *Desain Responsif*
