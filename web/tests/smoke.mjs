@@ -158,6 +158,16 @@ try {
   await page.getByRole('button', { name: 'Selesai', exact: true }).click();
   await page.getByText('Simulasi UTS • 0/30 benar').waitFor();
 
+  cur = 'kuis LMS PWD P1: 30 soal berurutan';
+  await visit('pemrograman-web-dinamis', 'p1', 'quiz');
+  await page.getByRole('button', { name: 'Kuis LMS · 30 soal' }).click();
+  await page.getByRole('button', { name: 'Mulai', exact: true }).click();
+  await page.getByText('Kuis LMS • terjawab 0/30').waitFor();
+  if (await page.evaluate(() => S.exam.indices.join(',')) !== Array.from({ length: 30 }, (_, i) => i + 10).join(',')) fail('Kuis LMS P1 harus berisi 30 soal [Kuis LMS P1] sesuai urutan');
+  await page.getByRole('button', { name: 'Selesai & lihat nilai', exact: true }).click();
+  await page.getByRole('button', { name: 'Selesai', exact: true }).click();
+  await page.getByText('Kuis LMS • 0/30 benar').waitFor();
+
   cur = 'lab SQL P6–P8';
   await visit(basis, 'p6', 'simulator');
   const click = name => page.getByRole('button', { name, exact: true }).click();
