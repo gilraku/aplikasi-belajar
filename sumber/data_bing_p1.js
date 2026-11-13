@@ -56,7 +56,7 @@ module.exports = {
     { type: "table", label: "Interaktif 5 • Preposition & Conjunction", title: "Kata Depan dan Kata Hubung", headers: ["Kelompok", "Isi", "Contoh"],
       rows: [
         ["Preposition of time", "in (tahun/bulan/bagian hari), on (hari/tanggal), at (jam)", "in 1990, on Sunday, at 7 o'clock"],
-        ["Preposition of place", "in, on, at, by, under, above, between, among", "at London, in the library, under the table"],
+        ["Preposition of place", "in, on, at, by, under, above, between, among", "at the station, in the library, under the table"],
         ["Preposition of direction", "to, into, towards, along", "go to school, walk into the room"],
         ["Coordinating conjunction", "FANBOYS, menyambung klausa setara", "I'm tired, but I'm happy."],
         ["Subordinating conjunction", "Menyambung anak kalimat ke induk", "after, although, as, because, before"],

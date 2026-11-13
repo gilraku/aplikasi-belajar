@@ -35,10 +35,37 @@ module.exports = [
     rows: [["100", "one hundred / a hundred", "tanpa -s: two hundred"], ["1,000", "one thousand", "koma = pemisah ribuan"], ["500,000", "five hundred thousand", "bukan “five hundreds thousands”"], ["1,000,000", "one million", "juta"], ["77,000,000", "seventy-seven million", ""], ["1,000,000,000", "one billion", "miliar (bukan “milyar”)"], ["3.5", "three point five", "titik = desimal (kebalikan Indonesia!)"], ["£94.50", "ninety-four pounds fifty", "harga"]],
     modes: [{ label: "Jebakan", target: "row", row: 6, title: "Koma vs titik", text: "Indonesia: 3,5 dan 1.000. Inggris: 3.5 dan 1,000." }, { label: "Tanpa -s", target: "row", row: 2, title: "hundred/thousand/million", text: "Setelah angka, tidak jamak: two million people. Jamak hanya jika tanpa angka: <em>millions of people</em>." }] },
   A("Language Focus 1: can dan can't", `<p>Karen ada di Metropolitan Museum of Art, Manhattan. Ia punya <strong>$25</strong>, sekarang jam <strong>ten past three</strong>, dan harus tiba di JFK Airport <strong>half past four</strong>. Ada empat cara: taksi ($35 + tip), subway + bus (90 menit, $2), jalan kaki + subway + AirTrain (±1 jam 32 menit, $7), atau subway ke Grand Central lalu New York Airport Express bus (±1 jam, $2 + $13, berangkat tiap 20 menit).</p>
-<p>Kesimpulan grammar modul: <em>She <strong>can</strong> take a bus at twenty past three. She <strong>can't</strong> take a taxi because she's only got $25. <strong>Can</strong> she take the subway to the airport?</em> — <em>can</em> sama untuk semua subjek dan diikuti kata kerja dasar.</p>`, "Bagian 3"),
+<p>Kesimpulan grammar modul: <em>She <strong>can</strong> take a bus at twenty past three. She <strong>can't</strong> take a taxi because she's only got $25. <strong>Can</strong> she take the subway to the airport?</em></p>
+<p><strong>can</strong> adalah <em>modal verb</em>, yaitu kata kerja bantu yang menambah makna pada verb utama. Di modul ini artinya “<strong>bisa/mungkin dilakukan</strong>” (ada pilihan itu atau tidak). <em>can't</em> (= cannot) artinya tidak bisa.</p>`, "Bagian 3"),
+  { type: "table", label: "Tabel Interaktif", title: "Aturan can", headers: ["Aturan", "Benar", "Salah"],
+    rows: [
+      ["Bentuknya sama untuk semua subjek (tidak ada -s)", "She <strong>can</strong> swim.", "She <s>cans</s> swim."],
+      ["Sesudah can selalu verb bentuk dasar, tanpa <em>to</em>", "I can <strong>speak</strong> English.", "I can <s>to speak</s> / can <s>speaks</s>."],
+      ["Negatif: can't / cannot, tanpa don't", "He <strong>can't</strong> drive.", "He <s>doesn't can</s> drive."],
+      ["Pertanyaan: can pindah ke depan subjek, tanpa do", "<strong>Can</strong> she take the subway?", "<s>Does she can</s> take…?"]
+    ],
+    modes: [
+      { label: "Tiga makna", target: "col", col: 1, title: "can dipakai untuk apa saja?", text: "<strong>Kemungkinan/pilihan</strong>: <em>She can take a bus</em> (pilihan itu ada). <strong>Kemampuan</strong>: <em>I can speak English</em>. <strong>Meminta/izin</strong>: <em>Can I have the bill, please?</em> (dipakai lagi di P7)." },
+      { label: "Jawaban singkat", target: "row", row: 3, title: "Yes, she can. / No, she can't.", text: "Ulangi subjek + can, tanpa verb utama." }
+    ] },
   tip("➕ can untuk kemampuan diri", "Gunakan untuk CV/wawancara: <em>I can speak English and Indonesian. I can use Microsoft Excel. I can't drive, but I can ride a motorbike.</em>", "info"),
-  A("Language Focus 2: Articles a/an, the, dan zero", `<p>Teks tentang Salem Al-Romeithi: 23 tahun, <strong>an engineer</strong>, tinggal bersama keluarga di rumah besar di <strong>Dubai</strong>, kota besar di <strong>the United Arab Emirates</strong>. Ia bekerja di perusahaan internasional dari <strong>Saturday</strong> sampai <strong>Wednesday</strong>, dan di <strong>weekend</strong> ia selalu bermain <strong>golf</strong>.</p>
-<ul><li><strong>a/an</strong>: menyebut sesuatu pertama kali atau salah satu dari banyak; pekerjaan.</li><li><strong>the</strong>: sesuatu yang sudah jelas atau hanya satu (the capital city, the city centre, on the right); bagian hari (in the morning); negara gabungan (the UAE, the USA, the UK); <em>at the weekend</em>.</li><li><strong>tanpa article</strong>: nama orang, kota, negara biasa, hari; frasa tetap <em>go to work, go home, at school, by bus, by car, on foot</em>.</li></ul>`, "Bagian 4"),
+  A("Language Focus 2: Articles a/an, the, dan zero", `<p><strong>Article</strong> adalah kata kecil sebelum noun yang memberi tahu pendengar: benda ini <strong>baru disebut / salah satu dari banyak</strong> (a/an), atau <strong>benda tertentu yang sudah sama-sama diketahui</strong> (the). Bahasa Indonesia tidak punya padanan langsung, jadi pilihannya dihafal lewat pola.</p>
+<p>Contoh paling jelas: <em>I've got <strong>a</strong> car and <strong>a</strong> motorbike. <strong>The</strong> car is red.</em> Saat pertama disebut pakai <em>a</em>; setelah itu pendengar tahu mobil yang mana, jadi pakai <em>the</em>.</p>
+<p>Teks modul tentang Salem Al-Romeithi: 23 tahun, <strong>an engineer</strong>, tinggal di <strong>Dubai</strong>, kota besar di <strong>the United Arab Emirates</strong>. Ia bekerja dari <strong>Saturday</strong> sampai <strong>Wednesday</strong>, dan di <strong>the weekend</strong> ia selalu bermain <strong>golf</strong>. Perhatikan mana yang memakai article dan mana yang tidak, lalu cocokkan dengan tabel.</p>`, "Bagian 4"),
+  { type: "table", label: "Tabel Interaktif", title: "a/an, the, atau Tanpa Article?", headers: ["Pakai", "Kapan", "Contoh"],
+    rows: [
+      ["a / an", "Disebut pertama kali, atau salah satu dari banyak (tunggal)", "There's <strong>a</strong> bus at 3.20."],
+      ["a / an", "Pekerjaan (tunggal)", "He's <strong>an</strong> engineer."],
+      ["the", "Sudah disebut sebelumnya / pendengar tahu yang mana", "<strong>The</strong> bus goes to the airport."],
+      ["the", "Hanya ada satu", "<strong>the</strong> capital city, <strong>the</strong> city centre, <strong>the</strong> sun"],
+      ["the", "Frasa tetap dan negara gabungan", "in <strong>the</strong> morning, on <strong>the</strong> right, at <strong>the</strong> weekend, <strong>the</strong> UK, <strong>the</strong> USA"],
+      ["– (tanpa)", "Nama orang, kota, negara biasa, hari, olahraga", "Salem, Dubai, Indonesia, on Monday, play golf"],
+      ["– (tanpa)", "Frasa tetap tempat dan kendaraan", "go to work, go home, at school, by bus, on foot"]
+    ],
+    modes: [
+      { label: "Negara", target: "row", row: 4, title: "Kenapa the USA tapi bukan the Indonesia?", text: "Negara yang namanya mengandung kata <em>States, Kingdom, Republic, Emirates</em> (gabungan) memakai the: the United States, the United Kingdom. Nama negara biasa tidak: Indonesia, Japan." },
+      { label: "Jamak", target: "col", col: 0, title: "a/an tidak untuk jamak", text: "<em>a car</em> → jamaknya <em>cars</em> (tanpa article) atau <em>the cars</em> (tertentu). Tidak ada <em>a cars</em>." }
+    ] },
   free("Latihan • Article", "Isi a, an, the, atau – (tanda strip untuk tanpa article)", "Ketik a / an / the / -", [
     ["He lives in ___ apartment in a big city.", "an"], ["___ Mrs Wilson is my teacher.", ["-", "—"]], ["It's on ___ left.", "the"], ["in ___ Bangkok", ["-", "—"]], ["in ___ UK", "the"], ["in ___ afternoon", "the"], ["from ___ Monday to Friday", ["-", "—"]], ["go to ___ work", ["-", "—"]]
   ]),
