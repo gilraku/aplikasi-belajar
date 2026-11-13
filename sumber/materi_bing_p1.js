@@ -46,8 +46,49 @@ module.exports = [
 <li><strong>Auxiliary</strong>: kata kerja bantu <em>be, have, do</em> untuk membentuk tense, kalimat negatif, dan pertanyaan. <em>They <strong>are</strong> trying… / They <strong>were</strong> trying…</em></li></ul>
 <p>Contoh dosen dengan <em>provide</em> (menyediakan): <em>I provide meals in the living room.</em> Polanya <strong>provide somebody with something</strong> atau <strong>provide something for somebody</strong>.</p>`, "Bagian 3"),
   tip("➕ Kata kerja yang bisa dua-duanya", "Banyak verb bisa transitive dan intransitive: <em>I <strong>eat</strong> rice</em> (transitive) vs <em>I <strong>eat</strong> at seven</em> (intransitive). Yang menentukan adalah ada/tidaknya objek <strong>di kalimat itu</strong>.", "info"),
-  A("Adjective dan Adverb", `<p><strong>Adjective</strong> menjelaskan noun: descriptive (<em>beautiful, smart</em>), quantitative (<em>one hundred, intense</em>), demonstrative (<em>this book</em>), interrogative (<em>which bag?</em>). Dosen mengingatkan: <em>this/that/these/those</em> adalah adjective <strong>kalau diikuti noun</strong>, dan pronoun kalau berdiri sendiri.</p>
-<p><strong>Adverb</strong> menjelaskan verb (cara, tempat, waktu, frekuensi): <em>happily, here, now, always</em>. Catatan dosen: “What to do / How to do” → adverb of manner menjawab <em>how?</em></p>`, "Bagian 4"),
+  A("Adjective dan Adverb", `<p><strong>Adjective</strong> (kata sifat) adalah kata yang memberi keterangan tentang <strong>noun</strong>: seperti apa, berapa banyak, yang mana. Adjective muncul di dua posisi:</p>
+<ul><li><strong>Sebelum noun</strong>: <em>a <strong>smart</strong> student</em>, <em><strong>three</strong> cats</em>.</li>
+<li><strong>Sesudah <em>be</em></strong> (is/am/are/was/were) atau verb sejenis (look, feel, seem): <em>She is <strong>smart</strong>.</em> <em>You look <strong>tired</strong>.</em></li></ul>
+<p>Adjective dalam bahasa Inggris <strong>tidak punya bentuk jamak</strong>: <em>two <strong>big</strong> houses</em>, bukan <em>bigs</em>.</p>
+<p><strong>Adverb</strong> (kata keterangan) memberi keterangan tentang <strong>verb</strong>: bagaimana, di mana, kapan, atau seberapa sering sesuatu dilakukan. Adverb juga bisa menerangkan adjective atau adverb lain: <em><strong>very</strong> smart</em>, <em>runs <strong>very</strong> fast</em>.</p>
+<p>Cara paling mudah membedakannya: <strong>cari kata yang diterangkan</strong>. Kalau yang diterangkan noun (orang/benda), itu adjective. Kalau yang diterangkan perbuatan (verb), itu adverb.</p>`, "Bagian 4"),
+  { type: "table", label: "Tabel Interaktif", title: "Empat Jenis Adjective (Slide Dosen)", headers: ["Jenis", "Menjawab pertanyaan", "Contoh", "Catatan"],
+    rows: [
+      ["Descriptive", "Seperti apa?", "a <strong>beautiful</strong> garden, a <strong>smart</strong> girl", "Jenis paling umum: warna, ukuran, sifat, perasaan."],
+      ["Quantitative", "Berapa banyak? Seberapa besar?", "<strong>one hundred</strong> students, <strong>some</strong> water, a <strong>colossal</strong> building", "Angka dan kata jumlah (some, many, few). Slide juga memasukkan kata ukuran/intensitas seperti colossal, intense."],
+      ["Demonstrative", "Yang mana (menunjuk)?", "<strong>this</strong> book, <strong>those</strong> shoes", "Hanya adjective kalau langsung diikuti noun."],
+      ["Interrogative", "Yang mana? (bertanya)", "<strong>Which</strong> bag is yours? <strong>Whose</strong> phone is this?", "Kata tanya yang diikuti noun: which, what, whose."]
+    ],
+    modes: [
+      { label: "Posisi", target: "col", col: 2, title: "Di mana adjective diletakkan?", text: "Sebelum noun (<em>a smart girl</em>) atau sesudah <em>be</em> (<em>The girl is smart</em>). Demonstrative dan interrogative selalu sebelum noun." },
+      { label: "Jebakan quantitative", target: "row", row: 1, title: "Angka juga adjective", text: "Pada <em>one hundred students</em>, <em>one hundred</em> menerangkan <em>students</em> (berapa banyak), jadi termasuk adjective." }
+    ] },
+  { type: "table", label: "Tabel Interaktif", title: "this/that/these/those: Adjective atau Pronoun?", headers: ["Kalimat", "Sesudahnya ada noun?", "Kelas kata"],
+    rows: [
+      ["<strong>This</strong> book is mine.", "Ya: book", "Demonstrative <strong>adjective</strong>"],
+      ["<strong>This</strong> is mine.", "Tidak", "Demonstrative <strong>pronoun</strong>"],
+      ["I like <strong>those</strong> shoes.", "Ya: shoes", "Demonstrative <strong>adjective</strong>"],
+      ["I like <strong>those</strong>.", "Tidak", "Demonstrative <strong>pronoun</strong>"]
+    ],
+    modes: [
+      { label: "Cara menguji", target: "col", col: 1, title: "Lihat satu kata sesudahnya", text: "Kalau langsung diikuti noun, kata itu sedang <em>menerangkan</em> noun tersebut, jadi adjective. Kalau berdiri sendiri, kata itu <em>menggantikan</em> noun, jadi pronoun." },
+      { label: "Dekat/jauh", target: "col", col: 0, title: "Arti keempatnya", text: "<em>this</em> (dekat, satu), <em>these</em> (dekat, banyak), <em>that</em> (jauh, satu), <em>those</em> (jauh, banyak). Noun sesudahnya harus cocok: <em>this book</em>, <em>these books</em>." }
+    ] },
+  { type: "table", label: "Tabel Interaktif", title: "Empat Jenis Adverb (Slide Dosen)", headers: ["Jenis", "Menjawab pertanyaan", "Contoh", "Posisi biasanya"],
+    rows: [
+      ["Manner (cara)", "<strong>How?</strong> Bagaimana dilakukan?", "She sings <strong>beautifully</strong>. He drives <strong>carefully</strong>.", "Sesudah verb (atau sesudah objek)."],
+      ["Place (tempat)", "<strong>Where?</strong> Di mana?", "Come <strong>here</strong>. They live <strong>abroad</strong>.", "Akhir kalimat."],
+      ["Time (waktu)", "<strong>When?</strong> Kapan?", "I'll call you <strong>tomorrow</strong>. Do it <strong>now</strong>.", "Akhir kalimat (bisa juga di awal)."],
+      ["Frequency (frekuensi)", "<strong>How often?</strong> Seberapa sering?", "I <strong>always</strong> wake up early. She is <strong>never</strong> late.", "Sebelum verb utama, tetapi sesudah <em>be</em>."]
+    ],
+    modes: [
+      { label: "Catatan dosen", target: "row", row: 0, title: "What to do / How to do", text: "Verb menjawab <em>what to do</em> (melakukan apa: <em>sing</em>). Adverb of manner menjawab <em>how to do</em> (dengan cara apa: <em>beautifully</em>). Jadi kalau pertanyaannya “bagaimana caranya?”, jawabannya adverb of manner." },
+      { label: "Urutan", target: "col", col: 3, title: "Kalau ada beberapa adverb", text: "Urutan yang lazim di akhir kalimat: <strong>manner → place → time</strong>. <em>She sang beautifully at the party last night.</em>" }
+    ] },
+  tip("Kesalahan yang sering terjadi", `<ul class="list-disc pl-5 space-y-1"><li><em>She sings <s>beautiful</s></em> → <em>She sings <strong>beautifully</strong></em>. Yang diterangkan <em>sings</em> (verb), jadi perlu adverb.</li>
+<li><em>She looks <s>beautifully</s></em> → <em>She looks <strong>beautiful</strong></em>. Sesudah look/feel/seem/be yang diterangkan subjeknya (noun), jadi pakai adjective.</li>
+<li><em>I <s>go always</s> to campus</em> → <em>I <strong>always go</strong> to campus</em>. Adverb of frequency sebelum verb utama.</li>
+<li>Menganggap <em>this</em> selalu pronoun. Cek dulu apakah ada noun sesudahnya.</li></ul>`, "warn"),
   { type: "choices", style: "toggle", label: "➕ Tambahan • Bentuk -ly", title: "Adjective → Adverb", options: [
     { label: "Aturan umum", tone: "emerald", title: "Tambah -ly", code: "quick → quickly, happy → happily, careful → carefully", text: "Akhiran -y diganti -ily. Akhiran -le diganti -ly (gentle → gently)." },
     { label: "Tidak beraturan", tone: "rose", title: "Bentuk khusus", code: "good → well, fast → fast, hard → hard, late → late", text: "<em>He works <strong>hard</strong></em> (bekerja keras). <em>hardly</em> artinya “hampir tidak”, maknanya beda!" },
