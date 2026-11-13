@@ -69,7 +69,10 @@ do {
     cout << "Masukkan batas (minimal 5): ";
     cin >> batas;
 } while (batas < 5);`, "➕ Validasi masukan: pertanyaan diulang terus sampai pengguna memasukkan nilai yang sah. Pola ini relevan untuk syarat “Batas Nilai ≥ 5” di Tugas Nested.", "do-while untuk Validasi"),
-  A("break dan continue", `<ul><li><strong>break;</strong> keluar dari blok perulangan for, while, do-while, atau switch (P5).</li><li><strong>continue;</strong> melanjutkan ke putaran berikutnya dan meninggalkan sisa instruksi di badan perulangan.</li></ul>`, "Bagian 3"),
+  A("break dan continue", `<p><code>break</code> dan <code>continue</code> sama-sama mengubah jalannya perulangan, tetapi akibatnya berbeda:</p>
+<ul class="list-disc pl-5 space-y-1"><li><code>break;</code> <strong>menghentikan</strong> perulangan sepenuhnya. Program langsung lompat ke baris sesudah loop. Juga dipakai untuk keluar dari <code>switch</code> (P5).</li><li><code>continue;</code> hanya <strong>melewati sisa putaran ini</strong>, lalu lanjut ke putaran berikutnya. Loop tetap berjalan.</li></ul>
+<p>Contoh: loop <code>i</code> dari 1 sampai 5 dengan <code>if (i == 3) …</code>. Dengan <code>break</code> keluarannya <code>1 2</code> (berhenti di 3). Dengan <code>continue</code> keluarannya <code>1 2 4 5</code> (hanya 3 yang dilewati).</p>
+<p>Kapan dipakai? <code>break</code> saat yang dicari sudah ketemu atau pengguna memilih keluar. <code>continue</code> saat data tertentu ingin dilewati, misalnya melewati bilangan genap. Jebakan di <code>while</code>: kalau <code>continue</code> diletakkan sebelum baris <code>i++</code>, penambahnya ikut terlewat dan loop tidak pernah berhenti.</p>`, "Bagian 3"),
   { type: "choices", label: "Interaktif", title: "Contoh break dan continue dari Slide", style: "toggle",
     options: [
       { label: "break", title: "Hitung mundur dibatalkan di 3", code: "for (int n = 10; n > 0; n--) {\n    cout << n << \", \";\n    if (n == 3) {\n        cout << \"countdown aborted!\";\n        break;\n    }\n}\n\n// 10, 9, 8, 7, 6, 5, 4, 3, countdown aborted!", text: "Angka 3 tetap tercetak karena cout ada sebelum if. Setelah break, sisa putaran (2, 1) tidak pernah dijalankan." },

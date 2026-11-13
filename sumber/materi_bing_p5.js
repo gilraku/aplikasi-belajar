@@ -28,16 +28,39 @@ module.exports = [
   A("Isi Module 4", `<p>Module 4 <em>Loves and hates</em> membahas: present simple untuk <em>he</em> dan <em>she</em>; <em>like … -ing</em>; pertanyaan; kata kerja aktivitas dan <em>adverbs of frequency</em>; listening tentang hal yang disukai/dibenci selebritas; bacaan <em>An American star in London … and a British star in Hollywood</em>; tugas mencari teman e-mail; dan real life: meminta dengan sopan.</p>
 <p>Listening pembuka: selebritas yang suka atau benci <em>dog, doll, clown, crowd, spider, TV, flying, doing housework</em>. Contoh kalimat modul: <em>Cameron Diaz doesn't watch TV. Johnny Depp hates clowns. Dean Cain never goes on planes. Britney Spears has hundreds of dolls.</em></p>`, "Bagian 1"),
   moveS,
-  A("Language Focus 1–2: he/she dan Pertanyaan", `<p>Positif: <em>He hates spiders. She loves dolls.</em> Negatif: <em>He doesn't like clowns. She doesn't watch TV.</em> Bentuk khusus: <em>have → has, go → goes, do → does</em>.</p>
-<p>Pertanyaan: <em>Does she like London? — Yes, she does. Does she miss the USA? — No, she doesn't.</em> Wh-: <em>What does she think about British people? Where does she come from?</em></p>
-<p>Latihan modul dengan Sarinder (teman dari Delhi yang tinggal di Brighton): pilih bentuk yang tepat, mis. <em>This <strong>is</strong> my friend Sarinder. He <strong>comes</strong> from Delhi… His parents <strong>are</strong> both doctors… They <strong>want</strong> to go back to India… Sarinder <strong>loves</strong> Brighton because he <strong>'s got</strong> lots of friends here.</em> Kuncinya: subjek tunggal (he) → -s; subjek jamak (his parents, they) → tanpa -s.</p>`, "Bagian 2"),
+  A("Language Focus 1–2: he/she dan Pertanyaan", `<p>Di P3 kita memakai present simple untuk <em>I, you, we, they</em>. Untuk subjek <strong>orang ketiga tunggal</strong> (<em>he, she, it</em>, satu nama, atau satu benda: <em>my mother, the shop</em>) ada satu aturan tambahan: <strong>verb di kalimat positif mendapat -s/-es</strong>. <em>I hate spiders</em> → <em>He hate<strong>s</strong> spiders.</em></p>
+<p>Di kalimat negatif dan pertanyaan, tanda -s itu <strong>pindah ke do</strong> sehingga menjadi <em>does/doesn't</em>, dan verb-nya kembali ke bentuk dasar:</p>
+<ul><li>(−) <em>He <strong>doesn't</strong> like clowns.</em> (bukan <em>doesn't likes</em>)</li>
+<li>(?) <em><strong>Does</strong> she like London? — Yes, she does. / No, she doesn't.</em></li>
+<li>Wh-: <em>Where <strong>does</strong> she come from? What <strong>does</strong> she think about British people?</em></li></ul>
+<p>Latihan modul dengan Sarinder (teman dari Delhi yang tinggal di Brighton): <em>This <strong>is</strong> my friend Sarinder. He <strong>comes</strong> from Delhi… His parents <strong>are</strong> both doctors… They <strong>want</strong> to go back to India…</em> Kuncinya: subjek tunggal (he) → -s; subjek jamak (his parents, they) → tanpa -s.</p>`, "Bagian 2"),
+  { type: "table", label: "Tabel Interaktif", title: "Cara Menambah -s untuk he/she/it", headers: ["Akhiran verb", "Aturan", "Contoh"],
+    rows: [
+      ["Kebanyakan verb", "+ s", "like → likes, work → works, love → loves"],
+      ["-s, -sh, -ch, -x, -o", "+ es", "miss → misses, watch → watches, go → goes, do → does"],
+      ["konsonan + y", "y → ies", "study → studies, fly → flies"],
+      ["vokal + y", "+ s saja", "play → plays, enjoy → enjoys"],
+      ["have", "bentuk khusus", "have → <strong>has</strong>"]
+    ],
+    modes: [
+      { label: "Jebakan y", target: "row", row: 3, title: "play bukan plaies", text: "Kalau sebelum y ada huruf vokal (a, i, u, e, o), cukup tambah -s." },
+      { label: "Pelafalan", target: "col", col: 2, title: "-es dibaca /ɪz/", text: "Sesudah bunyi s, sh, ch, x, akhiran dibaca “iz”: <em>misses, watches</em>. Lihat latihan pelafalan di bawah halaman." }
+    ] },
+  tip("like, love, hate + -ing (gerund)", "Modul ini bernama <em>Loves and hates</em>. Kalau yang disukai/dibenci adalah <strong>kegiatan</strong>, verb sesudahnya diberi <strong>-ing</strong>. Verb + -ing yang dipakai sebagai benda seperti ini disebut <strong>gerund</strong> (kisi-kisi UTS menyebutnya <em>like + gerund</em>): <em>She loves <strong>dancing</strong>. He hates <strong>flying</strong>. I don't like <strong>doing</strong> housework.</em> Kalau yang disukai benda, langsung noun: <em>He loves dogs.</em> Salah: <em>She loves dance</em> (sebagai kegiatan) atau <em>He hates fly</em>.", "info"),
+  {"type": "table", "label": "Tabel Interaktif", "title": "Ejaan Gerund (verb + -ing)", "headers": ["Akhiran verb", "Aturan", "Contoh"], "rows": [["Kebanyakan verb", "+ ing", "read → reading, play → playing, cook → cooking"], ["Berakhiran -e", "buang e, + ing", "dance → dancing, write → writing, ride → riding"], ["Satu suku kata: konsonan-vokal-konsonan", "gandakan huruf terakhir", "swim → swimming, run → running, shop → shopping"], ["Berakhiran -ie", "ie → y + ing", "lie → lying"]], "modes": [{"label": "Pola kalimat", "target": "col", "col": 2, "title": "Bentuk lengkapnya", "text": "<em>I like reading. She doesn't like cooking. Does he like swimming?</em> -ing tetap ada di kalimat negatif dan pertanyaan; yang berubah hanya like/likes/doesn't like."}]},
   tip("➕ Kalimat dengan subjek jamak tetap tanpa -s", "<em>My parents <strong>live</strong> in Delhi.</em> (bukan lives) — <em>Ben and Emily <strong>work</strong> in London.</em> Banyak salah karena lupa subjeknya dua orang.", "warn"),
   free("Latihan • Sarinder (gaya modul)", "Pilih Bentuk Kata Kerja yang Tepat", "Ketik bentuk yang benar.", [
     ["He ___ (come/comes) from Delhi in India.", "comes"], ["Now he ___ (live/lives) in Brighton.", "lives"], ["His parents ___ (is/are) both doctors.", "are"], ["After Sarinder ___ (finish/finishes) college, his parents want to go back.", "finishes"],
     ["Every year they ___ (go/goes) back to India.", "go"], ["Sometimes he ___ (miss/misses) his grandparents' big house.", "misses"], ["They ___ ('s got/'ve got) a fantastic garden.", "'ve got"]
   ]),
   A("Language Focus 3: Activity Verbs dan Adverbs of Frequency", `<p>Kata kerja aktivitas berpasangan dengan kata tertentu: <em>read a newspaper, go swimming, play football, write a letter, listen to the radio, watch television, go to school, visit friends, do nothing, have a meal</em>. Tambahan modul: <em>shopping, a magazine, the cinema, an e-mail, the guitar, CDs, a video, computer games, a restaurant, a shower, your relatives, your homework</em>.</p>
-<p>Adverbs of frequency (<em>always, usually, often, sometimes, not … often, never</em>) diletakkan <strong>sebelum</strong> kata kerja di kalimat positif dan <strong>setelah</strong> <em>don't</em> di kalimat negatif. Pertanyaan modul: <em>Do you ever go to concerts? — Not often. How about you?</em></p>`, "Bagian 3"),
+<p><strong>Adverbs of frequency</strong> adalah kata yang menjawab <em>How often?</em> (seberapa sering): <em>always</em> (selalu), <em>usually</em> (biasanya), <em>often</em> (sering), <em>sometimes</em> (kadang-kadang), <em>not … often</em> (jarang), <em>never</em> (tidak pernah). Lihat skalanya di diagram.</p>
+<p>Posisinya punya aturan tetap:</p>
+<ul><li><strong>Sebelum</strong> verb biasa: <em>I <strong>usually</strong> get up at six.</em></li>
+<li><strong>Sesudah</strong> to be: <em>She is <strong>never</strong> late.</em> (bukan <em>She never is late</em>)</li>
+<li>Di kalimat negatif, <strong>sesudah</strong> don't/doesn't: <em>I don't <strong>often</strong> write letters.</em></li></ul>
+<p>Untuk bertanya “pernahkah/seberapa sering”, pakai <em>ever</em>: <em>Do you <strong>ever</strong> go to concerts? — Not often. How about you?</em> <em>ever</em> hanya untuk pertanyaan; jawabannya pakai adverb lain.</p>
+<p><em>never</em> sudah bermakna negatif, jadi jangan ditambah don't: <em>I never eat meat</em>, bukan <em>I don't never eat meat</em>.</p>`, "Bagian 3"),
   { type: "diagram", label: "Diagram Interaktif", title: "Skala Adverbs of Frequency", desc: "Klik setiap titik pada skala.", minw: 520,
     svg: svg(720, 150,
       `<line x1="70" y1="70" x2="650" y2="70" stroke="#94a3b8" stroke-width="6" stroke-linecap="round"/>` +
