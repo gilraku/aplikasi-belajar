@@ -96,7 +96,8 @@ module.exports = {
     { tag: "P7", q: "CREATE TABLE minimal?", a: "CREATE TABLE t ( kolom TIPE NOT NULL, …, PRIMARY KEY (kolom) );" },
     { tag: "P7", q: "SHOW TABLES vs SHOW DATABASES?", a: "SHOW DATABASES: daftar basis data (P6). SHOW TABLES: daftar tabel di basis data yang dipakai (P7)." }
   ],
-  quiz: lama.concat(baru),
+  // Soal kuis LMS P5 (salinan) ikut masuk bank UTS, karena UTS diambil dari kuis P1–P7.
+  quiz: lama.concat(baru, JSON.parse(JSON.stringify(require("./data_bd_lms.js").p5)).map(q => ({ ...q, topic: "P5" }))),
   ringkasan: `*RANGKUMAN BASIS DATA — UTS (P1–P7)*
 📚 *Benang merah perpustakaan*
 

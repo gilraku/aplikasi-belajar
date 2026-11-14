@@ -172,4 +172,17 @@ M.p2 = M.p2.concat(X.ERD);
 M.p3 = require("./materi_bd_p3.js");
 M.p4 = require("./materi_bd_p4.js");
 for (const p of ["p5", "p6", "p7", "p8"]) M[p] = require("./materi_bd_" + p + ".js");
+// Kata Kunci dan perumpamaan modul P1–P7: soal LMS/UTS sering menanyakannya persis seperti di modul.
+{
+  const K = require("./modul_bd_istilah.js");
+  const nama = { "Data itu": "Data dan informasi", "Tingkatan ini": "Susunan data dari bit sampai basis data", "Kelima aturan itu": "Lima aturan tabel yang baik", "Ketiga lambang itu": "Tiga lambang ERD (entitas, atribut, relasi)", "Kelima langkah itu": "Lima langkah menggambar ERD", "Tabel seperti itu": "Tabel gabungan yang penuh redundansi", "Tiga tahap itu": "Tiga tahap normalisasi", "Keempat basis data sistem itu": "Empat basis data sistem (information_schema, mysql, performance_schema, sys)", "Perintah CREATE TABLE": "CREATE TABLE", "MySQL": "MySQL dan phpMyAdmin", "Normalisasi": "Normalisasi dan ERD" };
+  for (let n = 1; n <= 7; n++) {
+    const p = "p" + n;
+    if (p !== "p5") M[p].unshift({ type: "table", label: "Kata Kunci Modul", title: `Istilah Kunci Pertemuan ${n}`, headers: ["Istilah", "Arti singkat (sesuai modul)"], rows: K.kataKunci[p] });
+    M[p].push({ type: "reveal", label: "Latihan Interaktif • Perumpamaan Modul", title: "Menurut Modul, Ini Diibaratkan Apa?", items: K.ibarat[p].map(([subj, t]) => {
+      const kal = t.split(/(?<=\.)\s+/), awal = subj === "Data itu" ? "data ibarat beras, informasi ibarat nasi." : kal[0].replace(/^.+? ibarat /, "");
+      return { prompt: nama[subj] || subj, answer: awal.charAt(0).toUpperCase() + awal.slice(1), reason: kal.slice(1).join(" ") };
+    }) });
+  }
+}
 module.exports = M;

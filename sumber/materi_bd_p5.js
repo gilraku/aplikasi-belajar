@@ -66,40 +66,107 @@ const anomali = diagram({
   ]
 });
 
+const kataKunci = { type: "table", label: "Tabel Interaktif • Kata Kunci Modul", title: "Delapan Istilah yang Sering Muncul di Soal", headers: ["Istilah", "Artinya", "Contoh di perpustakaan"],
+  rows: [
+    ["Normalisasi", "Memecah satu tabel yang berantakan menjadi beberapa tabel yang rapi", "peminjaman_kacau dipecah jadi buku, anggota, peminjaman"],
+    ["Redundansi", "Keterangan yang sama ditulis berulang di banyak baris", "Judul BK002 tertulis di dua baris"],
+    ["Anomali", "Keanehan data yang muncul saat data ditambah, diubah, atau dihapus", "Satu buku punya dua judul berbeda"],
+    ["Ketergantungan fungsional", "Nilai satu kolom sudah bisa ditentukan dari kolom lain", "Tahu id_buku → pasti tahu judulnya"],
+    ["1NF", "Setiap sel hanya berisi satu nilai", "Sel “BK003, BK005” dipecah jadi dua baris"],
+    ["2NF", "Setiap kolom bergantung pada seluruh kunci, bukan sebagiannya", "judul pindah ke tabel buku"],
+    ["3NF", "Tidak ada kolom yang bergantung pada kolom bukan kunci", "nama_prodi pindah ke tabel prodi"],
+    ["Kunci gabungan", "Kunci primer yang terdiri dari dua kolom atau lebih", "(nim, kode_matkul) pada tabel nilai"]
+  ],
+  modes: [
+    { label: "Redundansi vs anomali", target: "row", row: 2, title: "Sebab dan akibat", text: "Redundansi adalah <strong>penyebab</strong> (data ditulis berulang). Anomali adalah <strong>akibatnya</strong> (data jadi tidak cocok, tidak bisa ditambah, atau ikut terhapus)." },
+    { label: "Kunci tamu = FK", target: "none", title: "Istilah yang dipakai modul", text: "Modul menulis <strong>kunci tamu</strong> untuk foreign key (FK): kolom yang menyimpan kunci primer tabel lain supaya dua tabel bisa dihubungkan. Di soal, “Bab 4” sama dengan Pertemuan 4 di Sinau." }
+  ] };
+
+const sesudah = { type: "table", label: "Tabel Interaktif", title: "Sebelum dan Sesudah Dinormalkan", headers: ["Anomali", "Sebelum (satu tabel gabungan)", "Sesudah (tabel buku, anggota, peminjaman)"],
+  rows: [
+    ["Pengubahan", "Judul BK002 diperbaiki di satu baris saja, satu buku jadi punya dua judul", "Judul hanya tersimpan di satu tempat, jadi <strong>tidak mungkin berbeda-beda</strong>"],
+    ["Penyisipan", "Buku baru tidak bisa dicatat sebelum ada yang meminjam (ERROR 1364)", "Buku baru langsung dicatat di tabel buku tanpa menunggu peminjaman"],
+    ["Penghapusan", "Hapus peminjaman terakhir BK001, keterangan bukunya ikut hilang", "Menghapus peminjaman tidak menyentuh tabel buku sama sekali"]
+  ],
+  modes: [
+    { label: "Manfaat utama", target: "row", row: 0, title: "Satu fakta, satu tempat", text: "Inilah inti normalisasi. Kalau nama anggota koperasi hanya disimpan di tabel anggota, nama itu tidak mungkin tertulis berbeda di tabel lain. Ubah sekali, semua ikut benar." },
+    { label: "Soal: anomali apa yang teratasi?", target: "row", row: 2, title: "Hapus transaksi, data produk tetap ada", text: "Kalau soal bilang “menghapus transaksi tanpa menghilangkan keterangan produk”, yang teratasi adalah <strong>anomali penghapusan</strong>." }
+  ] };
+
+const kekeliruan = { type: "table", label: "Tabel Interaktif • Kesalahan yang Sering Terjadi", title: "Enam Kekeliruan Saat Menormalkan", headers: ["Kekeliruan", "Akibatnya", "Perbaikannya"],
+  rows: [
+    ["ERROR 1364 Field 'id_pinjam' doesn't have a default value", "Data baru dipaksa masuk ke tabel gabungan tanpa kunci primer", "Pisahkan keterangan buku ke tabelnya sendiri"],
+    ["ERROR 1062 Duplicate entry", "Kunci primer tabel hasil pemecahan masih punya nilai yang berulang", "Pilih kolom yang benar-benar unik sebagai kunci primer"],
+    ["Sel berisi banyak nilai dibiarkan", "Tabel belum 1NF, jadi data tidak bisa disaring dan dihitung", "Pecah menjadi baris tersendiri sebelum lanjut ke 2NF"],
+    ["Menyimpan kolom hasil hitungan", "Kolom total jadi salah begitu tarif atau jumlah hari berubah", "Hitung saat dibutuhkan, jangan disimpan"],
+    ["Memecah tabel tanpa meninggalkan kunci tamu", "Tabel hasil pemecahan tidak bisa dihubungkan kembali", "Sisakan kunci tamu (FK) di tabel yang merujuk"],
+    ["Memecah terlalu jauh", "Setiap kolom jadi tabel sendiri, basis data justru sulit dipakai", "Berhenti di 3NF selama tidak ada anomali tersisa"]
+  ],
+  modes: [
+    { label: "Ada pesan error", target: "row", row: 0, title: "Hanya dua baris pertama yang memunculkan pesan", text: "ERROR 1364 dan ERROR 1062 benar-benar muncul di layar. Empat kekeliruan lainnya <strong>diam-diam</strong>: tidak ada pesan apa pun, jadi harus dikenali sendiri." },
+    { label: "Sel banyak nilai", target: "row", row: 2, title: "Kenapa tidak bisa disaring?", text: "Kalau sel berisi “nasi goreng, es teh, kerupuk”, perintah “tampilkan pesanan es teh” atau “hitung berapa es teh terjual” tidak bisa bekerja dengan benar, karena tiga menu bercampur dalam satu isian." },
+    { label: "Lupa kunci tamu", target: "row", row: 4, title: "Contoh: hotel", text: "Tabel pemesanan hotel dipecah jadi tamu dan kamar, tetapi tabel pemesanan tidak menyimpan id_tamu. Akibatnya tidak ada yang tahu kamar itu dipesan siapa." },
+    { label: "Terlalu jauh", target: "row", row: 5, title: "Pecah secukupnya", text: "Normalisasi bukan berarti makin banyak tabel makin baik. Kalau judul, pengarang, dan tahun dipisah ke tabel masing-masing, setiap kali ingin melihat satu buku harus menggabungkan banyak tabel." }
+  ] };
+
 module.exports = [
-  A("Mengapa Tabel Harus Dipecah?", `<p>P4 menghasilkan tiga tabel. Wajar bertanya: bukankah lebih mudah semuanya di satu tabel? Bayangkan tabel <code>peminjaman_kacau</code> yang memuat data peminjaman, buku, dan anggota sekaligus. Judul dan pengarang BK002 ditulis dua kali, nama prodi juga berulang. Inilah <strong>redundansi</strong>.</p>
-<p>Ibaratnya petugas yang menyalin ulang seluruh keterangan buku ke setiap slip peminjaman. Sepuluh peminjaman berarti sepuluh salinan; kalau judulnya salah cetak, kesepuluh slip harus dikoreksi satu per satu.</p>
-<p>➕ <strong>Tambahan:</strong> redundansi juga memboroskan ruang penyimpanan, tetapi alasan utama normalisasi adalah <em>kebenaran data</em>, bukan hemat ruang.</p>`, "Bagian 1"),
+  kataKunci,
+  A("Mengapa Tabel Harus Dipecah?", `<p>Pertemuan 4 menghasilkan tiga tabel: buku, anggota, dan peminjaman. Mungkin muncul pertanyaan: kenapa tidak satu tabel saja supaya praktis?</p>
+<p>Coba bayangkan tabel <code>peminjaman_kacau</code> yang memuat data peminjaman, buku, dan anggota sekaligus. Setiap kali BK002 dipinjam, judul dan pengarangnya ditulis lagi. Keadaan ini disebut <strong>redundansi</strong>: keterangan yang sama ditulis berulang.</p>
+<p>Modul memakai perumpamaan <strong>petugas yang menyalin ulang seluruh keterangan buku ke setiap slip peminjaman</strong>. Sepuluh peminjaman berarti sepuluh salinan. Kalau judulnya ternyata salah cetak, kesepuluh slip itu harus dicari dan dikoreksi satu per satu, dan mudah sekali ada yang terlewat.</p>
+<p>Masalah utamanya bukan boros tempat, tetapi <strong>data jadi mudah salah</strong>.</p>`, "Bagian 1"),
   anomali,
-  ex("Latihan Interaktif", "Anomali Apa Ini? (Contoh Lain)", ["Keadaan", "Anomali"], ["Pengubahan", "Penyisipan", "Penghapusan"], [
-    ["Dosen baru tidak bisa dicatat di tabel jadwal karena belum mengajar kelas mana pun", "Penyisipan"],
+  ex("Latihan Interaktif", "Anomali Apa Ini?", ["Keadaan", "Anomali"], ["Pengubahan", "Penyisipan", "Penghapusan"], [
+    ["Klinik tidak bisa mendaftarkan dokter baru sebelum dokter itu menangani pasien", "Penyisipan"],
     ["Nomor HP mahasiswa berubah dan harus diperbarui di semua baris KRS-nya", "Pengubahan"],
-    ["Menghapus kelas terakhir seorang dosen menghilangkan data dosen itu", "Penghapusan"],
-    ["Harga produk diperbarui di sebagian baris penjualan saja", "Pengubahan"]
+    ["Menghapus kelas terakhir seorang dosen ikut menghapus data dosen itu", "Penghapusan"],
+    ["Harga produk diperbarui di sebagian baris penjualan saja", "Pengubahan"],
+    ["Prodi baru tidak bisa didaftarkan sebelum ada anggota dari prodi itu", "Penyisipan"]
   ]),
-  A("Ketergantungan Fungsional", `<p><strong>Ketergantungan fungsional</strong> (functional dependency, ditulis A → B) berarti: kalau nilai kolom A diketahui, nilai kolom B pasti bisa ditentukan. A disebut <em>penentu</em> (determinan).</p>
-<p>Pada tabel gabungan ada tiga penentu: id_pinjam, id_buku, dan id_anggota. Artinya tabel itu sebenarnya berisi tiga kelompok keterangan. Normalisasi hanyalah memisahkan kelompok-kelompok itu ke tabel masing-masing.</p>
-<p>➕ Cara mengujinya: cari dua baris dengan nilai A yang sama. Jika nilai B-nya bisa berbeda, A tidak menentukan B. Contoh: dua anggota bernama “Ahmad Fauzi” bisa punya id berbeda, jadi nama ↛ id_anggota.</p>`, "Bagian 2"),
+  tip("Kenapa anomali berbahaya?", "Ketiga anomali <strong>tidak memunculkan pesan error</strong>. Bagi komputer, perintahnya sah. Datanya sudah salah, tetapi tidak ada yang memperingatkan, sehingga kesalahan baru ketahuan lama kemudian.", "warn"),
+  A("Ketergantungan Fungsional", `<p><strong>Ketergantungan fungsional</strong> artinya: <em>kalau nilai kolom A diketahui, nilai kolom B pasti bisa ditentukan</em>. Ditulis A → B, dan A disebut <strong>penentu</strong>.</p>
+<p>Contoh pada tabel gabungan perpustakaan:</p>
+<ul class="list-disc pl-5 space-y-1"><li>Kalau <code>id_buku</code> = BK002 diketahui, judul dan pengarang pasti bisa ditentukan. Jadi id_buku → judul, pengarang.</li>
+<li>Kalau <code>id_anggota</code> = AG001 diketahui, nama dan prodi pasti bisa ditentukan. Jadi id_anggota → nama, prodi.</li>
+<li>Kalau <code>id_pinjam</code> diketahui, tanggal pinjamnya pasti bisa ditentukan. Jadi id_pinjam → tgl_pinjam.</li></ul>
+<p>Tiga kalimat itu menunjukkan bahwa tabel gabungan sebenarnya berisi <strong>tiga kelompok keterangan</strong>, dan tiap kelompok punya penentunya sendiri. Normalisasi tinggal memisahkan tiap kelompok ke tabelnya masing-masing.</p>
+<p>Cara mengecek: tanyakan “kalau saya tahu kolom ini, apakah kolom itu pasti ketahuan?”. Nama anggota tidak menentukan id_anggota, karena dua orang bisa bernama sama.</p>`, "Bagian 2"),
   fd,
-  A("Tiga Tahap Normalisasi", `<p><strong>Normalisasi</strong> adalah proses memecah tabel besar menjadi beberapa tabel kecil supaya setiap keterangan disimpan di satu tempat saja. Prosesnya bertahap; setiap tahap punya satu syarat, dan tabel harus lolos tahap sebelumnya dulu.</p>
-<ul class="list-disc pl-5 space-y-1"><li><strong>1NF (bentuk normal pertama)</strong>: setiap sel berisi <strong>satu nilai</strong>, tanpa kelompok kolom berulang. Melanggar: sel telepon berisi “0812…, 0857…”, atau kolom telepon1, telepon2, telepon3. Perbaikan: pindahkan ke baris/tabel tersendiri.</li>
-<li><strong>2NF</strong>: sudah 1NF, dan setiap kolom bukan kunci bergantung pada <strong>seluruh</strong> kunci primer, bukan hanya sebagian. Ini hanya bisa dilanggar kalau kunci primernya <strong>gabungan</strong> dua kolom. Contoh: tabel nilai(<u>nim, kode_mk</u>, nama_mhs, nilai). <em>nilai</em> butuh nim <strong>dan</strong> kode_mk, tetapi <em>nama_mhs</em> cukup ditentukan oleh nim saja. Itu disebut <strong>ketergantungan parsial</strong>; nama_mhs dipindah ke tabel mahasiswa.</li>
-<li><strong>3NF</strong>: sudah 2NF, dan tidak ada kolom bukan kunci yang bergantung pada kolom bukan kunci <strong>lain</strong>. Contoh: mahasiswa(<u>nim</u>, nama, kode_prodi, nama_prodi). <em>nama_prodi</em> ditentukan oleh kode_prodi, bukan langsung oleh nim. Rantai nim → kode_prodi → nama_prodi disebut <strong>ketergantungan transitif</strong>; nama_prodi dipindah ke tabel prodi.</li></ul>
-<p>Pertanyaan pemandu: 1NF “apakah ada sel berisi banyak nilai?”, 2NF “apakah ada kolom yang cukup ditentukan sebagian kunci?”, 3NF “apakah ada kolom yang ditentukan kolom biasa?”.</p>
-<p>Ibarat membereskan laci campur aduk: satu kartu satu perkara (1NF), pindahkan kartu milik laci sebelah (2NF), lalu periksa sisa keterangan milik laci lain (3NF).</p>
-<p>➕ Di atas 3NF masih ada BCNF, 4NF, dan 5NF, tetapi untuk hampir semua basis data sehari-hari 3NF sudah cukup (sesuai modul).</p>`, "Bagian 3"),
+  ex("Latihan Interaktif", "Kolom Ini Ditentukan oleh Apa?", ["Kolom", "Penentunya"], null, [
+    ["judul dan pengarang (tabel gabungan perpustakaan)", "id_buku", "✓ Keterangan buku ditentukan nomor bukunya.", ["id_pinjam", "id_buku", "id_anggota", "tgl_pinjam"]],
+    ["tgl_pinjam (tabel gabungan perpustakaan)", "id_pinjam", "✓ Tanggal dicatat per peristiwa peminjaman.", ["id_pinjam", "id_buku", "id_anggota", "judul"]],
+    ["nama_anggota dan prodi", "id_anggota", "✓", ["id_pinjam", "id_buku", "id_anggota", "nama_anggota"]],
+    ["alamat_sekolah (tabel pendaftaran lomba)", "asal_sekolah", "✓ Alamat ikut sekolahnya, bukan pesertanya. Ini pelanggaran 3NF.", ["nama_peserta", "asal_sekolah", "tanggal_daftar", "nama_lomba"]],
+    ["nama_divisi (tabel karyawan)", "kode_divisi", "✓ Pindahkan nama_divisi ke tabel divisi.", ["id_karyawan", "kode_divisi", "nama_karyawan", "gaji"]]
+  ]),
+  A("Tiga Tahap Normalisasi", `<p>Normalisasi dikerjakan bertahap. Setiap tahap punya satu syarat, dan tabel harus lolos tahap sebelumnya dulu. Modul menyebut <strong>tiga tahap ini sudah cukup</strong> untuk hampir semua basis data sehari-hari.</p>
+<ul class="list-disc pl-5 space-y-1"><li><strong>1NF (bentuk normal pertama)</strong>: setiap sel berisi <strong>satu nilai</strong>, dan tidak ada kelompok kolom berulang (telepon1, telepon2, telepon3). Cara: pecah sel yang berisi banyak nilai menjadi baris tersendiri.</li>
+<li><strong>2NF</strong>: sudah 1NF, dan setiap kolom bukan kunci bergantung pada <strong>seluruh</strong> kunci primer, bukan sebagiannya. Syarat ini baru terasa kalau kuncinya <strong>kunci gabungan</strong>. Contoh: tabel nilai dengan kunci (nim, kode_matkul) tetapi ada kolom nama_mahasiswa. Nama cukup ditentukan nim saja, tanpa kode_matkul, jadi tabel ini melanggar 2NF. Cara: pindahkan nama_mahasiswa ke tabel mahasiswa.</li>
+<li><strong>3NF</strong>: sudah 2NF, dan tidak ada kolom bukan kunci yang bergantung pada kolom bukan kunci <strong>lain</strong>. Contoh: tabel karyawan berisi kode_divisi dan nama_divisi. nama_divisi ditentukan kode_divisi, bukan oleh id_karyawan. Cara: pindahkan nama_divisi ke tabel divisi.</li></ul>
+<p>Tiga pertanyaan pemandu: (1) adakah sel berisi banyak nilai? (2) adakah kolom yang cukup ditentukan sebagian kunci? (3) adakah kolom yang ditentukan kolom biasa?</p>
+<p>Nama teknisnya: kolom yang hanya bergantung pada sebagian kunci disebut <strong>ketergantungan parsial</strong> (dibuang di 2NF), dan kolom yang bergantung lewat kolom perantara disebut <strong>ketergantungan transitif</strong> (dibuang di 3NF). Di atas 3NF masih ada BCNF dan 4NF, tetapi tidak dibahas di modul.</p>`, "Bagian 3"),
   parsialTransitif,
   tahap,
   { type: "table", label: "Tabel Interaktif", title: "Praktik Terpandu Modul: Tabel yang Belum Normal", mono: true, headers: ["id_pinjam", "id_buku", "judul", "id_anggota", "nama_anggota", "tgl_pinjam"],
     rows: [["PJ0011", "BK003, BK005", "Jaringan Kom., Statistika", "AG002", "Nur Aisyah", "2026-11-02"], ["PJ0012", "BK003", "Jaringan Komputer Dasar", "AG004", "Dimas Prayoga", "2026-11-03"], ["PJ0013", "BK005", "Statistika untuk Inform.", "AG002", "Nur Aisyah", "2026-11-05"]],
     modes: [{ label: "1. Sel ganda", target: "cell", row: 0, col: 1, title: "Melanggar 1NF", text: "Pecah menjadi dua baris (BK003 dan BK005)." },
-      { label: "3. Pengulangan", target: "col", col: 4, title: "Nur Aisyah dua kali", text: "Judul BK003 dan BK005 juga akan berulang setelah 1NF. ➕ Perhatikan pula judul yang disingkat (“Jaringan Kom.”) di baris 1: bukti nyata anomali pengubahan, satu buku ditulis dengan dua cara." },
-      { label: "5. Hasil", target: "none", title: "Skema akhir", text: "buku(id_buku, judul) • anggota(id_anggota, nama_anggota) • peminjaman(id_pinjam, id_buku*, id_anggota*, tgl_pinjam) → sama dengan P4." }] },
-  tip("➕ Kolom hitungan (derived)", "Kolom seperti <code>total = hari_telat × tarif</code> atau <code>umur</code> dari tanggal lahir tidak perlu disimpan. Hitung saat ditampilkan: <code>SELECT id_denda, hari_telat * tarif AS total FROM denda;</code> Modul menggolongkannya pelanggaran 3NF karena total bergantung pada kolom bukan kunci."),
+      { label: "2. Pengulangan", target: "col", col: 4, title: "Nur Aisyah ditulis dua kali", text: "Judul BK003 dan BK005 juga akan berulang setelah 1NF. Lihat juga judul yang disingkat (“Jaringan Kom.”) di baris 1: satu buku ditulis dengan dua cara, contoh nyata anomali pengubahan." },
+      { label: "3. Pola kalimat", target: "none", title: "Tulis ketergantungannya", text: "Pola yang diminta modul: <em>kalau kolom ini diketahui, kolom itu pasti bisa ditentukan</em>. Contoh: kalau id_buku diketahui, judul pasti bisa ditentukan." },
+      { label: "4. Hasil", target: "none", title: "Skema akhir", text: "buku(id_buku, judul) • anggota(id_anggota, nama_anggota) • peminjaman(id_pinjam, id_buku*, id_anggota*, tgl_pinjam). Tanda * = kunci tamu. Hasilnya sama dengan Pertemuan 4." }] },
+  A("Setelah Dinormalkan", `<p>Modul menjalankan ulang ketiga percobaan pada tiga tabel hasil normalisasi, dan ketiga anomali hilang. Kuncinya satu: <strong>setiap fakta hanya disimpan di satu tempat</strong>.</p>`, "Bagian 4"),
+  sesudah,
+  A("Normalisasi dan ERD: Dua Jalan, Satu Hasil", `<p>Hasil normalisasi tabel perpustakaan adalah <strong>tiga tabel yang sama persis</strong> dengan hasil mengubah ERD menjadi tabel di Pertemuan 4. Ini bukan kebetulan. Keduanya berangkat dari pertanyaan yang sama: keterangan apa bergantung pada apa.</p>
+<p>Bedanya ada di <strong>waktunya</strong>. Modul memakai perumpamaan lemari:</p>
+<ul class="list-disc pl-5 space-y-1"><li><strong>ERD</strong> = menggambar denah <em>sebelum</em> lemarinya diisi. Dipakai saat merancang dari nol.</li>
+<li><strong>Normalisasi</strong> = merapikan lemari yang <em>sudah telanjur berantakan</em>. Dipakai untuk membenahi tabel yang sudah ada.</li></ul>
+<p>Keduanya menghasilkan susunan laci yang sama. Normalisasi tidak dikerjakan otomatis oleh DBMS, dan bisa dipakai untuk basis data kecil maupun besar.</p>`, "Bagian 5"),
+  kekeliruan,
+  tip("Kolom hasil hitungan", "Kolom seperti <code>total = hari_telat × tarif</code> atau <code>total = harga_satuan × jumlah</code> tidak perlu disimpan, karena bisa dihitung kapan saja. Kalau disimpan, total jadi salah begitu tarif atau jumlahnya berubah. Hitung saat ditampilkan: <code>SELECT hari_telat * tarif AS total FROM denda;</code> Modul menggolongkannya pelanggaran 3NF, karena total bergantung pada kolom yang bukan kunci."),
   rv("Cek Pemahaman Modul", "Jawab Dulu, Baru Buka", [
-    { prompt: "Sebutkan tiga anomali + contoh perpustakaan.", answer: "Pengubahan: dua judul • Penyisipan: buku baru tak bisa dicatat • Penghapusan: keterangan buku ikut hilang", reason: "Ketiganya akibat redundansi." },
-    { prompt: "Tulis satu ketergantungan fungsional pada tabel buku.", answer: "id_buku → judul, pengarang, tahun, stok", reason: "" },
-    { prompt: "harga_satuan, jumlah, total: melanggar apa, perbaikannya?", answer: "3NF; hapus total, hitung saat diperlukan", reason: "total bergantung pada kolom bukan kunci." },
-    { prompt: "Mengapa hasil normalisasi = hasil ERD P4?", answer: "Keduanya berangkat dari kenyataan yang sama: keterangan apa bergantung pada apa", reason: "Kesamaan hasil menandakan rancangannya benar." }
+    { prompt: "Sebutkan tiga anomali beserta contohnya di perpustakaan.", answer: "Pengubahan: dua judul • Penyisipan: buku baru tak bisa dicatat • Penghapusan: keterangan buku ikut hilang", reason: "Ketiganya akibat redundansi." },
+    { prompt: "Mengapa anomali pengubahan lebih berbahaya daripada pesan error biasa?", answer: "Karena tidak ada pesan apa pun", reason: "Data sudah salah tanpa ada yang memperingatkan." },
+    { prompt: "Tulis satu ketergantungan fungsional pada tabel buku.", answer: "Kalau id_buku diketahui, judul, pengarang, tahun, dan stok pasti bisa ditentukan", reason: "" },
+    { prompt: "harga_satuan, jumlah, total: melanggar apa, dan perbaikannya?", answer: "3NF; hapus total, hitung saat diperlukan", reason: "total bergantung pada kolom bukan kunci." },
+    { prompt: "Mengapa hasil normalisasi sama dengan hasil ERD Pertemuan 4?", answer: "Keduanya berangkat dari kenyataan yang sama: keterangan apa bergantung pada apa", reason: "Kesamaan hasil menandakan rancangannya benar." }
   ])
 ];
