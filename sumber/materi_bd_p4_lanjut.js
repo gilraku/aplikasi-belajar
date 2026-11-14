@@ -36,9 +36,6 @@ const peta = diagram({
   ]
 });
 
-const qInner = "SELECT p.id_pinjam, b.judul\nFROM peminjaman p\nINNER JOIN buku b ON p.id_buku = b.id_buku;";
-const qLeft = "SELECT b.id_buku, b.judul, p.id_pinjam\nFROM buku b\nLEFT JOIN peminjaman p ON p.id_buku = b.id_buku;";
-const qRight = "SELECT p.id_pinjam, a.nama\nFROM peminjaman p\nRIGHT JOIN anggota a ON p.id_anggota = a.id_anggota;";
 const qTiga = "SELECT a.nama, b.judul, p.tgl_pinjam\nFROM peminjaman p\nJOIN anggota a ON p.id_anggota = a.id_anggota\nJOIN buku b    ON p.id_buku = b.id_buku;";
 
 module.exports = [
@@ -86,18 +83,39 @@ module.exports = [
 <p><strong>Bentuk umum:</strong> <code>SELECT kolom FROM tabel_kiri [INNER | LEFT | RIGHT] JOIN tabel_kanan ON tabel_kiri.kolom = tabel_kanan.kolom;</code></p>
 <p><code>ON</code> berisi syarat pasangan. Tabel yang ditulis setelah FROM disebut tabel <strong>kiri</strong>, tabel setelah JOIN disebut tabel <strong>kanan</strong>. Istilah kiri/kanan ini penting untuk LEFT dan RIGHT JOIN.</p>
 <p><strong>Alias tabel.</strong> <code>FROM peminjaman p</code> memberi nama pendek <code>p</code>, sehingga <code>p.id_buku</code> cukup menggantikan <code>peminjaman.id_buku</code>. Alias boleh ditulis dengan atau tanpa AS: <code>peminjaman AS p</code> sama dengan <code>peminjaman p</code>.</p>`),
-  peta,
-  { type: "choices", label: "Interaktif", title: "Tiga Jenis JOIN dan Hasilnya", style: "toggle", options: [
-    { label: "INNER JOIN", tone: "emerald", badge: "INNER", title: "Hanya baris yang punya pasangan di kedua tabel",
-      code: qInner + "\n\n" + hasil(["id_pinjam", "judul"], [["PJ0001", "Sistem Basis Data"], ["PJ0002", "Dasar Pemrograman Komputer"], ["PJ0003", "Sistem Basis Data"]]),
-      text: "Menulis <code>JOIN</code> saja sama dengan <code>INNER JOIN</code>. Buku yang tidak pernah dipinjam (BK003–BK005) tidak muncul." },
-    { label: "LEFT JOIN", tone: "sky", badge: "LEFT", title: "Semua baris tabel kiri, pasangan kanan bila ada",
-      code: qLeft + "\n\n" + hasil(["id_buku", "judul", "id_pinjam"], [["BK001", "Dasar Pemrograman Komputer", "PJ0002"], ["BK002", "Sistem Basis Data", "PJ0001"], ["BK002", "Sistem Basis Data", "PJ0003"], ["BK003", "Jaringan Komputer Dasar", "NULL"], ["BK004", "Analisis Sistem Informasi", "NULL"], ["BK005", "Statistika untuk Informatika", "NULL"]]),
-      text: "Tabel kiri = <code>buku</code> (setelah FROM). Semua buku tampil; yang tidak punya pasangan diisi <code>NULL</code>. Nama lengkapnya <code>LEFT OUTER JOIN</code>, artinya sama." },
-    { label: "RIGHT JOIN", tone: "violet", badge: "RIGHT", title: "Semua baris tabel kanan, pasangan kiri bila ada",
-      code: qRight + "\n\n" + hasil(["id_pinjam", "nama"], [["PJ0001", "Ahmad Fauzi"], ["PJ0002", "Nur Aisyah"], ["PJ0003", "Rangga Pratama"], ["NULL", "Dimas Prayoga"]]),
-      text: "Tabel kanan = <code>anggota</code> (setelah JOIN). Dimas tetap muncul walau belum pernah meminjam. <code>A RIGHT JOIN B</code> sama hasilnya dengan <code>B LEFT JOIN A</code>; dalam praktik LEFT JOIN lebih sering dipakai." }
+  // ---------- Sebelum: dua tabel asal ----------
+  A("Sebelum JOIN: Dua Tabel yang Terpisah", `<p>Semua contoh JOIN di bawah memakai dua tabel yang sama dari database <code>perpustakaan</code>: <strong>buku</strong> (5 baris) dan <strong>peminjaman</strong> (3 baris).</p>
+<p>Perhatikan tabel peminjaman. Isinya hanya <strong>kode</strong>: PJ0001 meminjam <code>BK002</code>. Judul BK002 tidak ada di tabel ini, tetapi tersimpan di tabel buku. Pertanyaan "buku apa saja yang dipinjam?" baru bisa dijawab kalau kedua tabel disatukan lewat kolom yang sama, yaitu <code>id_buku</code>. Itulah tugas JOIN.</p>`, "Langkah 1 • Sebelum"),
+  { type: "row", cols: [1, 1], blocks: [
+    { type: "table", label: "Tabel asal", title: "buku", mono: true, headers: ["id_buku", "judul"],
+      rows: [["BK001", "Dasar Pemrograman Komputer"], ["BK002", "Sistem Basis Data"], ["BK003", "Jaringan Komputer Dasar"], ["BK004", "Analisis Sistem Informasi"], ["BK005", "Statistika untuk Informatika"]] },
+    { type: "table", label: "Tabel asal", title: "peminjaman", mono: true, headers: ["id_pinjam", "id_buku", "id_anggota"],
+      rows: [["PJ0001", "BK002", "AG001"], ["PJ0002", "BK001", "AG002"], ["PJ0003", "BK002", "AG003"]],
+      defaultNote: "Kolom <code>id_buku</code> di sini menunjuk ke <code>id_buku</code> di tabel buku. BK003, BK004, dan BK005 tidak pernah muncul di tabel ini, artinya belum pernah dipinjam." }
   ] },
+  peta,
+  // ---------- Sesudah: tiga jenis JOIN, pasangan tabel sama ----------
+  { type: "table", label: "Langkah 2 • Sesudah", title: "Tiga Jenis JOIN pada Dua Tabel yang Sama", mono: true, headers: ["id_buku", "judul", "id_pinjam"],
+    rows: [["BK001", "Dasar Pemrograman Komputer", "PJ0002"], ["BK002", "Sistem Basis Data", "PJ0001"], ["BK002", "Sistem Basis Data", "PJ0003"]],
+    modes: [
+      { label: "INNER JOIN", target: "none", title: "INNER JOIN: hanya buku yang punya pasangan (3 baris)",
+        code: "SELECT b.id_buku, b.judul, p.id_pinjam\nFROM buku b\nINNER JOIN peminjaman p ON p.id_buku = b.id_buku;",
+        text: "Setiap buku dicarikan pasangannya di tabel peminjaman. BK002 punya dua pasangan, jadi muncul dua kali. BK003–BK005 tidak punya pasangan, jadi <strong>tidak muncul</strong>. Menulis <code>JOIN</code> saja sama dengan <code>INNER JOIN</code>." },
+      { label: "LEFT JOIN", target: "none", marks: [3, 4, 5], title: "LEFT JOIN: semua buku tetap muncul (6 baris)",
+        code: "SELECT b.id_buku, b.judul, p.id_pinjam\nFROM buku b\nLEFT JOIN peminjaman p ON p.id_buku = b.id_buku;",
+        rows: [["BK001", "Dasar Pemrograman Komputer", "PJ0002"], ["BK002", "Sistem Basis Data", "PJ0001"], ["BK002", "Sistem Basis Data", "PJ0003"], ["BK003", "Jaringan Komputer Dasar", "NULL"], ["BK004", "Analisis Sistem Informasi", "NULL"], ["BK005", "Statistika untuk Informatika", "NULL"]],
+        text: "Perintahnya sama persis dengan INNER JOIN, hanya kata <code>INNER</code> diganti <code>LEFT</code>. Tabel <strong>kiri</strong> = <code>buku</code> (ditulis setelah FROM), dan <strong>semua</strong> barisnya ditampilkan. Tiga baris yang disorot kuning adalah tambahannya: buku tanpa pasangan, dengan <code>id_pinjam</code> diisi <code>NULL</code>." },
+      { label: "RIGHT JOIN", target: "none", marks: [3, 4, 5], title: "RIGHT JOIN: urutan tabel dibalik, hasilnya sama dengan LEFT",
+        code: "SELECT b.id_buku, b.judul, p.id_pinjam\nFROM peminjaman p\nRIGHT JOIN buku b ON p.id_buku = b.id_buku;",
+        rows: [["BK001", "Dasar Pemrograman Komputer", "PJ0002"], ["BK002", "Sistem Basis Data", "PJ0001"], ["BK002", "Sistem Basis Data", "PJ0003"], ["BK003", "Jaringan Komputer Dasar", "NULL"], ["BK004", "Analisis Sistem Informasi", "NULL"], ["BK005", "Statistika untuk Informatika", "NULL"]],
+        text: "Sekarang <code>buku</code> ditulis setelah JOIN, jadi buku menjadi tabel <strong>kanan</strong>. RIGHT JOIN menampilkan semua baris tabel kanan, sehingga hasilnya sama dengan LEFT JOIN tadi. Jadi <code>A RIGHT JOIN B</code> = <code>B LEFT JOIN A</code>. Dalam praktik, LEFT JOIN lebih sering dipakai." }
+    ] },
+  { type: "code", label: "Contoh Lain", title: "RIGHT JOIN dengan Tabel anggota", file: "right-join.sql", code: `-- Tabel kanan = anggota: semua anggota tampil, termasuk yang belum pernah meminjam
+SELECT p.id_pinjam, a.nama
+FROM peminjaman p
+RIGHT JOIN anggota a ON p.id_anggota = a.id_anggota;
+
+${hasil(["id_pinjam", "nama"], [["PJ0001", "Ahmad Fauzi"], ["PJ0002", "Nur Aisyah"], ["PJ0003", "Rangga Pratama"], ["NULL", "Dimas Prayoga"]])}` },
   { type: "table", label: "Tabel Interaktif", title: "Memilih Jenis JOIN", headers: ["Jenis", "Baris yang muncul", "Pakai saat", "Contoh pertanyaan"],
     rows: [
       ["<strong>INNER JOIN</strong> (atau JOIN)", "Hanya yang cocok di kedua tabel", "Hanya butuh data yang punya pasangan", "Daftar peminjaman lengkap dengan judul bukunya"],
