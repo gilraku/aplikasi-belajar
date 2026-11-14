@@ -759,18 +759,19 @@ ${cpp ? `<p class="text-xs text-slate-500">💡 C++ tidak bisa dijalankan di apl
         if (tg === 'col' && c === m.col) return 'bg-amber-200 text-amber-950 font-extrabold';
         if (tg === 'row' && r === m.row) return 'bg-emerald-100 font-semibold';
         if (tg === 'cell' && r === m.row && c === m.col) return 'bg-rose-200 text-rose-950 font-extrabold ring-4 ring-inset ring-rose-500';
+        if ((m.marks || []).includes(r)) return 'bg-[#fff2a8] text-ink font-semibold';
         return '';
       };
       const btns = modes.length ? `<div class="flex flex-wrap gap-2 mb-3">${modes.map((x, i) =>
         `<button ${act(n, 'mode', i)} class="px-3.5 py-2 rounded-xl text-xs font-bold border transition ${i === s.mode ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : BTN_IDLE} rich">${rich(x.label)}</button>`).join('')}</div>` : '';
       const explain = s.note != null
         ? `<div class="p-3.5 rounded-xl bg-indigo-50 border border-indigo-200 text-sm text-indigo-950 rich">${rich(heads[s.note] && heads[s.note].note)}</div>`
-        : m ? `<div class="p-4 rounded-xl bg-indigo-50 border border-indigo-200 space-y-1"><div class="font-extrabold text-indigo-900 rich">${rich(m.title)}</div><div class="text-sm text-indigo-950/90 leading-relaxed rich">${rich(m.text)}</div></div>`
+        : m ? `<div class="p-4 rounded-xl bg-indigo-50 border border-indigo-200 space-y-1"><div class="font-extrabold text-indigo-900 rich">${rich(m.title)}</div>${m.code ? `<pre class="font-mono text-xs sm:text-[13px] leading-relaxed p-3 my-2 rounded-lg bg-slate-950 text-slate-100 overflow-x-auto">${esc(m.code)}</pre>` : ''}<div class="text-sm text-indigo-950/90 leading-relaxed rich">${rich(m.text)}</div></div>`
         : d.defaultNote ? `<div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-600 rich">${rich(d.defaultNote)}</div>` : '';
       const table = `<div class="overflow-x-auto rounded-xl border border-slate-200 ${modes.length ? 'mt-3' : ''}"><table class="w-full text-left text-sm ${d.mono ? 'font-mono text-xs sm:text-sm' : ''}">
         <thead><tr class="${tg === 'header' ? 'bg-indigo-600 ring-4 ring-inset ring-indigo-300' : 'bg-slate-800'} text-white transition-all">${heads.map((h, c) =>
           `<th ${h.note ? act(n, 'note', c) : ''} class="p-3 font-bold whitespace-nowrap ${h.note ? 'cursor-pointer hover:bg-white/10' : ''} ${tg === 'col' && c === m.col ? 'bg-amber-500 text-amber-950' : ''}"><span class="rich">${rich(h.label)}</span>${c === keyCol && !d.mono ? ' <span class="ml-1 px-1.5 py-0.5 text-[10px] rounded bg-amber-400 text-amber-950 font-sans">🔑 PK</span>' : ''}${h.note ? ' <span class="opacity-60">ⓘ</span>' : ''}</th>`).join('')}</tr></thead>
-        <tbody class="divide-y divide-slate-200">${(d.rows || []).map((row, r) => `<tr class="hover:bg-slate-50/60">${(row || []).map((cell, c) =>
+        <tbody class="divide-y divide-slate-200">${((m && m.rows) || d.rows || []).map((row, r) => `<tr class="hover:bg-slate-50/60">${(row || []).map((cell, c) =>
           `<td class="p-3 border-r border-slate-100 last:border-r-0 transition-all ${c === keyCol && !hl(r, c) ? 'font-mono font-bold text-indigo-700 bg-indigo-50/40' : ''} ${hl(r, c)} rich">${rich(cell)}</td>`).join('')}</tr>`).join('')}</tbody>
       </table></div>`;
       const notes = (d.notes || []).length ? `<div class="grid grid-cols-1 md:grid-cols-${Math.min(3, d.notes.length)} gap-3 mt-4">${d.notes.map(x =>
