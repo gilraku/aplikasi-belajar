@@ -9,12 +9,12 @@
     "test": "node tests/sql-lab.mjs && node tests/smoke.mjs"
   },
   "dependencies": {
-    "astro": "^7.4.7"
+    "astro": "^7.4.10"
   },
   "devDependencies": {
     "autoprefixer": "^10.6.2",
     "esbuild": "^0.28.2",
-    "playwright": "^1.64.1",
+    "playwright": "^1.65.0",
     "postcss": "^8.5.32",
     "tailwindcss": "^3.4.19",
     "zod": "^4.6.7"
