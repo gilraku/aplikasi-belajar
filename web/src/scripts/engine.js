@@ -1166,7 +1166,7 @@ function renderFooter() {
   $('appFooter').innerHTML = `<div class="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-slate-500">
     <div>${m ? `<strong class="text-slate-700">${esc(c.nama)}${c.kode ? ' (' + esc(c.kode) + ')' : ''}, Pertemuan ${esc(m.nomor)}: ${esc(m.judul)}</strong><br>${esc([c.prodi, c.kampus].filter(Boolean).join(' • '))}${c.dosen ? ' • Dosen: ' + esc(c.dosen) : ''}`
       : `<span class="wordmark text-base">sinau</span>`}</div>
-    <button onclick="openShareModal()" class="self-start sm:self-auto px-3 py-2 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700">Bagikan / Unduh HTML</button>
+    <div class="self-start sm:self-auto flex flex-wrap gap-2">${waBtn()}<button onclick="openShareModal()" class="px-3 py-2 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700">Bagikan / Unduh HTML</button></div>
   </div>`;
 }
 function updateReadiness() {
@@ -1255,6 +1255,9 @@ window.addEventListener('hashchange', onHistory);
 document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('a[href^="#/"]'); if (!a) return; e.preventDefault(); go(a.getAttribute('href')); }, true);
 
 // ---------- Beranda ----------
+// Kontak untuk pertanyaan materi / usulan isi Sinau (WhatsApp)
+const WA_URL = 'https://wa.me/6289513111563?text=' + encodeURIComponent('Halo, saya mau tanya/usul soal Sinau: ');
+const waBtn = (cls = '') => `<a href="${WA_URL}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#ffe14d] hover:bg-[#ffd60a] text-ink ${cls}"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>Tanya / usul materi via WhatsApp</a>`;
 // Warna stabilo per mata kuliah (urut sesuai daftar matkul); teks di atasnya selalu tinta gelap.
 const HL = ['#ffe14d', '#8fe3a2', '#ff9ec7', '#ffb766', '#9cc7ff', '#c6b0ff', '#7fdcd2', '#f5a3a3'];
 const courseHL = c => HL[Math.max(0, LIB.indexOf(c)) % HL.length];
@@ -1360,7 +1363,8 @@ function renderHome(only) {
         ${c.dosen ? `<p class="text-xs text-slate-500 mt-1">Dosen: ${esc(c.dosen)}</p>` : ''}</div>
         <div class="w-full sm:w-auto flex flex-col sm:items-end gap-2">${courseSummary(c)}${only && LIB.length > 1 ? `<button onclick="go('#/')" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200">← Semua mata kuliah</button>` : ''}</div></div>
       ${babakList(c)}</section>`).join('');
-  $('appMain').innerHTML = `<div class="space-y-8">${cont}${peta}${lists}
+  const credit = only ? '' : `<div class="flex flex-wrap items-center justify-between gap-2 -mb-4"><p class="text-sm text-slate-600">Dibuat oleh <span class="font-display font-bold text-ink">Gilang</span></p>${waBtn()}</div>`;
+  $('appMain').innerHTML = `<div class="space-y-8">${credit}${cont}${peta}${lists}
     ${list.length ? '' : `<div class="p-8 rounded-2xl border-2 border-dashed border-slate-300 text-center text-slate-500">Belum ada materi.</div>`}
   </div>`;
 }
