@@ -1,5 +1,7 @@
 // Basis Data — Pertemuan 4: Dari ERD ke Tabel + SQL DML (slide) + CPMK 1 (bank soal P1–P4)
 const SEED = "CREATE DATABASE kampus; USE kampus; CREATE TABLE mahasiswa (nim CHAR(7) NOT NULL, nama VARCHAR(50) NOT NULL, jurusan VARCHAR(30), angkatan YEAR, ipk DECIMAL(3,2), PRIMARY KEY (nim)); INSERT INTO mahasiswa VALUES ('2301001','Andi Pratama','Sistem Informasi',2023,3.45), ('2301002','Budi Santoso','Sistem Informasi',2023,3.10), ('2301003','Citra Dewi','Teknik Informatika',2023,3.78), ('2201004','Dian Permata','Sistem Informasi',2022,3.25);";
+// Basis data perpustakaan untuk lab SQL lanjutan (data buku dari modul P2, peminjaman dari modul P4)
+const SEED_PUSTAKA = "CREATE DATABASE perpustakaan; USE perpustakaan; CREATE TABLE buku (id_buku CHAR(5) NOT NULL, judul VARCHAR(100) NOT NULL, pengarang VARCHAR(50), tahun YEAR, stok INT, PRIMARY KEY (id_buku)); CREATE TABLE anggota (id_anggota CHAR(5) NOT NULL, nama VARCHAR(50) NOT NULL, prodi VARCHAR(40), PRIMARY KEY (id_anggota)); CREATE TABLE peminjaman (id_pinjam CHAR(6) NOT NULL, id_buku CHAR(5) NOT NULL, id_anggota CHAR(5) NOT NULL, tgl_pinjam DATE NOT NULL, tgl_kembali DATE, PRIMARY KEY (id_pinjam)); INSERT INTO buku VALUES ('BK001','Dasar Pemrograman Komputer','Andi Wibowo',2019,4), ('BK002','Sistem Basis Data','Rina Kartika',2021,3), ('BK003','Jaringan Komputer Dasar','Budi Santoso',2018,2), ('BK004','Analisis Sistem Informasi','Siti Nurhaliza',2022,5), ('BK005','Statistika untuk Informatika','Dewi Anggraini',2020,1); INSERT INTO anggota VALUES ('AG001','Ahmad Fauzi','Sistem Informasi'), ('AG002','Nur Aisyah','Sistem Informasi'), ('AG003','Rangga Pratama','Teknik Informatika'), ('AG004','Dimas Prayoga','Teknik Informatika'); INSERT INTO peminjaman VALUES ('PJ0001','BK002','AG001','2026-10-01','2026-10-08'), ('PJ0002','BK001','AG002','2026-10-02',NULL), ('PJ0003','BK002','AG003','2026-10-05',NULL);";
 module.exports = {
   id: "p4", nomor: 4, judul: "Dari ERD ke Tabel, SQL DML & CPMK 1", ujian: "CPMK 1",
   hero: {
@@ -46,12 +48,33 @@ module.exports = {
     ] },
     { type: "table", label: "Interaktif 6 • Pengurutan & Batas", title: "ORDER BY, DISTINCT, LIMIT", mono: true, headers: ["Perintah", "Hasil"],
       rows: [["ORDER BY ipk DESC", "IPK tertinggi ke terendah (ASC = bawaan, kecil ke besar)"], ["SELECT DISTINCT jurusan", "Daftar jurusan tanpa pengulangan"], ["… ORDER BY ipk DESC LIMIT 3", "3 IPK tertinggi"], ["SQL Server: TOP • Oracle: FETCH FIRST n ROWS ONLY", "Padanan LIMIT di DBMS lain"]],
-      defaultNote: "Urutan klausa yang benar: SELECT … FROM … WHERE … ORDER BY … LIMIT …;" }
+      defaultNote: "Urutan klausa yang benar: SELECT … FROM … WHERE … ORDER BY … LIMIT …;" },
+    { type: "table", label: "Interaktif 7 • Bukan dari modul LMS", title: "SQL Lanjutan yang Ditanyakan Kuis", mono: true, headers: ["Perintah", "Arti", "Contoh"],
+      rows: [
+        ["ALTER TABLE … ADD", "Menambah kolom", "ALTER TABLE Produk ADD Stok INT;"],
+        ["ALTER TABLE … DROP COLUMN", "Menghapus kolom", "ALTER TABLE buku DROP COLUMN fax;"],
+        ["ALTER TABLE … MODIFY", "Ganti tipe (nama tetap)", "ALTER TABLE buku MODIFY judul VARCHAR(150);"],
+        ["ALTER TABLE … CHANGE", "Ganti nama + tipe kolom", "ALTER TABLE buku CHANGE stok jumlah INT;"],
+        ["ALTER TABLE … RENAME TO", "Ganti nama tabel", "ALTER TABLE barang RENAME TO produk;"],
+        ["INNER JOIN … ON", "Hanya baris yang cocok di kedua tabel", "FROM peminjaman p JOIN buku b ON p.id_buku = b.id_buku"],
+        ["LEFT JOIN … ON", "Semua baris tabel kiri (FROM), kanan NULL bila tak ada", "FROM buku b LEFT JOIN peminjaman p ON …"],
+        ["RIGHT JOIN … ON", "Semua baris tabel kanan (JOIN)", "FROM peminjaman p RIGHT JOIN anggota a ON …"],
+        ["COUNT SUM AVG MIN MAX", "Fungsi agregat: satu nilai dari banyak baris", "SELECT AVG(ipk) FROM mahasiswa;"],
+        ["GROUP BY", "Hitung per kelompok", "SELECT jurusan, COUNT(*) FROM mahasiswa GROUP BY jurusan;"],
+        ["HAVING", "Saring kelompok (setelah GROUP BY)", "… GROUP BY jurusan HAVING COUNT(*) > 1;"],
+        ["AS", "Alias (nama sementara) kolom/tabel di hasil", "SELECT COUNT(*) AS jumlah …"]
+      ],
+      modes: [
+        { label: "ALTER vs UPDATE vs INSERT", target: "row", row: 0, title: "Kolom, isi, atau baris?", text: "ALTER … ADD = tambah <strong>kolom</strong> (struktur). UPDATE = ubah <strong>isi</strong> kolom yang sudah ada. INSERT = tambah <strong>baris</strong> baru." },
+        { label: "Kiri atau kanan?", target: "row", row: 6, title: "Kiri = setelah FROM", text: "Pada <code>A LEFT JOIN B</code>, semua baris A dipertahankan. <code>A RIGHT JOIN B</code> = <code>B LEFT JOIN A</code>." },
+        { label: "WHERE vs HAVING", target: "row", row: 10, title: "Baris vs kelompok", text: "WHERE menyaring baris sebelum GROUP BY dan tidak boleh berisi COUNT/SUM (ERROR 1111). HAVING menyaring kelompok sesudahnya." }
+      ],
+      defaultNote: "Urutan klausa lengkap: SELECT … FROM … JOIN … ON … WHERE … GROUP BY … HAVING … ORDER BY … LIMIT …;" }
   ],
   simulator: [
     { type: "sql-lab", profile: "p4", label: "Lab Basis Data • SQL DML", title: "Ketik Sendiri Perintah DML pada Tabel mahasiswa",
       desc: "Tabel <code>mahasiswa</code> dari slide sudah terisi 4 baris di basis data <code>kampus</code>. Muat contoh, ubah sedikit (misalnya nilai WHERE-nya), lalu jalankan. Kalau datanya berantakan, tekan <strong>Kembalikan data awal</strong>.",
-      tip: "Ini simulasi di browser yang mendukung SELECT (WHERE, AND/OR, LIKE, ORDER BY, LIMIT, DISTINCT, COUNT(*)), INSERT, UPDATE, DELETE, TRUNCATE, serta START TRANSACTION, COMMIT, dan ROLLBACK. Kunci tamu belum didukung.",
+      tip: "Ini simulasi di browser yang mendukung SELECT (WHERE, AND/OR, LIKE, BETWEEN, IN, ORDER BY, LIMIT, DISTINCT, COUNT/SUM/AVG/MIN/MAX, GROUP BY, HAVING, AS), INSERT, UPDATE, DELETE, TRUNCATE, ALTER TABLE, serta START TRANSACTION, COMMIT, dan ROLLBACK. Kunci tamu belum didukung. JOIN dicoba di lab berikutnya.",
       seed: SEED,
       examples: [
         { label: "Semua data", sql: "SELECT * FROM mahasiswa;" },
@@ -60,11 +83,35 @@ module.exports = {
         { label: "AND", sql: "SELECT nama, ipk FROM mahasiswa WHERE ipk >= 3.50 AND angkatan = 2023;" },
         { label: "LIKE 'A%'", sql: "SELECT * FROM mahasiswa WHERE nama LIKE 'A%';" },
         { label: "DISTINCT", sql: "SELECT DISTINCT jurusan FROM mahasiswa;" },
+        { label: "BETWEEN", sql: "SELECT nama, ipk FROM mahasiswa WHERE ipk BETWEEN 3.00 AND 3.50;" },
+        { label: "IN", sql: "SELECT nama, angkatan FROM mahasiswa WHERE angkatan IN (2022, 2024);" },
+        { label: "GROUP BY + AS", sql: "SELECT jurusan, COUNT(*) AS jumlah, AVG(ipk) AS rata_ipk\nFROM mahasiswa\nGROUP BY jurusan;" },
+        { label: "ALTER TABLE ADD", sql: "ALTER TABLE mahasiswa ADD email VARCHAR(50);\nDESCRIBE mahasiswa;\nSELECT nim, email FROM mahasiswa;" },
         { label: "INSERT", sql: "INSERT INTO mahasiswa (nim, nama, jurusan, angkatan, ipk)\nVALUES ('2301005', 'Eka Saputra', 'Sistem Informasi', 2023, 3.60);" },
         { label: "UPDATE dengan WHERE", sql: "UPDATE mahasiswa SET ipk = 3.35 WHERE nim = '2301002';" },
         { label: "UPDATE tanpa WHERE", sql: "UPDATE mahasiswa SET ipk = 3.70;\nSELECT nama, ipk FROM mahasiswa;" },
         { label: "DELETE lalu ROLLBACK", sql: "START TRANSACTION;\nDELETE FROM mahasiswa WHERE angkatan = 2022;\nSELECT COUNT(*) FROM mahasiswa;\nROLLBACK;\nSELECT COUNT(*) FROM mahasiswa;" },
         { label: "nim kembar", sql: "INSERT INTO mahasiswa VALUES ('2301001', 'Eko', 'Sistem Informasi', 2023, 3.00);" }
+      ] },
+    { type: "sql-lab", profile: "p4-lanjut", label: "Lab Basis Data • SQL Lanjutan (bukan dari modul)", title: "Coba JOIN, GROUP BY, dan ALTER TABLE pada Tiga Tabel Perpustakaan",
+      desc: "Basis data <code>perpustakaan</code> berisi tabel <code>buku</code> (5 baris), <code>anggota</code> (4 baris), dan <code>peminjaman</code> (3 baris) dari modul. BK003–BK005 belum pernah dipinjam dan AG004 belum pernah meminjam, jadi perbedaan INNER, LEFT, dan RIGHT JOIN terlihat jelas.",
+      tip: "Mendukung INNER/LEFT/RIGHT/CROSS JOIN dengan ON, alias tabel, fungsi agregat, GROUP BY, HAVING, AS, dan ALTER TABLE (ADD, DROP COLUMN, MODIFY, CHANGE, RENAME, ADD/DROP PRIMARY KEY). Kalau datanya berantakan, tekan Kembalikan data awal.",
+      seed: SEED_PUSTAKA,
+      examples: [
+        { label: "INNER JOIN", sql: "SELECT p.id_pinjam, b.judul\nFROM peminjaman p\nINNER JOIN buku b ON p.id_buku = b.id_buku;" },
+        { label: "LEFT JOIN", sql: "SELECT b.id_buku, b.judul, p.id_pinjam\nFROM buku b\nLEFT JOIN peminjaman p ON p.id_buku = b.id_buku;" },
+        { label: "RIGHT JOIN", sql: "SELECT p.id_pinjam, a.nama\nFROM peminjaman p\nRIGHT JOIN anggota a ON p.id_anggota = a.id_anggota;" },
+        { label: "Tiga tabel", sql: "SELECT a.nama, b.judul, p.tgl_pinjam, p.tgl_kembali\nFROM peminjaman p\nJOIN anggota a ON p.id_anggota = a.id_anggota\nJOIN buku b ON p.id_buku = b.id_buku;" },
+        { label: "Belum pernah dipinjam", sql: "SELECT b.id_buku, b.judul\nFROM buku b\nLEFT JOIN peminjaman p ON p.id_buku = b.id_buku\nWHERE p.id_pinjam IS NULL;" },
+        { label: "⚠️ Lupa ON", sql: "SELECT b.judul, p.id_pinjam\nFROM buku b JOIN peminjaman p;" },
+        { label: "⚠️ Kolom ambigu", sql: "SELECT id_buku, judul\nFROM peminjaman p JOIN buku b ON p.id_buku = b.id_buku;" },
+        { label: "GROUP BY + HAVING", sql: "SELECT id_buku, COUNT(*) AS kali\nFROM peminjaman\nGROUP BY id_buku\nHAVING COUNT(*) > 1;" },
+        { label: "Agregat buku", sql: "SELECT COUNT(*) AS judul, SUM(stok) AS total_stok, AVG(stok), MIN(tahun), MAX(tahun)\nFROM buku;" },
+        { label: "⚠️ Kolom tanpa GROUP BY", sql: "SELECT prodi, nama, COUNT(*)\nFROM anggota\nGROUP BY prodi;" },
+        { label: "ALTER ADD", sql: "ALTER TABLE buku ADD penerbit VARCHAR(50) AFTER judul;\nDESCRIBE buku;" },
+        { label: "ALTER MODIFY / CHANGE", sql: "ALTER TABLE buku MODIFY judul VARCHAR(150);\nALTER TABLE buku CHANGE stok jumlah INT;\nDESCRIBE buku;" },
+        { label: "⚠️ MODIFY terlalu sempit", sql: "ALTER TABLE buku MODIFY judul VARCHAR(10);" },
+        { label: "ALTER DROP / RENAME", sql: "ALTER TABLE anggota DROP COLUMN prodi;\nALTER TABLE anggota RENAME TO member;\nSHOW TABLES;" }
       ] },
     { type: "exercise", label: "Permainan Interaktif 1 • Latihan Tingkat 1 Modul", title: "Aturan Transformasi Nomor Berapa?", headers: ["Relasi", "Aturan"],
       rows: [["Satu penerbit menerbitkan banyak buku; satu buku diterbitkan satu penerbit", "Aturan 3 (1:N) → 2 tabel", "✓ id_penerbit dititipkan ke tabel buku."], ["Satu anggota memiliki satu kartu; satu kartu dimiliki satu anggota", "Aturan 2 (1:1) → 2 tabel", "✓ Titipkan salah satu kunci ke tabel lain."], ["Satu buku ditulis banyak pengarang; satu pengarang menulis banyak buku", "Aturan 4 (M:N) → 3 tabel", "✓ Perlu tabel penghubung, misalnya buku_pengarang."], ["Satu rak menampung banyak buku; satu buku di satu rak", "Aturan 3 (1:N) → 2 tabel", "✓ id_rak dititipkan ke tabel buku."]]

@@ -154,6 +154,20 @@ SELECT nama, ipk FROM mahasiswa ORDER BY ipk DESC LIMIT 3;`, note: "➕ Untuk NU
   ex("Latihan Interaktif", "Operator WHERE yang Tepat", ["Kebutuhan", "Operator"], ["BETWEEN", "IN", "LIKE", "IS NULL"], [
     ["IPK dari 3.00 sampai 3.50", "BETWEEN"], ["Jurusan SI atau TI", "IN"], ["Nama diawali huruf C", "LIKE"], ["Buku yang belum dikembalikan", "IS NULL"]
   ]),
+  { type: "table", label: "Tabel Interaktif", title: "Pola LIKE: % dan _", mono: true, headers: ["Pola", "Artinya", "Cocok dengan", "Tidak cocok"],
+    rows: [
+      ["LIKE 'A%'", "Diawali A", "Andi Pratama", "Budi Santoso"],
+      ["LIKE '%a'", "Diakhiri a", "Andi Pratama, Dian Permata", "Citra Dewi"],
+      ["LIKE '%dewi%'", "Mengandung dewi di mana saja", "Citra Dewi", "Dian Permata"],
+      ["LIKE '_i%'", "Huruf kedua i", "Citra Dewi, Dian Permata", "Andi Pratama"],
+      ["LIKE '____'", "Tepat 4 karakter", "Andi", "Andi Pratama"],
+      ["NOT LIKE 'A%'", "Tidak diawali A", "Budi, Citra, Dian", "Andi Pratama"]
+    ],
+    modes: [
+      { label: "% vs _", target: "col", col: 0, title: "Dua karakter pengganti", text: "<code>%</code> = nol, satu, atau banyak karakter apa saja. <code>_</code> = <strong>tepat satu</strong> karakter. Jadi <code>'A%'</code> cocok dengan \"A\" sendiri, sedangkan <code>'A_'</code> butuh tepat 2 huruf." },
+      { label: "Huruf besar/kecil", target: "row", row: 2, title: "MySQL tidak membedakan", text: "Dengan pengaturan bawaan MySQL, <code>LIKE '%dewi%'</code> juga cocok dengan \"Dewi\" dan \"DEWI\"." },
+      { label: "Tanpa % = sama persis", target: "none", title: "LIKE tanpa karakter pengganti", text: "<code>WHERE nama LIKE 'Andi'</code> hanya cocok dengan \"Andi\" persis, sama seperti <code>= 'Andi'</code>. Kesalahan umum: lupa menulis % sehingga hasilnya kosong." }
+    ] },
   { type: "code", label: "Contoh Kode", title: "UPDATE dan DELETE dengan Aman", file: "ubah_hapus.sql", code: `-- 1. lihat dulu baris yang akan kena
 SELECT * FROM mahasiswa WHERE nim = '2301002';
 -- 2. baru ubah dengan WHERE yang sama
@@ -165,6 +179,7 @@ DELETE FROM mahasiswa WHERE angkatan = 2022;`, note: "UPDATE/DELETE tanpa WHERE 
   hapus,
   transaksi,
   tip("➕ Tambahan: urutan penulisan klausa SELECT", "SELECT kolom → FROM tabel → WHERE kondisi → ORDER BY kolom → LIMIT n. Menukar urutan (misalnya ORDER BY sebelum WHERE) menghasilkan ERROR 1064."),
+  ...require("./materi_bd_p4_lanjut.js"),
   rv("Cek Pemahaman", "Jawab Dulu, Baru Buka", [
     { prompt: "Tulis skema relasi untuk relasi Buku M:N Pengarang.", answer: "buku(id_buku, …) • pengarang(id_pengarang, nama, …) • buku_pengarang(id_buku*, id_pengarang*)", reason: "Aturan 4." },
     { prompt: "Mengapa tabel anggota harus diisi sebelum peminjaman?", answer: "Karena peminjaman merujuk anggota", reason: "Kalau AG001 belum ada, INSERT peminjaman → ERROR 1452." },
