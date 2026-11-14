@@ -38,7 +38,7 @@ const alur = diagram({
     { id: "create", label: "CREATE", title: "Buat rangka", text: "Hasil “nol baris” itu wajar: CREATE tidak menghasilkan data." },
     { id: "show", label: "SHOW TABLES", title: "Pastikan tabel ada", text: "Kolom hasilnya bernama Tables_in_perpustakaan." },
     { id: "desc", label: "DESCRIBE", title: "Cocokkan dengan skema", text: "Bandingkan dengan skema P4 dan dengan tab Struktur (ikon kunci di id_buku)." },
-    { id: "drop", label: "DROP", title: "Hapus seketika", text: "MySQL tidak bertanya ulang dan tidak menyimpan cadangan. ➕ phpMyAdmin bawaannya memunculkan kotak konfirmasi untuk perintah DROP; jangan mengandalkannya." }
+    { id: "drop", label: "DROP", title: "Hapus seketika", text: "Tidak ada pertanyaan konfirmasi dan tidak ada pembatalan (ini yang ditanyakan kuis). ➕ phpMyAdmin versi tertentu memunculkan kotak “Anda yakin…?”, tetapi itu fitur halamannya, bukan MySQL; jangan mengandalkannya." }
   ]
 });
 
@@ -93,7 +93,7 @@ const duaCara = {
     { label: "DROP TABLE", what: "Menghapus satu tabel beserta seluruh isinya. Coba dengan tabel <code>coba</code>, jangan <code>buku</code>.",
       klik: { how: "Buka tabel <code>coba</code> → tab <strong>Operasi</strong> → bagian <em>Hapus data atau tabel</em> → <strong>Hapus tabel (DROP)</strong>, lalu <strong>Oke</strong>.", imgs: [I("droptable-klik.webp", "Kotak konfirmasi: Anda akan MENGHANCURKAN sebuah tabel lengkap"), I("droptable-klik-hasil.webp", "Setelah dihapus, tabel coba hilang dari daftar")], ok: "<code>coba</code> hilang dari daftar kiri; yang tersisa hanya <code>buku</code>." },
       query: { how: "Di basis data <code>perpustakaan</code>, tab <strong>SQL</strong>. phpMyAdmin akan bertanya “Anda yakin akan menjalankan DROP TABLE coba;?”, klik <strong>OK</strong>.", code: "DROP TABLE coba;", imgs: [I("droptable-query.webp", "Hasil DROP TABLE coba: MySQL memberikan hasil kosong")], ok: "pesan hijau “MySQL memberikan hasil kosong (atau nol baris)”. Itu tanda berhasil, karena DROP memang tidak menghasilkan baris." },
-      note: "Pertanyaan konfirmasi itu dari phpMyAdmin. Di MySQL sendiri, DROP langsung jalan tanpa bertanya dan tidak bisa dibatalkan." },
+      note: "Pertanyaan konfirmasi itu dari phpMyAdmin. Modul menegaskan DROP bekerja seketika tanpa pertanyaan konfirmasi dan tanpa pembatalan, jadi untuk kuis jawablah “tidak ada konfirmasi”." },
     { label: "DROP DATABASE", what: "Menghapus satu basis data beserta semua tabel di dalamnya. Contoh di sini memakai <code>latihan_db</code>.",
       klik: { how: "Klik <code>latihan_db</code> → tab <strong>Operasi</strong> → <strong>Hapus basis data (DROP)</strong>, lalu <strong>Oke</strong>.", imgs: [I("dropdb-klik.webp", "Kotak konfirmasi: Anda akan MENGHANCURKAN sebuah database lengkap"), I("dropdb-klik-hasil.webp", "Setelah dihapus, latihan_db hilang dari daftar basis data")], ok: "<code>latihan_db</code> hilang dari daftar kiri dan dari menu Basis data." },
       query: { how: "Dari halaman depan (server), tab <strong>SQL</strong>, lalu jawab <strong>OK</strong> saat ditanya.", code: "DROP DATABASE latihan_db;", imgs: [I("dropdb-query.webp", "Hasil DROP DATABASE latihan_db: MySQL memberikan hasil kosong")], ok: "pesan hijau yang sama, dan <code>latihan_db</code> hilang dari daftar kiri." },
@@ -136,6 +136,38 @@ module.exports = [
   FOREIGN KEY (id_buku)    REFERENCES buku (id_buku),
   FOREIGN KEY (id_anggota) REFERENCES anggota (id_anggota)
 );`, note: "Belum dipraktikkan di Bab 7. Inilah wujud SQL dari skema P4 yang menghasilkan MUL pada DESCRIBE dan ERROR 1452 bila rujukan tidak ada. Tabel buku dan anggota harus dibuat lebih dulu." },
+  // ---------- Detail modul yang sering muncul di kuis LMS P7 ----------
+  A("Detail Modul yang Sering Ditanyakan Kuis", `<p>Kuis P7 di LMS mengambil kalimat dari modul, termasuk catatan kecil yang mudah terlewat. Bagian ini mengumpulkan detail itu. Kalau penjelasan umum dan isi modul berbeda, <strong>kunci kuis mengikuti modul</strong>.</p>`, "Bagian 3"),
+  { type: "table", label: "Tabel Interaktif", title: "Enam Detail Kecil dari Modul P7", headers: ["Yang ditanyakan", "Jawaban menurut modul", "Penjelasan"],
+    rows: [
+      ["Perintah DDL mana yang <strong>dibahas</strong> di modul P7?", "<strong>CREATE dan DROP</strong>", "DDL punya tiga perintah utama: CREATE, ALTER, DROP. Modul P7 sengaja hanya membahas CREATE dan DROP; ALTER baru dibahas di Bab 8. Jadi bedakan pertanyaan “tiga perintah DDL” (CREATE, ALTER, DROP) dengan “yang dibahas di bab ini” (CREATE dan DROP)."],
+      ["Apa arti angka pada <code>year(4)</code> dan <code>int(11)</code> di hasil DESCRIBE?", "<strong>Lebar tampilan bawaan MariaDB</strong>", "Angka itu muncul sendiri walaupun perintahnya hanya menulis <code>YEAR</code> dan <code>INT</code>. Fungsinya hanya mengatur lebar saat ditampilkan, bukan batas nilai, jumlah baris, atau jumlah huruf wajib. MySQL 8 (yang dibawa MAMP) menampilkan <code>year</code> dan <code>int</code> tanpa angka; artinya sama."],
+      ["Apakah CREATE TABLE wajib ditulis bertingkat beberapa baris?", "<strong>Tidak wajib.</strong> Satu baris panjang pun hasilnya sama.", "DBMS tidak peduli baris baru atau spasi di antara bagian perintah. Penulisan bertingkat (satu kolom satu baris) hanya supaya mudah dibaca dan mudah mencari koma yang terlewat. Tabel yang terbentuk tetap sama, tidak lebih cepat atau lebih lambat."],
+      ["Apa gunanya mencatat <strong>alasan</strong> pemilihan tipe data setiap kolom?", "<strong>Memudahkan pemeriksaan ulang</strong> bila nanti ada kolom yang perlu diperbaiki", "Ini dari mini-case modul (tabel rak). Contoh catatan: “id_rak CHAR(3) karena polanya tetap R01”, “daya_tampung INT karena dihitung”. Catatan itu tidak mempercepat perintah dan tidak membuat kunci primer otomatis; gunanya untuk diri sendiri atau orang lain yang memeriksa rancangan."],
+      ["Saat tabel <code>coba</code> dihapus di praktik terpandu, apa yang perlu diperhatikan?", "<strong>Tidak ada pertanyaan konfirmasi</strong> yang muncul", "Modul menekankan bahwa DROP bekerja seketika tanpa bertanya ulang. Di phpMyAdmin versi tertentu memang bisa muncul kotak “Anda yakin…?” (lihat tangkapan layar di atas), tetapi itu fitur halaman pengelolanya, bukan MySQL. Untuk kuis, pegang kalimat modul: tidak ada konfirmasi dan tidak ada pembatalan."],
+      ["Apa yang terjadi bila <strong>dua kolom sekaligus</strong> ditetapkan sebagai kunci primer?", "<strong>Perintahnya ditolak</strong> (ERROR 1068 Multiple primary key defined)", "Yang dimaksud modul adalah dua baris <code>PRIMARY KEY (id_anggota)</code> dan <code>PRIMARY KEY (nama)</code> seperti di Latihan Tingkat 2. Satu tabel hanya boleh punya satu kunci primer. Kunci gabungan tetap boleh, tetapi ditulis dalam <strong>satu</strong> baris: <code>PRIMARY KEY (nim, kode_matkul)</code>. Itu satu kunci primer yang terdiri dari dua kolom, bukan dua kunci primer."]
+    ],
+    modes: [
+      { label: "Tiga vs dibahas", target: "row", row: 0, title: "Hitung dulu yang ditanyakan", text: "“Tiga perintah utama DDL” → CREATE, ALTER, DROP. “Dua perintah yang dibahas modul ini” → CREATE dan DROP." },
+      { label: "Dua PK vs PK gabungan", target: "row", row: 5, title: "Hitung kata PRIMARY KEY-nya", text: "Dua kali menulis PRIMARY KEY → ERROR 1068. Satu kali menulis PRIMARY KEY dengan dua kolom di dalam kurung → kunci gabungan yang sah." }
+    ] },
+  { type: "code", label: "Contoh Kode", title: "Satu Baris vs Bertingkat: Hasilnya Sama", file: "sama.sql", code: `-- satu baris panjang
+CREATE TABLE rak (id_rak CHAR(3) NOT NULL, nama_rak VARCHAR(30) NOT NULL, lantai INT NOT NULL, daya_tampung INT NOT NULL, PRIMARY KEY (id_rak));
+
+-- bertingkat (lebih mudah dibaca)
+CREATE TABLE rak (
+  id_rak       CHAR(3)     NOT NULL,  -- pola tetap R01
+  nama_rak     VARCHAR(30) NOT NULL,  -- panjang beragam, maks 30
+  lantai       INT         NOT NULL,  -- bilangan
+  daya_tampung INT         NOT NULL,  -- dihitung
+  PRIMARY KEY (id_rak)
+);`, note: "Kedua perintah membuat tabel yang persis sama (jalankan salah satu saja; yang kedua akan ditolak ERROR 1050 karena nama rak sudah ada). Komentar setelah <code>--</code> adalah contoh mencatat alasan tipe data." },
+  tip("Kesalahan yang sering terjadi saat menjawab kuis P7", `<ul class="list-disc pl-5 space-y-1">
+<li><strong>Mengira int(11) berarti maksimal 11 angka atau 11 baris.</strong> Itu hanya lebar tampilan MariaDB.</li>
+<li><strong>Menjawab “CREATE dan ALTER”</strong> untuk perintah yang dibahas modul. ALTER memang DDL, tetapi baru dibahas di Bab 8.</li>
+<li><strong>Mengira tabel lama ditimpa</strong> bila CREATE TABLE dengan nama sama dijalankan ulang. Perintahnya ditolak (ERROR 1050) dan tabel lama tidak berubah sedikit pun.</li>
+<li><strong>Mengira pesan “hasil kosong / nol baris” berarti gagal.</strong> CREATE TABLE dan DROP memang tidak menghasilkan baris; pesan itu tanda berhasil. Begitu juga <code>SELECT * FROM buku;</code> pada tabel baru: hasil kosong berarti tabel ada tetapi belum diisi.</li>
+<li><strong>Mengandalkan kotak konfirmasi phpMyAdmin.</strong> Menurut modul, DROP tidak bertanya ulang. Baca ulang nama tabel sebelum menekan Kirim.</li></ul>`, "warn"),
   tip("Jangan hapus tabel buku!", "Tabel <code>buku</code> dipakai terus sampai Bab 12. Untuk mencoba DROP, buat tabel <code>coba</code> dulu.", "warn"),
   rv("Cek Pemahaman Modul", "Jawab Dulu, Baru Buka", [
     { prompt: "Apa itu DDL dan tiga perintahnya?", answer: "Perintah pengurus rangka basis data: CREATE, ALTER, DROP", reason: "" },
