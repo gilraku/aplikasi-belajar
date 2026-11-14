@@ -1166,7 +1166,7 @@ function renderFooter() {
   $('appFooter').innerHTML = `<div class="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-slate-500">
     <div>${m ? `<strong class="text-slate-700">${esc(c.nama)}${c.kode ? ' (' + esc(c.kode) + ')' : ''}, Pertemuan ${esc(m.nomor)}: ${esc(m.judul)}</strong><br>${esc([c.prodi, c.kampus].filter(Boolean).join(' • '))}${c.dosen ? ' • Dosen: ' + esc(c.dosen) : ''}`
       : `<span class="wordmark text-base">sinau</span>`}</div>
-    <button onclick="openShareModal()" class="self-start sm:self-auto px-3 py-2 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700">Bagikan / Unduh HTML</button>
+    <div class="self-start sm:self-auto flex flex-wrap items-center gap-x-4 gap-y-2"><span>Dibuat oleh <strong class="font-display text-ink">Gilang</strong></span>${waBtn()}</div>
   </div>`;
 }
 function updateReadiness() {
@@ -1255,6 +1255,9 @@ window.addEventListener('hashchange', onHistory);
 document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('a[href^="#/"]'); if (!a) return; e.preventDefault(); go(a.getAttribute('href')); }, true);
 
 // ---------- Beranda ----------
+// Kontak untuk pertanyaan materi / usulan isi Sinau (WhatsApp)
+const WA_URL = 'https://wa.me/6289513111563?text=' + encodeURIComponent('Halo, saya mau tanya/usul soal Sinau: ');
+const waBtn = (cls = '') => `<a href="${WA_URL}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#ffe14d] hover:bg-[#ffd60a] text-ink ${cls}"><svg class="w-4 h-4 -rotate-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.3z"/><path d="M9.2 8.3c.3-.4.8-.4 1 0l.8 1.6c.1.3 0 .6-.2.8l-.5.5a5.6 5.6 0 0 0 2.6 2.6l.5-.5c.2-.2.5-.3.8-.2l1.6.8c.4.2.4.7 0 1-.6.6-1.5.9-2.3.6a8.4 8.4 0 0 1-4.9-4.9c-.3-.8 0-1.7.6-2.3z" fill="currentColor" stroke-width="1"/></svg>Tanya / usul materi via WhatsApp</a>`;
 // Warna stabilo per mata kuliah (urut sesuai daftar matkul); teks di atasnya selalu tinta gelap.
 const HL = ['#ffe14d', '#8fe3a2', '#ff9ec7', '#ffb766', '#9cc7ff', '#c6b0ff', '#7fdcd2', '#f5a3a3'];
 const courseHL = c => HL[Math.max(0, LIB.indexOf(c)) % HL.length];
