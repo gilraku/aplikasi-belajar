@@ -1,7 +1,7 @@
 // Basis Data — Pertemuan 4: Dari ERD ke Tabel + SQL DML (slide) + CPMK 1 (bank soal P1–P4)
 const SEED = "CREATE DATABASE kampus; USE kampus; CREATE TABLE mahasiswa (nim CHAR(7) NOT NULL, nama VARCHAR(50) NOT NULL, jurusan VARCHAR(30), angkatan YEAR, ipk DECIMAL(3,2), PRIMARY KEY (nim)); INSERT INTO mahasiswa VALUES ('2301001','Andi Pratama','Sistem Informasi',2023,3.45), ('2301002','Budi Santoso','Sistem Informasi',2023,3.10), ('2301003','Citra Dewi','Teknik Informatika',2023,3.78), ('2201004','Dian Permata','Sistem Informasi',2022,3.25);";
-// Basis data perpustakaan untuk lab SQL lanjutan (data buku dari modul P2, peminjaman dari modul P4)
-const SEED_PUSTAKA = "CREATE DATABASE perpustakaan; USE perpustakaan; CREATE TABLE buku (id_buku CHAR(5) NOT NULL, judul VARCHAR(100) NOT NULL, pengarang VARCHAR(50), tahun YEAR, stok INT, PRIMARY KEY (id_buku)); CREATE TABLE anggota (id_anggota CHAR(5) NOT NULL, nama VARCHAR(50) NOT NULL, prodi VARCHAR(40), PRIMARY KEY (id_anggota)); CREATE TABLE peminjaman (id_pinjam CHAR(6) NOT NULL, id_buku CHAR(5) NOT NULL, id_anggota CHAR(5) NOT NULL, tgl_pinjam DATE NOT NULL, tgl_kembali DATE, PRIMARY KEY (id_pinjam)); INSERT INTO buku VALUES ('BK001','Dasar Pemrograman Komputer','Andi Wibowo',2019,4), ('BK002','Sistem Basis Data','Rina Kartika',2021,3), ('BK003','Jaringan Komputer Dasar','Budi Santoso',2018,2), ('BK004','Analisis Sistem Informasi','Siti Nurhaliza',2022,5), ('BK005','Statistika untuk Informatika','Dewi Anggraini',2020,1); INSERT INTO anggota VALUES ('AG001','Ahmad Fauzi','Sistem Informasi'), ('AG002','Nur Aisyah','Sistem Informasi'), ('AG003','Rangga Pratama','Teknik Informatika'), ('AG004','Dimas Prayoga','Teknik Informatika'); INSERT INTO peminjaman VALUES ('PJ0001','BK002','AG001','2026-10-01','2026-10-08'), ('PJ0002','BK001','AG002','2026-10-02',NULL), ('PJ0003','BK002','AG003','2026-10-05',NULL);";
+// Basis data perpustakaan untuk lab SQL lanjutan (data buku dari modul P2, peminjaman dari modul P4, dengan kunci tamu)
+const SEED_PUSTAKA = "CREATE DATABASE perpustakaan; USE perpustakaan; CREATE TABLE buku (id_buku CHAR(5) NOT NULL, judul VARCHAR(100) NOT NULL, pengarang VARCHAR(50), tahun YEAR, stok INT, PRIMARY KEY (id_buku)); CREATE TABLE anggota (id_anggota CHAR(5) NOT NULL, nama VARCHAR(50) NOT NULL, prodi VARCHAR(40), PRIMARY KEY (id_anggota)); CREATE TABLE peminjaman (id_pinjam CHAR(6) NOT NULL, id_buku CHAR(5) NOT NULL, id_anggota CHAR(5) NOT NULL, tgl_pinjam DATE NOT NULL, tgl_kembali DATE, PRIMARY KEY (id_pinjam), FOREIGN KEY (id_buku) REFERENCES buku(id_buku), FOREIGN KEY (id_anggota) REFERENCES anggota(id_anggota)); INSERT INTO buku VALUES ('BK001','Dasar Pemrograman Komputer','Andi Wibowo',2019,4), ('BK002','Sistem Basis Data','Rina Kartika',2021,3), ('BK003','Jaringan Komputer Dasar','Budi Santoso',2018,2), ('BK004','Analisis Sistem Informasi','Siti Nurhaliza',2022,5), ('BK005','Statistika untuk Informatika','Dewi Anggraini',2020,1); INSERT INTO anggota VALUES ('AG001','Ahmad Fauzi','Sistem Informasi'), ('AG002','Nur Aisyah','Sistem Informasi'), ('AG003','Rangga Pratama','Teknik Informatika'), ('AG004','Dimas Prayoga','Teknik Informatika'); INSERT INTO peminjaman VALUES ('PJ0001','BK002','AG001','2026-10-01','2026-10-08'), ('PJ0002','BK001','AG002','2026-10-02',NULL), ('PJ0003','BK002','AG003','2026-10-05',NULL);";
 module.exports = {
   id: "p4", nomor: 4, judul: "Dari ERD ke Tabel, SQL DML & CPMK 1", ujian: "CPMK 1",
   hero: {
@@ -62,7 +62,15 @@ module.exports = {
         ["COUNT SUM AVG MIN MAX", "Fungsi agregat: satu nilai dari banyak baris", "SELECT AVG(ipk) FROM mahasiswa;"],
         ["GROUP BY", "Hitung per kelompok", "SELECT jurusan, COUNT(*) FROM mahasiswa GROUP BY jurusan;"],
         ["HAVING", "Saring kelompok (setelah GROUP BY)", "… GROUP BY jurusan HAVING COUNT(*) > 1;"],
-        ["AS", "Alias (nama sementara) kolom/tabel di hasil", "SELECT COUNT(*) AS jumlah …"]
+        ["AS", "Alias (nama sementara) kolom/tabel di hasil", "SELECT COUNT(*) AS jumlah …"],
+        ["( … ) dengan AND/OR", "AND dikerjakan sebelum OR; kurung mengubah urutan", "WHERE (a OR b) AND c"],
+        ["IN (SELECT …)", "Subquery: daftar nilai dari query lain", "WHERE id_buku IN (SELECT id_buku FROM peminjaman)"],
+        ["= (SELECT …)", "Subquery satu nilai", "WHERE stok > (SELECT AVG(stok) FROM buku)"],
+        ["FOREIGN KEY … REFERENCES", "Kunci tamu; ON DELETE CASCADE / SET NULL", "FOREIGN KEY (id_buku) REFERENCES buku(id_buku)"],
+        ["CONCAT UPPER ROUND IFNULL", "Fungsi per baris", "SELECT CONCAT(nama, ' - ', prodi) …"],
+        ["CREATE VIEW", "Query yang disimpan dengan nama", "CREATE VIEW v AS SELECT …"],
+        ["CREATE INDEX", "Mempercepat pencarian kolom", "CREATE INDEX idx_judul ON buku (judul);"],
+        ["GRANT / REVOKE", "Beri / cabut hak akses (DCL)", "GRANT SELECT ON perpustakaan.* TO 'petugas'@'localhost';"]
       ],
       modes: [
         { label: "ALTER vs UPDATE vs INSERT", target: "row", row: 0, title: "Kolom, isi, atau baris?", text: "ALTER … ADD = tambah <strong>kolom</strong> (struktur). UPDATE = ubah <strong>isi</strong> kolom yang sudah ada. INSERT = tambah <strong>baris</strong> baru." },
@@ -94,8 +102,8 @@ module.exports = {
         { label: "nim kembar", sql: "INSERT INTO mahasiswa VALUES ('2301001', 'Eko', 'Sistem Informasi', 2023, 3.00);" }
       ] },
     { type: "sql-lab", profile: "p4-lanjut", label: "Lab Basis Data • SQL Lanjutan (bukan dari modul)", title: "Coba JOIN, GROUP BY, dan ALTER TABLE pada Tiga Tabel Perpustakaan",
-      desc: "Basis data <code>perpustakaan</code> berisi tabel <code>buku</code> (5 baris), <code>anggota</code> (4 baris), dan <code>peminjaman</code> (3 baris) dari modul. BK003–BK005 belum pernah dipinjam dan AG004 belum pernah meminjam, jadi perbedaan INNER, LEFT, dan RIGHT JOIN terlihat jelas.",
-      tip: "Mendukung INNER/LEFT/RIGHT/CROSS JOIN dengan ON, alias tabel, fungsi agregat, GROUP BY, HAVING, AS, dan ALTER TABLE (ADD, DROP COLUMN, MODIFY, CHANGE, RENAME, ADD/DROP PRIMARY KEY). Kalau datanya berantakan, tekan Kembalikan data awal.",
+      desc: "Basis data <code>perpustakaan</code> berisi tabel <code>buku</code> (5 baris), <code>anggota</code> (4 baris), dan <code>peminjaman</code> (3 baris, dengan kunci tamu ke buku dan anggota) dari modul. BK003–BK005 belum pernah dipinjam dan AG004 belum pernah meminjam, jadi perbedaan INNER, LEFT, dan RIGHT JOIN terlihat jelas.",
+      tip: "Mendukung JOIN, subquery, fungsi agregat dan fungsi bawaan (CONCAT, UPPER, ROUND, IFNULL, YEAR, DATEDIFF, …), hitungan, kurung AND/OR/NOT, GROUP BY, HAVING, AS, UNION, ALTER TABLE, kunci tamu (ON DELETE CASCADE/SET NULL), VIEW, INDEX, serta CREATE USER, GRANT, dan REVOKE. Kalau datanya berantakan, tekan Kembalikan data awal.",
       seed: SEED_PUSTAKA,
       examples: [
         { label: "INNER JOIN", sql: "SELECT p.id_pinjam, b.judul\nFROM peminjaman p\nINNER JOIN buku b ON p.id_buku = b.id_buku;" },
@@ -111,7 +119,20 @@ module.exports = {
         { label: "ALTER ADD", sql: "ALTER TABLE buku ADD penerbit VARCHAR(50) AFTER judul;\nDESCRIBE buku;" },
         { label: "ALTER MODIFY / CHANGE", sql: "ALTER TABLE buku MODIFY judul VARCHAR(150);\nALTER TABLE buku CHANGE stok jumlah INT;\nDESCRIBE buku;" },
         { label: "⚠️ MODIFY terlalu sempit", sql: "ALTER TABLE buku MODIFY judul VARCHAR(10);" },
-        { label: "ALTER DROP / RENAME", sql: "ALTER TABLE anggota DROP COLUMN prodi;\nALTER TABLE anggota RENAME TO member;\nSHOW TABLES;" }
+        { label: "ALTER DROP / RENAME", sql: "ALTER TABLE anggota DROP COLUMN prodi;\nALTER TABLE anggota RENAME TO member;\nSHOW TABLES;" },
+        { label: "Subquery IN", sql: "SELECT judul FROM buku\nWHERE id_buku IN (SELECT id_buku FROM peminjaman);" },
+        { label: "Subquery NOT IN", sql: "SELECT nama FROM anggota\nWHERE id_anggota NOT IN (SELECT id_anggota FROM peminjaman);" },
+        { label: "Subquery > AVG", sql: "SELECT judul, stok FROM buku\nWHERE stok > (SELECT AVG(stok) FROM buku);" },
+        { label: "⚠️ Subquery dengan =", sql: "SELECT judul FROM buku\nWHERE id_buku = (SELECT id_buku FROM peminjaman);" },
+        { label: "Fungsi teks", sql: "SELECT CONCAT(nama, ' (', prodi, ')') AS anggota, UPPER(nama), LENGTH(nama)\nFROM anggota;" },
+        { label: "Fungsi tanggal + IFNULL", sql: "SELECT id_pinjam, IFNULL(tgl_kembali, 'belum kembali') AS kembali,\n       DATEDIFF(IFNULL(tgl_kembali, CURDATE()), tgl_pinjam) AS lama_hari\nFROM peminjaman;" },
+        { label: "Hitungan + UPDATE", sql: "SELECT judul, stok, stok * 2 AS dua_kali, stok / 2 FROM buku;\nUPDATE buku SET stok = stok - 1 WHERE id_buku = 'BK002';\nSELECT id_buku, stok FROM buku WHERE id_buku = 'BK002';" },
+        { label: "Kurung AND/OR", sql: "SELECT judul, tahun, stok FROM buku\nWHERE (tahun < 2020 OR tahun > 2021) AND stok >= 2;" },
+        { label: "⚠️ Pinjam BK999", sql: "INSERT INTO peminjaman VALUES ('PJ0004', 'BK999', 'AG001', '2026-10-06', NULL);" },
+        { label: "⚠️ Hapus buku dipinjam", sql: "DELETE FROM buku WHERE id_buku = 'BK002';" },
+        { label: "VIEW", sql: "CREATE VIEW v_peminjaman AS\nSELECT a.nama, b.judul, p.tgl_pinjam\nFROM peminjaman p\nJOIN anggota a ON p.id_anggota = a.id_anggota\nJOIN buku b ON p.id_buku = b.id_buku;\nSELECT * FROM v_peminjaman;" },
+        { label: "INDEX", sql: "CREATE INDEX idx_judul ON buku (judul);\nSHOW INDEX FROM buku;" },
+        { label: "GRANT / REVOKE", sql: "CREATE USER 'petugas'@'localhost' IDENTIFIED BY 'rahasia';\nGRANT SELECT, INSERT ON perpustakaan.* TO 'petugas'@'localhost';\nREVOKE INSERT ON perpustakaan.* FROM 'petugas'@'localhost';\nSHOW GRANTS FOR 'petugas'@'localhost';" }
       ] },
     { type: "exercise", label: "Permainan Interaktif 1 • Latihan Tingkat 1 Modul", title: "Aturan Transformasi Nomor Berapa?", headers: ["Relasi", "Aturan"],
       rows: [["Satu penerbit menerbitkan banyak buku; satu buku diterbitkan satu penerbit", "Aturan 3 (1:N) → 2 tabel", "✓ id_penerbit dititipkan ke tabel buku."], ["Satu anggota memiliki satu kartu; satu kartu dimiliki satu anggota", "Aturan 2 (1:1) → 2 tabel", "✓ Titipkan salah satu kunci ke tabel lain."], ["Satu buku ditulis banyak pengarang; satu pengarang menulis banyak buku", "Aturan 4 (M:N) → 3 tabel", "✓ Perlu tabel penghubung, misalnya buku_pengarang."], ["Satu rak menampung banyak buku; satu buku di satu rak", "Aturan 3 (1:N) → 2 tabel", "✓ id_rak dititipkan ke tabel buku."]]

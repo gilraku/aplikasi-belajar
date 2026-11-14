@@ -43,7 +43,7 @@ const qTiga = "SELECT a.nama, b.judul, p.tgl_pinjam\nFROM peminjaman p\nJOIN ang
 
 module.exports = [
   A("SQL di Luar Modul: ALTER, JOIN, GROUP BY", `<p>Modul P1–P7 baru membahas CREATE, DROP, INSERT, SELECT, UPDATE, dan DELETE. Kuis LMS ternyata juga menanyakan <strong>ALTER TABLE</strong>, <strong>JOIN</strong> (termasuk LEFT JOIN), fungsi seperti <strong>COUNT</strong> dan <strong>SUM</strong>, <strong>GROUP BY</strong>, dan alias <strong>AS</strong>. Bagian ini membahas semuanya dengan contoh tabel perpustakaan dari modul.</p>
-<p>Semua contoh bisa dicoba di tab <strong>Simulator</strong> P4, pada lab kedua (<em>SQL Lanjutan</em>).</p>`, "Bagian 4 • Bukan dari modul LMS"),
+<p>Semua contoh bisa dicoba di tab <strong>Simulator</strong> P4, pada lab kedua (<em>SQL Lanjutan</em>). Subquery, kunci tamu lengkap, fungsi bawaan, VIEW, INDEX, dan GRANT/REVOKE ada di Bagian 5.</p>`, "Bagian 4 • Bukan dari modul LMS"),
   tip("Bukan dari modul LMS", "Bagian 4 disusun dari dokumentasi MySQL 8, bukan dari modul dosen. Modul P7 menyebut bahwa ALTER baru dibahas di Bab 8 (setelah UTS), dan JOIN serta GROUP BY belum dibahas di modul mana pun.", "warn"),
 
   // ---------- ALTER TABLE ----------

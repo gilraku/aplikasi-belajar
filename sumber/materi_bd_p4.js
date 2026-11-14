@@ -180,6 +180,7 @@ DELETE FROM mahasiswa WHERE angkatan = 2022;`, note: "UPDATE/DELETE tanpa WHERE 
   transaksi,
   tip("➕ Tambahan: urutan penulisan klausa SELECT", "SELECT kolom → FROM tabel → WHERE kondisi → ORDER BY kolom → LIMIT n. Menukar urutan (misalnya ORDER BY sebelum WHERE) menghasilkan ERROR 1064."),
   ...require("./materi_bd_p4_lanjut.js"),
+  ...require("./materi_bd_p4_lanjut2.js"),
   rv("Cek Pemahaman", "Jawab Dulu, Baru Buka", [
     { prompt: "Tulis skema relasi untuk relasi Buku M:N Pengarang.", answer: "buku(id_buku, …) • pengarang(id_pengarang, nama, …) • buku_pengarang(id_buku*, id_pengarang*)", reason: "Aturan 4." },
     { prompt: "Mengapa tabel anggota harus diisi sebelum peminjaman?", answer: "Karena peminjaman merujuk anggota", reason: "Kalau AG001 belum ada, INSERT peminjaman → ERROR 1452." },
