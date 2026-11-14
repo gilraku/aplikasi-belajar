@@ -241,7 +241,9 @@ function sqlWhere(text, indexOf, columnAt = () => null) {
         const list = raws.map(sqlValue);
         if (!list.length || list.some(v => v === undefined)) return { error: "Bentuk IN: kolom IN ('nilai1', 'nilai2'). Teks pakai kutip tunggal." };
         const numeric = sqlNumType(columnAt(i)) || raws.every(v => !/^'/.test(v)), not = !!m[2];
-        group.push(r => r[i] !== null && list.some(v => v !== null && sqlCompare(r[i], v, numeric) === 0) !== not); continue;
+        // Seperti SQL: x NOT IN (…, NULL) tidak pernah benar, karena perbandingan dengan NULL hasilnya UNKNOWN
+        const hasNull = list.includes(null);
+        group.push(r => { if (r[i] === null) return false; const hit = list.some(v => v !== null && sqlCompare(r[i], v, numeric) === 0); return not ? !hit && !hasNull : hit; }); continue;
       }
       if ((m = new RegExp(`^(${SQL_OPERAND})\\s*(<=|>=|<>|!=|=|<|>)\\s*([\\s\\S]+)$`, 'i').exec(part))) {
         if (typeof (i = pick(m[1])) === 'object') return i;
@@ -369,7 +371,16 @@ function sqlAlter(schema, name, actionsText) {
         if (v.error) return v;
         values.push(v.value);
       }
-      if (t.columns[i].name === t.key) t.key = d.column.name;
+      if (t.columns[i].name === t.key) {
+        // Nilai kunci yang tadinya berbeda bisa menjadi kembar setelah diubah tipenya (mis. '1.1' dan '1.2' → INT 1)
+        const seen = new Set();
+        for (const v of values) {
+          const k = String(v).toLowerCase();
+          if (seen.has(k)) return { error: `Duplicate entry '${v}' for key 'PRIMARY'. Setelah tipe diubah, ada nilai kunci primer yang menjadi kembar.`, code: 1062 };
+          seen.add(k);
+        }
+        t.key = d.column.name;
+      }
       t.columns[i] = d.column; t.rows.forEach((r, k) => { r[i] = values[k]; });
       move(i, d); continue;
     }
@@ -430,8 +441,22 @@ function sqlFrom(schema, text) {
     aliases.push(ref.alias);
     const t2 = load(ref);
     if (t2.error) return t2;
-    const o = /^\s+ON\s+([\s\S]+?)(?=\s+(?:(?:INNER|CROSS|LEFT|RIGHT)(?:\s+OUTER)?\s+)?JOIN\b|\s*,|$)/i.exec(rest);
-    if (o) rest = rest.slice(o[0].length);
+    // Syarat ON berakhir pada koma atau JOIN berikutnya di tingkat teratas (bukan di dalam kurung atau kutip)
+    let o = null;
+    const on = /^\s+ON\s+/i.exec(rest);
+    if (on) {
+      let depth = 0, quote = false, end = rest.length;
+      for (let k = on[0].length; k < rest.length; k++) {
+        const ch = rest[k];
+        if (ch === "'") quote = !quote;
+        if (quote) continue;
+        if (ch === '(') depth++;
+        else if (ch === ')') depth--;
+        else if (!depth && (ch === ',' || (/\s/.test(ch) && /^\s+(?:(?:INNER|CROSS|LEFT|RIGHT)(?:\s+OUTER)?\s+)?JOIN\b/i.test(rest.slice(k))))) { end = k; break; }
+      }
+      o = [rest.slice(0, end), rest.slice(on[0].length, end).trim()];
+      rest = rest.slice(end);
+    }
     else if (kind === 'LEFT' || kind === 'RIGHT') return { error: `${kind} JOIN wajib diikuti ON, misalnya ON p.id_buku = b.id_buku.`, code: 1064 };
     const right = t2.columns.map(c => ({ ...c, from: ref.alias })), all = cols.concat(right);
     const test = o ? sqlWhere(o[1], sqlResolver(all), i => all[i]) : () => true;

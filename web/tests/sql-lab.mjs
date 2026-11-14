@@ -44,6 +44,13 @@ ok('SELECT id_buku, COUNT(*) FROM peminjaman GROUP BY id_buku HAVING COUNT(*) > 
 err('SELECT prodi, nama, COUNT(*) FROM anggota GROUP BY prodi;', 1055);
 err('SELECT nama, COUNT(*) FROM anggota;', 1140);
 err('SELECT prodi FROM anggota WHERE COUNT(*) > 1 GROUP BY prodi;', 1111);
+// Temuan review: NOT IN dengan NULL, koma di dalam ON, PK kembar setelah MODIFY
+ok("SELECT nama FROM anggota WHERE id_anggota NOT IN ('AG001', NULL);", 'Empty set (0 baris)');
+ok("SELECT a.nama FROM anggota a JOIN peminjaman p ON a.id_anggota = p.id_anggota AND p.id_buku IN ('BK001', 'BK003') JOIN buku b ON b.id_buku = p.id_buku;", 'nama\nNur\n1 baris');
+{ const db = fresh();
+  ok("CREATE TABLE t (id VARCHAR(5) NOT NULL, PRIMARY KEY (id)); INSERT INTO t VALUES ('1.1'), ('1.2');", null, db);
+  err('ALTER TABLE t MODIFY id INT;', 1062, db);
+}
 // ALTER TABLE
 { const db = fresh();
   ok('ALTER TABLE buku ADD tahun YEAR;', null, db);
