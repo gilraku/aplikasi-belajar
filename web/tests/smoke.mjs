@@ -129,7 +129,7 @@ try {
   const quick = await page.evaluate(() => {
     const q = S.meeting.quiz;
     const chosen = sampleExam(q);
-    return [chosen.length, new Set(chosen).size, new Set(chosen.map(i => q[i].q.match(/^\[P\d+\]/)?.[0])).size];
+    return [chosen.length, new Set(chosen).size, new Set(chosen.map(i => q[i].topic || q[i].q.match(/^\[(P\d+)\]/)?.[1])).size];
   });
   if (quick.join('/') !== '25/25/7') fail('Simulasi Cepat harus berisi 25 soal unik dari 7 pertemuan Basis Data');
   const practiceBefore = await page.evaluate(() => JSON.stringify(S.prog.quiz));
