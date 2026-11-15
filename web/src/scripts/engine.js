@@ -133,6 +133,8 @@ function rich(s) {
   s = String(s);
   if (richCache.has(s)) return richCache.get(s);
   let t = s.replace(/`([^`\n]+)`/g, (m, c) => '<code>' + esc(c) + '</code>').replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  // Tag di luar daftar yang diizinkan (mis. #include <iostream>, tag <title>) adalah teks, bukan markup: tampilkan apa adanya
+  t = t.replace(/<\/?([a-zA-Z][\w.-]*)\b[^<>]*>/g, (m, name) => (ALLOWED_TAGS.has(name.toUpperCase()) ? m : esc(m)));
   if (!/<(br|ul|ol|li|p|pre)\b/i.test(t)) t = t.replace(/\n/g, '<br>');
   const doc = new DOMParser().parseFromString('<div>' + t + '</div>', 'text/html');
   const root = doc.body.firstChild;
@@ -597,11 +599,13 @@ ${cpp ? `<p class="text-xs text-slate-500">💡 C++ tidak bisa dijalankan di apl
   },
 
   list: {
-    render: d => `<div class="grid grid-cols-1 ${(d.groups || []).length > 1 ? 'md:grid-cols-2' : ''} gap-4">${(d.groups || []).map(g => { const t = tone(g.tone, 'indigo');
+    // Bentuk ringkas { items: [...] } sama dengan satu grup tanpa judul
+    render: d => { const groups = d.groups || (Array.isArray(d.items) ? [{ items: d.items, ordered: d.ordered, tone: d.tone }] : []);
+      return `<div class="grid grid-cols-1 ${groups.length > 1 ? 'md:grid-cols-2' : ''} gap-4">${groups.map(g => { const t = tone(g.tone, 'indigo');
       return `<div class="p-4 rounded-xl border ${t.soft}">
         ${g.title ? `<span class="inline-block mb-2 px-2.5 py-1 rounded-lg text-xs font-bold ${t.badge} rich">${rich(g.title)}</span>` : ''}
         <${g.ordered ? 'ol' : 'ul'} class="space-y-1.5 text-sm">${(g.items || []).map(i => `<li class="p-2 rounded-lg bg-white/70 rich">${rich(i)}</li>`).join('')}</${g.ordered ? 'ol' : 'ul'}>
-      </div>`; }).join('')}</div>`
+      </div>`; }).join('')}</div>`; }
   },
 
   flow: {
@@ -1815,7 +1819,7 @@ function jumpTo(j) {
   else if (j.kind === 'f') {
     el = $('fc-' + j.i);
     // Kalau kata yang dicari hanya ada di sisi jawaban, balik kartunya supaya jawabannya terlihat
-    const f = S.meeting && S.meeting.flashcards[j.i], fq = f ? fold(String(f.q || '').replace(/<[^>]+>/g, ' ')) : '';
+    const f = S.meeting && S.meeting.flashcards[j.i], fq = f ? fold((d => (d.innerHTML = rich(f.q || ''), d.textContent))(document.createElement('div'))) : '';
     if (el && f && !j.terms.every(t => fq.includes(t))) el.classList.add('flipped');
   }
   else { const ids = S.blockIds && S.blockIds[j.tab], n = ids && ids[j.i]; el = n != null ? $('blk-' + n) : null; }
@@ -1824,27 +1828,35 @@ function jumpTo(j) {
   // Tentukan panelnya dari teks hasil itu sendiri, buka, baru tandai katanya.
   const n = el.id && el.id.startsWith('blk-') ? el.id.slice(4) : null, b = n != null && BLOCKS[n];
   if (b && j.text) {
-    const flat = o => { const out = []; const w = v => { if (typeof v === 'string') out.push(v); else if (v && typeof v === 'object') Object.values(v).forEach(w); }; w(o); return out.join(' '); };
-    const squash = x => fold(String(x).replace(/<[^>]+>/g, ' ').replace(/&[#\w]+;/g, ' ')).replace(/[^\p{L}\p{N}]+/gu, '');
+    // Teks hasil sudah polos; teks data dirender lewat rich() dulu supaya sama dengan yang tampil
+    const squash = x => fold(String(x)).replace(/[^\p{L}\p{N}]+/gu, '');
+    const shown = x => { const d = document.createElement('div'); d.innerHTML = rich(x); return d.textContent; };
+    // Kode program/keluaran ditampilkan apa adanya (esc), teks lain lewat rich()
+    const RAWK = new Set(['code', 'sql', 'cmd', 'res', 'preview', 'output', 'cpp', 'js', 'css']);
+    const flat = o => { const out = []; const w = (v, k) => { if (typeof v === 'string') out.push(RAWK.has(k) ? v : shown(v)); else if (v && typeof v === 'object') Object.entries(v).forEach(([kk, x]) => w(x, Array.isArray(v) ? k : kk)); }; w(o, ''); return out.join(' '); };
     const key = squash(j.text).slice(0, 60), has = o => key && squash(flat(o)).includes(key);
+    // Teks pendek bisa muncul di beberapa panel: utamakan panel yang memuat teks itu secara utuh
+    const full = squash(j.text), strs = o => { const out = []; const w = (v, k) => { if (typeof v === 'string') out.push(squash(RAWK.has(k) ? v : shown(v))); else if (v && typeof v === 'object') Object.entries(v).forEach(([kk, x]) => w(x, Array.isArray(v) ? k : kk)); }; w(o, ''); return out; };
+    const pick = list => { const i = list.findIndex(o => strs(o).includes(full)); return i >= 0 ? i : list.findIndex(has); };
     let changed = false;
     // Blok yang hanya menampilkan satu bagian sekaligus: [daftar di data, kunci status, nilai status untuk bagian ke-i]
     const ONES = { tabs: ['tabs', 'active'], choices: ['options', 'sel'], steps: ['items', 'open'], symbols: ['groups', 'tab'], cara: ['tabs', 'tab'],
-      terminal: ['scenarios', 'sel'], table: ['modes', 'mode'], diagram: ['parts', 'sel', it => it.id], shot: ['parts', 'sel', it => it.id] };
+      terminal: ['scenarios', 'sel'], table: ['modes', 'mode'], say: ['items', 'last'], diagram: ['parts', 'sel', it => it.id], shot: ['parts', 'sel', it => it.id] };
     // Buka bagian yang cocok, termasuk blok di dalam baris (row) dan di dalam tab yang terpilih
     const open = k => {
       const bk = BLOCKS[k]; if (!bk) return;
       if (bk.def.type === 'reveal') (bk.def.items || []).forEach((it, i) => { if (!bk.state.open[i] && has(it)) { bk.state.open[i] = true; changed = true; } });
       const ONE = ONES[bk.def.type];
       if (ONE) {
-        const list = bk.def[ONE[0]] || [], i = list.findIndex(has);
+        const list = bk.def[ONE[0]] || [], i = pick(list);
         if (i >= 0) { const v = ONE[2] ? ONE[2](list[i]) : i; if (bk.state[ONE[1]] !== v) { bk.state[ONE[1]] = v; changed = true; } }
       }
       // Tabel: penjelasan kolom (headers[].note) ditampilkan lewat state.note; memilih mode harus mengosongkannya
       if (bk.def.type === 'table') {
         const hi = (bk.def.headers || []).findIndex(h => h && h.note && has(h.note));
         if (hi >= 0) { if (bk.state.note !== hi) { bk.state.note = hi; changed = true; } }
-        else if (ONE && bk.state.note != null && (bk.def.modes || []).some(has)) { bk.state.note = null; changed = true; }
+        // Hasil ada di penjelasan mode atau di catatan bawaan: tutup catatan kolom yang sedang terbuka
+        else if (bk.state.note != null && ((bk.def.modes || []).some(has) || (bk.def.defaultNote && has(bk.def.defaultNote)))) { bk.state.note = null; changed = true; }
       }
       if (bk.def.type === 'row') (bk.state.kids || []).forEach(c => { if (BLOCKS[c] && has(BLOCKS[c].def)) open(c); });
       if (bk.def.type === 'tabs') ((bk.state.kids || [])[bk.state.active] || []).forEach(c => { if (BLOCKS[c] && has(BLOCKS[c].def)) open(c); });
