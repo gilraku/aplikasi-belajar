@@ -1804,7 +1804,7 @@ function cariGo(i) {
   const tab = CARI_TAB[h.e[1]];
   S.jump = { tab, kind: h.e[1], i: h.e[2], terms: CARI.terms.slice(), text: h.e[3] };
   closeModal();
-  if (h.e[1] === 'q') { S.quizFilter = 'all'; if (S.exam && S.meeting === mm) S.jump = null; }
+  if (h.e[1] === 'q') { S.quizFilter = 'all'; S.examReview = false; if (S.exam && S.meeting === mm) S.jump = null; }
   if (h.e[1] === 'f') S.fcFilter = 'all';
   go(routeFor(c, mm, tab));
 }
