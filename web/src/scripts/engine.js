@@ -1825,7 +1825,7 @@ function jumpTo(j) {
   const n = el.id && el.id.startsWith('blk-') ? el.id.slice(4) : null, b = n != null && BLOCKS[n];
   if (b && j.text) {
     const flat = o => { const out = []; const w = v => { if (typeof v === 'string') out.push(v); else if (v && typeof v === 'object') Object.values(v).forEach(w); }; w(o); return out.join(' '); };
-    const squash = x => fold(String(x).replace(/<[^>]+>/g, ' ').replace(/&[#\w]+;/g, ' ')).replace(/[^a-z0-9]+/g, '');
+    const squash = x => fold(String(x).replace(/<[^>]+>/g, ' ').replace(/&[#\w]+;/g, ' ')).replace(/[^\p{L}\p{N}]+/gu, '');
     const key = squash(j.text).slice(0, 60), has = o => key && squash(flat(o)).includes(key);
     let changed = false;
     // Blok yang hanya menampilkan satu bagian sekaligus: [daftar di data, kunci status, nilai status untuk bagian ke-i]
@@ -1839,6 +1839,12 @@ function jumpTo(j) {
       if (ONE) {
         const list = bk.def[ONE[0]] || [], i = list.findIndex(has);
         if (i >= 0) { const v = ONE[2] ? ONE[2](list[i]) : i; if (bk.state[ONE[1]] !== v) { bk.state[ONE[1]] = v; changed = true; } }
+      }
+      // Tabel: penjelasan kolom (headers[].note) ditampilkan lewat state.note; memilih mode harus mengosongkannya
+      if (bk.def.type === 'table') {
+        const hi = (bk.def.headers || []).findIndex(h => h && h.note && has(h.note));
+        if (hi >= 0) { if (bk.state.note !== hi) { bk.state.note = hi; changed = true; } }
+        else if (ONE && bk.state.note != null && (bk.def.modes || []).some(has)) { bk.state.note = null; changed = true; }
       }
       if (bk.def.type === 'row') (bk.state.kids || []).forEach(c => { if (BLOCKS[c] && has(BLOCKS[c].def)) open(c); });
       if (bk.def.type === 'tabs') ((bk.state.kids || [])[bk.state.active] || []).forEach(c => { if (BLOCKS[c] && has(BLOCKS[c].def)) open(c); });
