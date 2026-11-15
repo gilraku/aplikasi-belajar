@@ -133,6 +133,8 @@ function rich(s) {
   s = String(s);
   if (richCache.has(s)) return richCache.get(s);
   let t = s.replace(/`([^`\n]+)`/g, (m, c) => '<code>' + esc(c) + '</code>').replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  // Tag di luar daftar yang diizinkan (mis. #include <iostream>, tag <title>) adalah teks, bukan markup: tampilkan apa adanya
+  t = t.replace(/<\/?([a-zA-Z][\w.-]*)\b[^<>]*>/g, (m, name) => (ALLOWED_TAGS.has(name.toUpperCase()) ? m : esc(m)));
   if (!/<(br|ul|ol|li|p|pre)\b/i.test(t)) t = t.replace(/\n/g, '<br>');
   const doc = new DOMParser().parseFromString('<div>' + t + '</div>', 'text/html');
   const root = doc.body.firstChild;
@@ -597,11 +599,13 @@ ${cpp ? `<p class="text-xs text-slate-500">💡 C++ tidak bisa dijalankan di apl
   },
 
   list: {
-    render: d => `<div class="grid grid-cols-1 ${(d.groups || []).length > 1 ? 'md:grid-cols-2' : ''} gap-4">${(d.groups || []).map(g => { const t = tone(g.tone, 'indigo');
+    // Bentuk ringkas { items: [...] } sama dengan satu grup tanpa judul
+    render: d => { const groups = d.groups || (Array.isArray(d.items) ? [{ items: d.items, ordered: d.ordered, tone: d.tone }] : []);
+      return `<div class="grid grid-cols-1 ${groups.length > 1 ? 'md:grid-cols-2' : ''} gap-4">${groups.map(g => { const t = tone(g.tone, 'indigo');
       return `<div class="p-4 rounded-xl border ${t.soft}">
         ${g.title ? `<span class="inline-block mb-2 px-2.5 py-1 rounded-lg text-xs font-bold ${t.badge} rich">${rich(g.title)}</span>` : ''}
         <${g.ordered ? 'ol' : 'ul'} class="space-y-1.5 text-sm">${(g.items || []).map(i => `<li class="p-2 rounded-lg bg-white/70 rich">${rich(i)}</li>`).join('')}</${g.ordered ? 'ol' : 'ul'}>
-      </div>`; }).join('')}</div>`
+      </div>`; }).join('')}</div>`; }
   },
 
   flow: {
@@ -1040,6 +1044,7 @@ document.addEventListener('change', onField);
 //  TAMPILAN: header, beranda, pertemuan, flashcard, kuis
 // =====================================================================
 const ICON = {
+  search: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"/>',
   db: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>',
   book: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>',
   share: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>',
@@ -1125,6 +1130,7 @@ function renderHeader() {
         : `<h1 class="leading-none"><button onclick="go('#/')" class="wordmark text-[28px] sm:text-[32px]" aria-label="Beranda Sinau">sinau</button></h1><p class="mt-1.5 text-xs text-slate-500 truncate">${esc(['rangkuman', APP.semester, programLine()].filter(Boolean).join(' • '))}</p>`}
       </div>
       ${m ? `<div class="md:hidden shrink-0 h-10 px-2 rounded-xl bg-indigo-50 text-indigo-700 flex flex-col items-center justify-center leading-none" title="Progres belajar"><span id="readinessPill" class="text-sm font-extrabold">0%</span><span class="text-[9px] font-bold uppercase tracking-wide">progres</span></div>` : ''}
+      ${APP.standalone ? '' : `<button onclick="openSearch()" title="Cari cepat di semua pertemuan (tombol /)" aria-label="Cari cepat" class="shrink-0 h-10 px-3 rounded-xl text-xs font-bold bg-[#ffe14d] text-ink hover:bg-[#ffd60a] flex items-center gap-1.5">${svg('search', 'w-4 h-4')}<span class="hidden sm:inline">Cari</span></button>`}
       <button onclick="openProgressModal()" title="Progres belajarku (simpan / pindah perangkat)" aria-label="Progres belajarku" class="shrink-0 h-10 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1.5">${svg('chart', 'w-4 h-4')}<span class="hidden sm:inline">Progresku</span></button>
       <button onclick="openShareModal()" title="Bagikan / Unduh" aria-label="Bagikan / Unduh" class="shrink-0 h-10 px-3 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 flex items-center gap-1.5">${svg('share', 'w-4 h-4')}<span class="hidden sm:inline">Bagikan / Unduh</span></button>
     </div>
@@ -1242,10 +1248,12 @@ function route(forced) {
   renderHeader(); renderFooter(); renderNext();
   if (m) renderMeeting(changedMeeting); else renderHome(c);
   updateReadiness();
+  const jump = m && S.jump && S.jump.tab === tab ? S.jump : null; S.jump = null;
   // Siapkan pertemuan berikutnya di belakang layar supaya pindah halaman terasa instan
   const nx = m && c.meetings[c.meetings.indexOf(m) + 1];
   if (nx && nx._lazy) setTimeout(() => fetchMeeting(c, nx).catch(() => {}), 1500);
-  window.scrollTo({ top: 0, behavior: changedMeeting ? 'auto' : 'smooth' });
+  if (jump) { window.scrollTo({ top: 0 }); setTimeout(() => jumpTo(jump), 80); }
+  else window.scrollTo({ top: 0, behavior: changedMeeting ? 'auto' : 'smooth' });
 }
 (function () { let compact = false; window.addEventListener('scroll', () => { const h = $('appHeader'); if (!h) return;
   const want = innerWidth < 768 && (compact ? scrollY > 40 : scrollY > 160); if (want !== compact) { compact = want; h.classList.toggle('hdr-compact', compact); } }, { passive: true }); })();
@@ -1453,7 +1461,7 @@ function renderFlashcards() {
         <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800">Dikuasai: ${mastered} / ${total}</span>
       </div></div>
     ${list.length ? `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">${list.map(({ c, i }) => { const ok = p.mastered.has(i);
-      return `<div class="perspective-1000 h-64 cursor-pointer select-none" onclick="this.classList.toggle('flipped')">
+      return `<div id="fc-${i}" class="perspective-1000 h-64 cursor-pointer select-none scroll-mt-40" onclick="this.classList.toggle('flipped')">
         <div class="flip-inner">
           <div class="flip-face rounded-2xl border ${ok ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-gradient-to-br from-white to-slate-50'} shadow-sm p-4 flex flex-col">
             <div class="flex items-center justify-between gap-2 text-[11px] font-bold"><span class="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 truncate rich">${rich(c.tag || 'Kartu')}</span><span class="text-slate-400 shrink-0">#${i + 1} • Klik balik →</span></div>
@@ -1510,7 +1518,7 @@ function renderQuiz() {
           ${lastResult ? `<button onclick="openExamReview()" class="${btn} bg-slate-100 text-slate-700">Hasil simulasi terakhir</button>` : ''}
           <button onclick="resetQuiz()" class="${btn} bg-slate-100 hover:bg-slate-200 text-slate-700">↺ Ulangi kuis</button></div></div>`;
   const card = (qi, pos) => { const q = m.quiz[qi], ch = ans[qi], done = !!review || (!ex && ch !== undefined);
-    return `<div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3">
+    return `<div id="qz-${qi}" class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3 scroll-mt-40">
         <p class="font-bold text-slate-900 text-sm sm:text-[15px] leading-snug"><span class="text-indigo-600">${ex || review ? pos + 1 : qi + 1}.</span> <span class="rich">${rich(q.q)}</span></p>
         <div class="grid gap-2">${q.opts.map((o, oi) => {
           const cls = ex ? (oi === ch ? 'bg-indigo-50 border-indigo-500 text-indigo-950 font-semibold' : 'bg-white border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 text-slate-800')
@@ -1662,6 +1670,242 @@ function openModal(html, width = 'max-w-lg') {
 }
 function closeModal() { $('modalRoot').innerHTML = ''; }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// =====================================================================
+//  CARI CEPAT: cari istilah/kalimat di semua pertemuan satu mata kuliah
+//  Indeks dibuat saat build (data/cari/<matkul>.json), dimuat saat kotak cari dibuka.
+// =====================================================================
+const CARI = { idx: {}, loads: {}, scope: null, q: '', timer: 0, results: [], terms: [] };
+const CARI_TAB = { l: 'materi', c: 'cheatsheet', s: 'simulator', f: 'flashcard', q: 'quiz' };
+const CARI_TAB_NAME = { l: 'Materi', c: 'Cheat Sheet', s: 'Simulator', f: 'Flashcard', q: 'Kuis' };
+const CARI_W = { l: 3, c: 3, s: 2, f: 1, q: 1 };
+// Huruf kecil, tanpa tanda aksen, tanda kutip disamakan: "Porta" = "porta", "é" = "e"
+const foldCh = ch => ch.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[‘’`´]/g, "'").replace(/[“”]/g, '"');
+const fold = s => foldCh(String(s));
+// Versi lipat + peta posisi ke teks asli, supaya bagian yang cocok bisa ditandai di teks aslinya
+function foldMap(text) { const chars = [], map = []; for (let i = 0; i < text.length; i++) for (const ch of foldCh(text[i])) { chars.push(ch); map.push(i); } return { f: chars.join(''), map }; }
+const cariCourses = () => LIB.filter(c => c.meetings.some(m => !m._imported));
+const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function loadSearchIndex(cid) {
+  if (CARI.idx[cid]) return Promise.resolve(CARI.idx[cid]);
+  if (!CARI.loads[cid]) CARI.loads[cid] = fetchText(assetUrl('data/cari/' + encodeURIComponent(cid) + '.json')).then(t => {
+    const ix = JSON.parse(t);
+    ix.h = ix.e.map(e => [fold(ix.t[`${e[0]}.${e[1]}.${e[2]}`] || ''), fold(e[3])]);
+    return (CARI.idx[cid] = ix);
+  }).catch(e => { delete CARI.loads[cid]; throw e; });
+  return CARI.loads[cid];
+}
+function cariTerms(q) { return fold(q).replace(/["']/g, ' ').split(/\s+/).filter(t => t.length >= 2 || /\d/.test(t)); }
+function searchIndex(ix, terms) {
+  const phrase = terms.join(' '), starts = terms.map(t => new RegExp('(^|[^a-z0-9_])' + escRe(t))), words = terms.map(t => new RegExp('(^|[^a-z0-9_])' + escRe(t) + '($|[^a-z0-9_])'));
+  const hits = [];
+  ix.h.forEach(([title, body], k) => {
+    if (!terms.every(t => body.includes(t) || title.includes(t))) return;
+    const e = ix.e[k], inBody = terms.filter(t => body.includes(t)).length;
+    let sc = CARI_W[e[1]] + inBody * 2;
+    if (terms.length > 1 && body.includes(phrase)) sc += 8;
+    // Kata utuh ("penghapus") lebih tinggi daripada kata turunan ("penghapusan")
+    terms.forEach((t, i) => { if (title.includes(t)) sc += 2; if (words[i].test(body)) sc += 6; else if (starts[i].test(body)) sc += 2; });
+    // Potongan sangat pendek (label tombol, satu kata) kurang berguna sebagai jawaban
+    sc -= e[3].length < 25 ? 3 : Math.min(2, e[3].length / 250);
+    hits.push({ e, sc, inBody });
+  });
+  hits.sort((a, b) => b.sc - a.sc || a.e[0] - b.e[0]);
+  // Paling banyak 3 potongan dari satu bagian (1 bila yang cocok hanya judulnya), supaya hasil tidak menumpuk
+  const per = {}, out = [];
+  hits.forEach(h => { const key = h.e[0] + '.' + h.e[1] + '.' + h.e[2], n = per[key] || 0; if (n >= (h.inBody ? 3 : 1)) return; per[key] = n + 1; out.push(h); });
+  return out;
+}
+function snippetHTML(text, terms, max = 230) {
+  const { f, map } = foldMap(text), rs = [];
+  terms.forEach(t => { let p = f.indexOf(t); while (p >= 0) { rs.push([map[p], map[p + t.length - 1] + 1]); p = f.indexOf(t, p + t.length); } });
+  rs.sort((a, b) => a[0] - b[0]);
+  const mr = []; rs.forEach(r => { const l = mr[mr.length - 1]; if (l && r[0] <= l[1]) l[1] = Math.max(l[1], r[1]); else mr.push(r.slice()); });
+  let start = 0, end = text.length;
+  if (text.length > max) {
+    const f0 = mr.length ? mr[0][0] : 0;
+    start = Math.max(0, Math.min(f0 - 70, text.length - max)); end = Math.min(text.length, start + max);
+    if (start > 0) { const sp = text.indexOf(' ', start); if (sp > 0 && sp < f0) start = sp + 1; }
+    if (end < text.length) { const sp = text.lastIndexOf(' ', end); if (sp > start + max / 2) end = sp; }
+  }
+  let out = '', pos = start;
+  mr.forEach(([a, b]) => { if (b <= pos || a >= end) return; a = Math.max(a, pos); b = Math.min(b, end); out += esc(text.slice(pos, a)) + '<mark class="cari-mark">' + esc(text.slice(a, b)) + '</mark>'; pos = b; });
+  return (start > 0 ? '… ' : '') + out + esc(text.slice(pos, end)) + (end < text.length ? ' …' : '');
+}
+function openSearch(cid) {
+  clearCariMarks();
+  const courses = cariCourses();
+  if (!courses.length) return;
+  const cur = cid || (S.course && S.course.id);
+  CARI.scope = courses.some(c => c.id === cur) ? cur : (CARI.scope || courses[0].id);
+  openModal(`<div class="space-y-3">
+    <div class="pr-9"><h3 class="font-display text-lg font-extrabold text-ink leading-tight">Cari cepat</h3>
+      <p class="text-xs text-slate-500 mt-0.5">Cari istilah atau kalimat modul di semua pertemuan sekaligus, lalu klik hasilnya untuk langsung ke bagiannya.</p></div>
+    <label class="relative block"><span class="sr-only">Kata yang dicari</span>${svg('search', 'w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none')}
+      <input id="cariQ" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="${esc(CARI.q)}" placeholder="mis. penghapus, porta, anomali penyisipan"
+        class="w-full h-12 pl-10 pr-3 rounded-xl border-2 border-slate-300 bg-white focus:border-ink focus:outline-none text-base"></label>
+    <div id="cariScope" class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1" role="radiogroup" aria-label="Cari di mata kuliah"></div>
+    <div id="cariOut" aria-live="polite"></div>
+  </div>`, 'max-w-2xl');
+  const inp = $('cariQ');
+  inp.addEventListener('input', () => { clearTimeout(CARI.timer); CARI.timer = setTimeout(runSearch, 150); });
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const first = document.querySelector('#cariOut [data-cari]'); if (first && CARI.results.length) first.focus(); } });
+  setTimeout(() => { inp.focus(); inp.select(); }, 30);
+  runSearch();
+}
+function setCariScope(id) { CARI.scope = id; runSearch(); const i = $('cariQ'); if (i) i.focus(); }
+function cariScopeHTML() {
+  const chip = (id, label, title) => `<button role="radio" aria-checked="${CARI.scope === id}" onclick="setCariScope('${esc(id)}')" title="${esc(title || label)}" class="shrink-0 max-w-[14rem] truncate px-3 py-1.5 rounded-lg text-xs font-bold border ${CARI.scope === id ? 'bg-ink text-white border-ink' : 'bg-white text-slate-700 border-slate-300 hover:border-ink'}">${esc(label)}</button>`;
+  const cs = cariCourses();
+  return cs.map(c => chip(c.id, c.singkat || c.nama.replace(/\s*\(.*\)$/, ''), c.nama)).join('') + (cs.length > 1 ? chip('*', 'Semua matkul') : '');
+}
+function runSearch() {
+  const out = $('cariOut'), q = ($('cariQ') || {}).value || '';
+  if (!out) return;
+  CARI.q = q;
+  $('cariScope').innerHTML = cariScopeHTML();
+  const ids = CARI.scope === '*' ? cariCourses().map(c => c.id) : [CARI.scope];
+  const terms = cariTerms(q);
+  CARI.results = []; CARI.terms = terms;
+  if (!terms.length) {
+    out.innerHTML = `<div class="p-4 rounded-xl bg-slate-50 border border-dashed border-slate-300 text-xs text-slate-600 leading-relaxed space-y-1.5">
+      <p><strong class="text-slate-800">Tips:</strong> ketik satu atau beberapa kata. Semua kata harus muncul, urutannya bebas.</p>
+      <p>Contoh: <button class="font-bold text-indigo-700 underline" onclick="cariContoh('penghapus')">penghapus</button> · <button class="font-bold text-indigo-700 underline" onclick="cariContoh('porta 8888')">porta 8888</button> · <button class="font-bold text-indigo-700 underline" onclick="cariContoh('anomali penyisipan')">anomali penyisipan</button> · <button class="font-bold text-indigo-700 underline" onclick="cariContoh('aturan keempat')">aturan keempat</button></p>
+      <p class="text-slate-500">Pintasan: tekan <kbd class="px-1 rounded border border-slate-300 bg-white">/</kbd> di mana saja untuk membuka kotak cari.</p></div>`;
+    return;
+  }
+  const need = ids.filter(id => !CARI.idx[id]);
+  if (need.length) {
+    out.innerHTML = `<p class="py-6 text-center text-sm text-slate-500 font-semibold">Menyiapkan indeks pencarian…</p>`;
+    Promise.all(need.map(loadSearchIndex)).then(runSearch).catch(() => { if ($('cariOut')) $('cariOut').innerHTML = `<p class="py-6 text-center text-sm font-bold text-rose-700">Indeks pencarian gagal dimuat. Periksa koneksi internet, lalu coba lagi.</p>`; });
+    return;
+  }
+  const all = [];
+  ids.forEach(id => searchIndex(CARI.idx[id], terms).forEach(h => all.push(Object.assign(h, { cid: id }))));
+  if (ids.length > 1) all.sort((a, b) => b.sc - a.sc);
+  const LIMIT = 60, list = all.slice(0, LIMIT);
+  CARI.results = list;
+  if (!list.length) { out.innerHTML = `<p class="py-6 text-center text-sm text-slate-500">Tidak ada yang cocok dengan <strong class="text-slate-800">${esc(q.trim())}</strong>. Coba kata lain atau kata dasarnya.</p>`; return; }
+  const meetings = new Set(list.map(h => h.cid + '/' + h.e[0]));
+  out.innerHTML = `<p class="text-[11px] font-bold text-slate-500 mb-2">${all.length > LIMIT ? `${LIMIT} hasil teratas dari ${all.length}` : `${all.length} hasil`} di ${meetings.size} pertemuan</p>
+    <div class="space-y-2">${list.map((h, i) => {
+      const ix = CARI.idx[h.cid], m = ix.m[h.e[0]], title = ix.t[`${h.e[0]}.${h.e[1]}.${h.e[2]}`] || '', c = findCourse(h.cid);
+      return `<button data-cari="${i}" onclick="cariGo(${i})" class="w-full text-left p-3 rounded-xl border border-slate-200 bg-white hover:border-ink hover:bg-[#fffbe0] focus:border-ink focus:outline-none transition">
+        <div class="flex items-center gap-1.5 text-[11px] font-bold min-w-0">
+          <span class="shrink-0 px-1.5 py-0.5 rounded bg-ink text-white">P${esc(m[1])}</span>
+          <span class="shrink-0 text-indigo-700">${CARI_TAB_NAME[h.e[1]]}</span>
+          ${ids.length > 1 && c ? `<span class="shrink-0 text-slate-400">· ${esc(c.singkat || c.nama.replace(/\s*\(.*\)$/, ''))}</span>` : ''}
+          ${title ? `<span class="truncate text-slate-500">· ${esc(title)}</span>` : ''}
+        </div>
+        <p class="mt-1 text-[13px] sm:text-sm text-slate-800 leading-relaxed">${snippetHTML(h.e[3], terms)}</p>
+      </button>`;
+    }).join('')}</div>`;
+}
+function cariContoh(q) { const i = $('cariQ'); if (!i) return; i.value = q; runSearch(); i.focus(); }
+function cariGo(i) {
+  const h = CARI.results[i]; if (!h) return;
+  const c = findCourse(h.cid), ix = CARI.idx[h.cid], mm = c && findMeeting(c, ix.m[h.e[0]][0]);
+  if (!mm) return;
+  const tab = CARI_TAB[h.e[1]];
+  S.jump = { tab, kind: h.e[1], i: h.e[2], terms: CARI.terms.slice(), text: h.e[3] };
+  closeModal();
+  if (h.e[1] === 'q') { S.quizFilter = 'all'; S.examReview = false; if (S.exam && S.meeting === mm) S.jump = null; }
+  if (h.e[1] === 'f') S.fcFilter = 'all';
+  go(routeFor(c, mm, tab));
+}
+// Setelah pindah halaman: gulir ke bagian yang dicari, lalu tandai kata yang cocok
+function jumpTo(j) {
+  let el = null;
+  if (j.kind === 'q') el = $('qz-' + j.i);
+  else if (j.kind === 'f') {
+    el = $('fc-' + j.i);
+    // Kalau kata yang dicari hanya ada di sisi jawaban, balik kartunya supaya jawabannya terlihat
+    const f = S.meeting && S.meeting.flashcards[j.i], fq = f ? fold((d => (d.innerHTML = rich(f.q || ''), d.textContent))(document.createElement('div'))) : '';
+    if (el && f && !j.terms.every(t => fq.includes(t))) el.classList.add('flipped');
+  }
+  else { const ids = S.blockIds && S.blockIds[j.tab], n = ids && ids[j.i]; el = n != null ? $('blk-' + n) : null; }
+  if (!el) return;
+  // Hasil yang dipilih bisa berada di bagian tersembunyi (jawaban "Lihat →" atau panel tab lain).
+  // Tentukan panelnya dari teks hasil itu sendiri, buka, baru tandai katanya.
+  const n = el.id && el.id.startsWith('blk-') ? el.id.slice(4) : null, b = n != null && BLOCKS[n];
+  if (b && j.text) {
+    // Teks hasil sudah polos; teks data dirender lewat rich() dulu supaya sama dengan yang tampil
+    const squash = x => fold(String(x)).replace(/[^\p{L}\p{N}]+/gu, '');
+    const shown = x => { const d = document.createElement('div'); d.innerHTML = rich(x); return d.textContent; };
+    // Kode program/keluaran ditampilkan apa adanya (esc), teks lain lewat rich()
+    const RAWK = new Set(['code', 'sql', 'cmd', 'res', 'preview', 'output', 'cpp', 'js', 'css']);
+    const flat = o => { const out = []; const w = (v, k) => { if (typeof v === 'string') out.push(RAWK.has(k) ? v : shown(v)); else if (v && typeof v === 'object') Object.entries(v).forEach(([kk, x]) => w(x, Array.isArray(v) ? k : kk)); }; w(o, ''); return out.join(' '); };
+    const key = squash(j.text).slice(0, 60), has = o => key && squash(flat(o)).includes(key);
+    // Teks pendek bisa muncul di beberapa panel: utamakan panel yang memuat teks itu secara utuh
+    const full = squash(j.text), strs = o => { const out = []; const w = (v, k) => { if (typeof v === 'string') out.push(squash(RAWK.has(k) ? v : shown(v))); else if (v && typeof v === 'object') Object.entries(v).forEach(([kk, x]) => w(x, Array.isArray(v) ? k : kk)); }; w(o, ''); return out; };
+    const pick = list => { const i = list.findIndex(o => strs(o).includes(full)); return i >= 0 ? i : list.findIndex(has); };
+    let changed = false;
+    // Blok yang hanya menampilkan satu bagian sekaligus: [daftar di data, kunci status, nilai status untuk bagian ke-i]
+    const ONES = { tabs: ['tabs', 'active'], choices: ['options', 'sel'], steps: ['items', 'open'], symbols: ['groups', 'tab'], cara: ['tabs', 'tab'],
+      terminal: ['scenarios', 'sel'], table: ['modes', 'mode'], say: ['items', 'last'], diagram: ['parts', 'sel', it => it.id], shot: ['parts', 'sel', it => it.id] };
+    // Buka bagian yang cocok, termasuk blok di dalam baris (row) dan di dalam tab yang terpilih
+    const open = k => {
+      const bk = BLOCKS[k]; if (!bk) return;
+      if (bk.def.type === 'reveal') (bk.def.items || []).forEach((it, i) => { if (!bk.state.open[i] && has(it)) { bk.state.open[i] = true; changed = true; } });
+      const ONE = ONES[bk.def.type];
+      if (ONE) {
+        const list = bk.def[ONE[0]] || [], i = pick(list);
+        if (i >= 0) { const v = ONE[2] ? ONE[2](list[i]) : i; if (bk.state[ONE[1]] !== v) { bk.state[ONE[1]] = v; changed = true; } }
+      }
+      // Tabel: penjelasan kolom (headers[].note) ditampilkan lewat state.note; memilih mode harus mengosongkannya
+      if (bk.def.type === 'table') {
+        const hi = (bk.def.headers || []).findIndex(h => h && h.note && has(h.note));
+        if (hi >= 0) { if (bk.state.note !== hi) { bk.state.note = hi; changed = true; } }
+        // Hasil ada di penjelasan mode atau di catatan bawaan: tutup catatan kolom yang sedang terbuka
+        else if (bk.state.note != null && ((bk.def.modes || []).some(has) || (bk.def.defaultNote && has(bk.def.defaultNote)))) { bk.state.note = null; changed = true; }
+      }
+      if (bk.def.type === 'row') (bk.state.kids || []).forEach(c => { if (BLOCKS[c] && has(BLOCKS[c].def)) open(c); });
+      if (bk.def.type === 'tabs') ((bk.state.kids || [])[bk.state.active] || []).forEach(c => { if (BLOCKS[c] && has(BLOCKS[c].def)) open(c); });
+    };
+    open(n);
+    if (changed) refreshBlock(n);
+  }
+  const hit = markTerms(el, j.terms);
+  (hit || el).scrollIntoView({ behavior: 'smooth', block: hit ? 'center' : 'start' });
+  el.classList.add('cari-flash'); setTimeout(() => el.classList.remove('cari-flash'), 2400);
+  // Sorotan hanya penunjuk sementara: pudar sendiri setelah beberapa detik
+  clearTimeout(CARI.markTimer);
+  if (hit) CARI.markTimer = setTimeout(() => clearCariMarks(true), 6000);
+}
+// Hapus sorotan hasil pencarian (fade = pudar dulu, lalu dilepas dari teks)
+function clearCariMarks(fade) {
+  clearTimeout(CARI.markTimer);
+  // Sorotan di daftar hasil (di dalam kotak Cari) bukan bagian halaman: jangan disentuh
+  const ms = [...document.querySelectorAll('.cari-mark')].filter(m => !m.closest('#modalRoot'));
+  const unwrap = () => ms.forEach(m => { const p = m.parentNode; if (!p) return; m.replaceWith(...m.childNodes); p.normalize(); });
+  if (!fade) return unwrap();
+  ms.forEach(m => m.classList.add('cari-fade'));
+  CARI.markTimer = setTimeout(unwrap, 700);
+}
+function markTerms(root, terms) {
+  if (!terms || !terms.length) return null;
+  const want = [terms.join(' ')].concat(terms.slice().sort((a, b) => b.length - a.length));
+  const nodes = [], w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let n; while ((n = w.nextNode())) { const p = n.parentElement; if (p && !p.closest('script,style,textarea,svg') && p.getClientRects().length) nodes.push(n); }
+  let first = null;
+  for (const t of want) {
+    nodes.forEach(node => {
+      if (!node.parentNode) return;
+      const { f, map } = foldMap(node.nodeValue), p = f.indexOf(t);
+      if (p < 0 || (node.parentElement && node.parentElement.classList.contains('cari-mark'))) return;
+      const a = map[p], b = map[p + t.length - 1] + 1, mid = node.splitText(a); mid.splitText(b - a);
+      const mk = document.createElement('mark'); mk.className = 'cari-mark'; mid.parentNode.replaceChild(mk, mid); mk.appendChild(mid);
+      if (!first) first = mk;
+    });
+    if (first) break;
+  }
+  return first;
+}
+document.addEventListener('keydown', e => {
+  if (APP.standalone || e.defaultPrevented || e.altKey) return;
+  const tgt = e.target, typing = tgt && (tgt.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(tgt.tagName));
+  if ((e.key === '/' && !typing && !e.ctrlKey && !e.metaKey) || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k')) { e.preventDefault(); openSearch(); }
+});
 
 // ---------- Pasang sebagai aplikasi (PWA) ----------
 let INSTALL_PROMPT = null;

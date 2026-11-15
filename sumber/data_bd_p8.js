@@ -70,6 +70,7 @@ module.exports = {
       rows: [["1 : 1", "2 tabel", "Salah satu (lazimnya tabel yang bergantung)"], ["1 : N", "2 tabel", "Di sisi banyak"], ["M : N", "3 tabel", "Di tabel penghubung (kedua FK + atribut relasi)"]] }
   ],
   simulator: [
+    require("./data_bd_kasus.js"),
     { type: "exercise", label: "Permainan Interaktif 1 • Ini Materi Pertemuan Berapa?", title: "Cocokkan Konsep dengan Pertemuannya", headers: ["Konsep", "Pertemuan"],
       rows: [["Belah ketupat untuk relasi", "P3"], ["ERROR 1452 a foreign key constraint fails", "P4"], ["Anomali penghapusan", "P5"], ["localhost:8888/phpMyAdmin", "P6"], ["DESCRIBE buku; menampilkan year(4)", "P7"], ["Sel berisi satu nilai, kolom sejenis", "P2"], ["Lemari = basis data, laci = tabel", "P1"], ["UPDATE tanpa WHERE", "P4"]]
         .map(([c, a]) => ({ cells: [c], fields: [{ options: ["P1", "P2", "P3", "P4", "P5", "P6", "P7"], answer: a }], ok: "✓" })) },

@@ -16,9 +16,9 @@ const jalur = diagram({
   ),
   parts: [
     { id: "browser", label: "Peramban", title: "Pengunjung loket", text: "Kamu mengetik alamat phpMyAdmin seperti membuka situs biasa." },
-    { id: "apache", label: "Apache", title: "Server web", text: "Menerima permintaan di porta Apache yang aktif, misalnya 8888 pada konfigurasi bawaan MAMP." },
+    { id: "apache", label: "Apache", title: "Server web", text: "Menerima permintaan dari peramban. Porta bawaannya 80 di Windows dan 8888 di macOS." },
     { id: "php", label: "PHP + phpMyAdmin", title: "Halaman pengelola", text: "phpMyAdmin adalah aplikasi web yang ditulis dengan PHP. Ia menerjemahkan klik dan formulir menjadi perintah SQL untuk MySQL." },
-    { id: "mysql", label: "MySQL", title: "Tempat data sebenarnya", text: "Menyimpan dan mengambilkan data. Porta MySQL bawaan MAMP adalah 8889. ➕ Banyak distribusi Linux/XAMPP memakai MariaDB, “saudara kembar” MySQL dengan perintah yang hampir sama; layar modul menunjukkan Jenis server: MariaDB." }
+    { id: "mysql", label: "MySQL", title: "Tempat data sebenarnya", text: "Menyimpan dan mengambilkan data. Porta MySQL bawaan MAMP: 3306 di Windows, 8889 di macOS. ➕ Banyak distribusi Linux/XAMPP memakai MariaDB, “saudara kembar” MySQL dengan perintah yang hampir sama; layar modul menunjukkan Jenis server: MariaDB." }
   ]
 });
 
@@ -51,7 +51,7 @@ const langkah = {
     { title: "Buat basis data perpustakaan lewat menu", how: "Klik menu <strong>Basis data</strong>, ketik <code>perpustakaan</code> di kolom <strong>Buat basis data</strong>, lalu klik <strong>Buat</strong>.", img: { src: IMG + "buat.webp", alt: "Tab Basis data phpMyAdmin dengan nama perpustakaan diketik di kolom Buat basis data" } },
     { title: "Pastikan muncul di kiri", how: "Setelah klik Buat, phpMyAdmin langsung membuka basis data baru itu.", ok: "<code>perpustakaan</code> ada di daftar kiri dan bagian atas bertuliskan <strong>Database: perpustakaan</strong>. Pesan “Tidak ada tabel” itu wajar karena tabelnya belum dibuat.", img: { src: IMG + "buat-hasil.webp", alt: "phpMyAdmin setelah membuat perpustakaan: nama muncul di daftar kiri" } },
     { title: "Jalankan SHOW DATABASES; di tab SQL", how: "Klik tab <strong>SQL</strong>, ketik perintah berikut, lalu klik <strong>Kirim</strong>.", code: "SHOW DATABASES;", ok: "muncul tabel hasil berisi <code>perpustakaan</code> bersama empat basis data sistem.", img: { src: IMG + "sql-hasil.webp", alt: "Hasil SHOW DATABASES di phpMyAdmin: information_schema, mysql, performance_schema, perpustakaan, sys" } },
-    { title: "Catat alamat, porta, dan nama pengguna", how: "Catat alamat (<code>localhost</code>), porta Apache dan MySQL (bawaan MAMP <code>8888</code> dan <code>8889</code>, cek di Preferences/Settings), serta nama pengguna (<code>root</code>, terlihat di bagian ⑤). Catatan ini dipakai lagi di pertemuan berikutnya." }
+    { title: "Catat alamat, porta, dan nama pengguna", how: "Catat alamat (<code>localhost</code>), porta Apache dan MySQL (bawaan modul: Windows <code>80</code>/<code>3306</code>, macOS <code>8888</code>/<code>8889</code>; cek di Preferences), serta nama pengguna (<code>root</code>, terlihat di bagian ⑤). Catatan ini dipakai lagi di pertemuan berikutnya." }
   ]
 };
 
@@ -61,10 +61,21 @@ module.exports = [
 <p>➕ <code>localhost</code> adalah nama khusus yang selalu berarti “komputer ini sendiri”, dengan alamat loopback seperti <code>127.0.0.1</code> atau <code>::1</code>.</p>`, "Bagian 1"),
   jalur,
   A("Alamat dan Porta", `<p>Nomor <strong>porta</strong> adalah nomor pintu masuk layanan. Satu komputer bisa menjalankan banyak layanan, masing-masing di porta berbeda, seperti satu gedung dengan banyak loket. Alamat HTTP tanpa porta memakai 80, sedangkan HTTPS memakai 443.</p>
-<p>Pada MAMP Windows dan macOS, konfigurasi bawaan memakai Apache <code>8888</code> dan MySQL <code>8889</code>. <code>80</code> dan <code>3306</code> adalah preset lain. Jalankan server, klik <strong>WebStart</strong>, lalu buka <strong>phpMyAdmin</strong> dari halaman tersebut. Periksa porta aktif di Preferences/Settings.</p>
+<p>Menurut modul (bagian 5.3), alamat dan porta bawaannya berbeda antara Windows dan macOS:</p>
+<ul><li><strong>Windows</strong>: <code>localhost/phpMyAdmin</code>, Apache <code>80</code>, MySQL <code>3306</code>.</li><li><strong>macOS</strong>: <code>localhost:8888/phpMyAdmin</code>, Apache <code>8888</code>, MySQL <code>8889</code>.</li></ul>
+<p>Windows tidak perlu menulis nomor porta karena alamat tanpa nomor otomatis menuju 80. macOS memakai 8888, jadi nomornya wajib ditulis. Porta dapat diubah lewat menu <strong>Preferences</strong> MAMP, jadi saat praktik cocokkan sekali dengan komputermu. Untuk soal, ikuti angka modul di atas.</p>
 <p>➕ Alternatif MAMP yang banyak dipakai di Windows: <strong>XAMPP</strong> atau <strong>Laragon</strong>. Isinya serupa (Apache, MySQL/MariaDB, PHP, phpMyAdmin). Dua layanan bentrok jika dijalankan bersamaan pada porta yang sama.</p>`, "Bagian 2"),
   layar,
   langkah,
+  A("Menghapus Basis Data lewat Menu Operasi", `<p>Mini-case modul meminta membuat <code>perpustakaan_latihan</code>, lalu <strong>menghapusnya lewat menu Operasi</strong>. Jadi kalau soal bertanya "lewat menu apa basis data latihan dihapus", jawabannya <strong>menu Operasi</strong>, bukan Ekspor, SQL, atau Struktur.</p>
+<ol><li>Klik nama basis data <code>perpustakaan_latihan</code> di daftar kiri. Bagian atas layar harus bertuliskan <strong>Database: perpustakaan_latihan</strong>.</li>
+<li>Klik tab <strong>Operasi</strong> di baris menu atas.</li>
+<li>Cari bagian <strong>Hapus basis data (DROP)</strong>, lalu klik tautan dengan tulisan yang sama.</li>
+<li>phpMyAdmin bertanya apakah benar ingin menjalankan <code>DROP DATABASE</code>. Klik <strong>OK</strong>.</li>
+<li>Pastikan namanya sudah hilang dari daftar kiri, dan basis data <code>perpustakaan</code> masih ada.</li></ol>
+<p><strong>Hasilnya sama dengan</strong> mengetik <code>DROP DATABASE perpustakaan_latihan;</code> di tab SQL. Basis data beserta semua tabel dan isinya <strong>benar-benar terhapus dari MySQL</strong> dan tidak bisa dibatalkan, walaupun perintahnya dikirim lewat phpMyAdmin.</p>
+<p><strong>Kesalahan yang sering terjadi:</strong> berada di basis data yang salah saat membuka Operasi (selalu cek tulisan <em>Database: …</em> di atas), atau menghapus salah satu dari empat basis data sistem (<code>information_schema</code>, <code>mysql</code>, <code>performance_schema</code>, <code>sys</code>). Menghapus <code>mysql</code> membuat DBMS tidak bisa berjalan.</p>
+<p><strong>Beda dengan menutup MAMP:</strong> menutup MAMP atau menekan Stop hanya menghentikan server, datanya tetap ada. Menghapus basis data menghilangkan datanya.</p>`, "Mini-case"),
   { type: "code", label: "Contoh Kode", title: "Perintah Pertemuan Ini", file: "p6.sql", code: `CREATE DATABASE perpustakaan;
 SHOW DATABASES;
 
