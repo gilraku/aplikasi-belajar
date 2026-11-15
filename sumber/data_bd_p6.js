@@ -16,8 +16,9 @@ module.exports = {
     ] },
     { type: "callout", tone: "warn", heading: "phpMyAdmin ≠ MySQL", html: "Basis data perpustakaan berada <strong>di dalam MySQL</strong>, bukan di phpMyAdmin. Menghapus phpMyAdmin tidak menghapus data. Sebaliknya, perintah hapus yang dikirim <strong>lewat</strong> phpMyAdmin benar-benar menghapus data di MySQL." },
     { type: "table", label: "Interaktif 2 • Alamat dan Porta", title: "Konfigurasi Porta MAMP", mono: true, headers: ["Konfigurasi", "Cara membuka", "Porta"],
-      rows: [["Bawaan Windows dan macOS", "WebStart → phpMyAdmin", "Apache 8888, MySQL 8889"], ["Preset opsional 80 & 3306", "WebStart → phpMyAdmin", "Apache 80, MySQL 3306"]],
-      modes: [{ label: "Kenapa :8888?", target: "row", row: 0, title: "Alamat HTTP memakai porta Apache", text: "HTTP tanpa nomor porta memakai 80. Untuk porta bawaan 8888, buka http://localhost:8888 atau gunakan tombol WebStart." },
+      rows: [["Windows", "localhost/phpMyAdmin", "Apache 80, MySQL 3306"], ["macOS", "localhost:8888/phpMyAdmin", "Apache 8888, MySQL 8889"]],
+      modes: [{ label: "Kenapa macOS pakai :8888?", target: "row", row: 1, title: "Porta Apache macOS bukan 80", text: "Alamat tanpa nomor porta selalu diartikan menuju porta 80. Windows memakai 80, jadi cukup <code>localhost/phpMyAdmin</code>. MAMP macOS memakai 8888, jadi nomornya harus ikut ditulis: <code>localhost:8888/phpMyAdmin</code>." },
+        { label: "Kalau di komputermu beda?", target: "none", title: "Jawaban soal ikut tabel modul", text: "Porta bisa diubah lewat menu Preferences MAMP, dan versi MAMP tertentu bisa memakai angka lain. Untuk praktik, pakai porta yang tertulis di komputermu. Untuk soal, ikuti tabel modul ini: Windows 80/3306, macOS 8888/8889." },
         { label: "Porta = nomor loket", target: "none", title: "Satu gedung, banyak loket", text: "Di MAMP, porta Apache melayani browser dan porta MySQL melayani koneksi basis data. Porta bisa diubah lewat Preferences MAMP; catat yang berlaku di komputermu." }] },
     { type: "table", label: "Interaktif 3 • Layar phpMyAdmin (Gambar 2 Modul)", title: "Lima Bagian Halaman Depan", headers: ["No", "Bagian", "Fungsi"],
       rows: [["1", "Logo phpMyAdmin", "Kembali ke halaman depan"], ["2", "Daftar basis data (kiri)", "Semua basis data di server, termasuk milik sistem"], ["3", "Baris menu", "Basis data, SQL, Status, Akun pengguna, Ekspor, Impor, …"], ["4", "Pengaturan umum", "Penyortiran (collation) dan bahasa tampilan"], ["5", "Keterangan server", "Jenis & versi DBMS, pengguna (root@localhost), kumpulan karakter"]],
@@ -30,7 +31,7 @@ module.exports = {
     { type: "table", label: "Interaktif 5 • Membaca Perintah", title: "CREATE DATABASE perpustakaan;", mono: true, headers: ["Bagian", "Arti"],
       rows: [["CREATE", "Membuat sesuatu yang baru"], ["DATABASE", "Yang dibuat basis data, bukan tabel"], ["perpustakaan", "Nama: huruf kecil, tanpa spasi"], [";", "Perintah selesai"]] },
     { type: "table", label: "Interaktif 6 • Kesalahan Umum", title: "Masalah di Pertemuan Pemasangan", headers: ["Masalah", "Perbaikan"],
-      rows: [["phpMyAdmin tidak dapat dijangkau", "Start Servers di MAMP; cocokkan alamat & porta"], ["Lampu MySQL tidak hijau", "Porta MySQL yang aktif dipakai program lain: ubah porta di Preferences atau tutup program itu"], ["ERROR 1007 Can't create database … database exists", "Pilih nama lain, gunakan basis data yang ada, atau gunakan IF NOT EXISTS"], ["Nama memakai spasi/huruf besar", "Huruf kecil + garis bawah: perpustakaan_latihan"], ["Perintah jalan di basis data yang salah", "Lihat judul di atas kotak SQL; klik dulu basis data yang dituju"], ["Basis data sistem ikut terhapus", "Jangan mencentang information_schema, mysql, performance_schema, sys"]] }
+      rows: [["phpMyAdmin tidak dapat dijangkau", "Start Servers di MAMP; cocokkan alamat & porta"], ["Lampu MySQL tidak hijau", "Porta MySQL yang aktif dipakai program lain: ubah porta di Preferences atau tutup program itu"], ["ERROR 1007 Can't create database … database exists", "Pilih nama lain, gunakan basis data yang ada, atau gunakan IF NOT EXISTS"], ["Nama memakai spasi/huruf besar", "Huruf kecil + garis bawah: perpustakaan_latihan"], ["Perintah jalan di basis data yang salah", "Lihat judul di atas kotak SQL; klik dulu basis data yang dituju"], ["Basis data sistem ikut terhapus", "Jangan mencentang information_schema, mysql, performance_schema, sys"], ["Menghapus basis data latihan (mini-case)", "Klik basis datanya → tab <strong>Operasi</strong> → Hapus basis data (DROP) → OK. Sama dengan DROP DATABASE; benar-benar terhapus"]] }
   ],
   simulator: [
     { type: "sql-lab", profile: "p6", label: "Lab Basis Data", title: "Siapkan Basis Data Perpustakaan",
@@ -63,7 +64,7 @@ module.exports = {
     { tag: "P6", q: "Apa itu server lokal?", a: "Layanan yang berjalan di komputer sendiri. Akses dari komputer yang sama memakai localhost." },
     { tag: "P6", q: "Kepanjangan MAMP?", a: "Macintosh, Apache, MySQL, PHP (tersedia juga untuk Windows), plus phpMyAdmin." },
     { tag: "P6", q: "Beda phpMyAdmin dan MySQL?", a: "MySQL = DBMS tempat data disimpan. phpMyAdmin = halaman pengelola untuk memberi perintah ke MySQL." },
-    { tag: "P6", q: "Bagaimana membuka phpMyAdmin pada MAMP?", a: "Buka WebStart → phpMyAdmin. Bawaan Windows dan macOS memakai Apache 8888 dan MySQL 8889. Cek pengaturan jika porta diubah." },
+    { tag: "P6", q: "Bagaimana membuka phpMyAdmin pada MAMP?", a: "Windows: <code>localhost/phpMyAdmin</code> (Apache 80, MySQL 3306). macOS: <code>localhost:8888/phpMyAdmin</code> (Apache 8888, MySQL 8889). Porta bisa diubah lewat Preferences." },
     { tag: "P6", q: "Apa itu porta?", a: "Nomor pintu masuk layanan. Tanpa nomor, HTTP memakai 80 dan HTTPS memakai 443." },
     { tag: "P6", q: "Empat basis data sistem?", a: "information_schema, mysql, performance_schema, sys. Jangan diubah/dihapus." },
     { tag: "P6", q: "Perintah membuat basis data?", a: "<code>CREATE DATABASE perpustakaan;</code> Cek dengan <code>SHOW DATABASES;</code>" },
@@ -76,7 +77,7 @@ module.exports = {
     { q: "Data basis data perpustakaan sebenarnya tersimpan di…", opts: ["phpMyAdmin", "MySQL", "Peramban", "Apache"], ans: 1, exp: "phpMyAdmin hanya loket." },
     { q: "Pernyataan yang benar tentang phpMyAdmin adalah…", opts: ["Menghapus phpMyAdmin menghapus semua data", "phpMyAdmin adalah DBMS", "Perintah hapus lewat phpMyAdmin benar-benar menghapus data di MySQL", "phpMyAdmin hanya bisa dipakai di macOS"], ans: 2, exp: "" },
     { q: "Cara yang dianjurkan untuk membuka phpMyAdmin di MAMP adalah…", opts: ["Buka porta MySQL di peramban", "Buka WebStart lalu pilih phpMyAdmin", "Buka file .sql", "Buka pengelola tugas"], ans: 1, exp: "WebStart memakai konfigurasi web server yang aktif." },
-    { q: "Porta bawaan MySQL pada MAMP Windows adalah…", opts: ["80", "8888", "3306", "8889"], ans: 3, exp: "MAMP memakai 8889 secara bawaan. 3306 tersedia pada preset 80 & 3306." },
+    { q: "Porta bawaan MySQL pada MAMP Windows menurut modul adalah…", opts: ["80", "8888", "3306", "8889"], ans: 2, exp: "Modul 5.3: Windows = Apache 80, MySQL 3306. macOS = Apache 8888, MySQL 8889." },
     { q: "Alamat HTTP tanpa nomor porta berarti menuju porta…", opts: ["80", "3306", "8080", "443"], ans: 0, exp: "Bawaan halaman web (http)." },
     { q: "Berikut basis data milik sistem, KECUALI…", opts: ["information_schema", "performance_schema", "sys", "perpustakaan"], ans: 3, exp: "" },
     { q: "Basis data mysql tidak boleh dihapus karena…", opts: ["Berisi data perpustakaan", "Berisi catatan sistem termasuk daftar pengguna dan hak akses", "Isinya kosong", "Milik phpMyAdmin"], ans: 1, exp: "DBMS tak bisa berjalan tanpanya." },
@@ -93,7 +94,7 @@ module.exports = {
 1️⃣ Server lokal = DBMS yang berjalan di komputer sendiri (localhost).
 2️⃣ MAMP: Apache (server web) • MySQL (DBMS, data disimpan di sini) • PHP (penyusun halaman) • phpMyAdmin (halaman pengelola).
 3️⃣ phpMyAdmin ≠ MySQL: hapus phpMyAdmin tidak menghapus data; hapus lewat phpMyAdmin = data hilang.
-4️⃣ MAMP Windows/macOS: Apache 8888, MySQL 8889 secara bawaan. Buka WebStart → phpMyAdmin.
+4️⃣ Porta bawaan menurut modul: Windows Apache 80 / MySQL 3306 (localhost/phpMyAdmin); macOS Apache 8888 / MySQL 8889 (localhost:8888/phpMyAdmin).
 5️⃣ Basis data sistem: information_schema, mysql, performance_schema, sys → jangan disentuh.
 6️⃣ CREATE DATABASE perpustakaan; • SHOW DATABASES; • ERROR 1007 = nama sudah ada.
 7️⃣ Nama: huruf kecil + garis bawah, tanpa spasi.`

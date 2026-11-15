@@ -63,7 +63,12 @@ CREATE TABLE nama_tabel (
         ["kode_prodi: teks 4 huruf panjang tetap, wajib diisi", "kode_prodi CHAR(4) NOT NULL", ["kode_prodi CHAR(4) NOT NULL", "kode_prodi VARCHAR(4)", "kode_prodi INT NOT NULL"]],
         ["nama_penerbit: teks sampai 60 huruf, wajib diisi", "nama_penerbit VARCHAR(60) NOT NULL", ["nama_penerbit CHAR(60)", "nama_penerbit VARCHAR(60) NOT NULL", "nama_penerbit TEXT(60) NULL"]],
         ["jumlah_halaman: bilangan bulat, boleh dikosongkan", "jumlah_halaman INT", ["jumlah_halaman INT NOT NULL", "jumlah_halaman INT", "jumlah_halaman VARCHAR(5)"]],
-        ["tanggal_masuk: tanggal lengkap, wajib diisi", "tanggal_masuk DATE NOT NULL", ["tanggal_masuk YEAR NOT NULL", "tanggal_masuk DATE NOT NULL", "tanggal_masuk VARCHAR(10) NOT NULL"]]
+        ["tanggal_masuk: tanggal lengkap, wajib diisi", "tanggal_masuk DATE NOT NULL", ["tanggal_masuk YEAR NOT NULL", "tanggal_masuk DATE NOT NULL", "tanggal_masuk VARCHAR(10) NOT NULL"]],
+        ["Bengkel • plat_nomor: teks sampai 12 huruf, wajib diisi", "plat_nomor VARCHAR(12) NOT NULL", ["plat_nomor INT NOT NULL", "plat_nomor VARCHAR(12) NOT NULL", "plat_nomor DATE"]],
+        ["Notaris • no_akta: selalu 10 karakter, wajib diisi", "no_akta CHAR(10) NOT NULL", ["no_akta CHAR(10) NOT NULL", "no_akta INT(10)", "no_akta YEAR NOT NULL"]],
+        ["Minimarket • stok_gudang: bilangan bulat, boleh minus saat koreksi", "stok_gudang INT", ["stok_gudang INT", "stok_gudang VARCHAR(5)", "stok_gudang DATE"]],
+        ["Klinik • no_hp pasien: diawali 0 atau +62, boleh kosong", "no_hp VARCHAR(15)", ["no_hp INT", "no_hp VARCHAR(15)", "no_hp YEAR"]],
+        ["Penerbit • tahun_terbit majalah: hanya tahun", "tahun_terbit YEAR", ["tahun_terbit DATE", "tahun_terbit YEAR", "tahun_terbit CHAR(2)"]]
       ].map(([c, a, o]) => ({ cells: [c], fields: [{ options: o, answer: a }], ok: "✓" })) },
     { type: "reveal", label: "Mini-Case & Cek Pemahaman", title: "Coba Dulu, Lalu Buka", items: [
       { prompt: "Mini-case rak: nomor rak 3 huruf unik, nama maks 30, lantai bilangan, daya tampung bilangan. Tulis CREATE TABLE-nya.", answer: "CREATE TABLE rak ( id_rak CHAR(3) NOT NULL, nama_rak VARCHAR(30) NOT NULL, lantai INT NOT NULL, daya_tampung INT NOT NULL, PRIMARY KEY (id_rak) );", reason: "Skema: rak(id_rak, nama_rak, lantai, daya_tampung). Jika dijalankan dua kali → ERROR 1050." },
