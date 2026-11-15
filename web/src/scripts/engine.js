@@ -1824,8 +1824,13 @@ function jumpTo(j) {
     const key = squash(j.text).slice(0, 60), has = o => key && squash(flat(o)).includes(key);
     let changed = false;
     if (b.def.type === 'reveal') (b.def.items || []).forEach((it, i) => { if (!b.state.open[i] && has(it)) { b.state.open[i] = true; changed = true; } });
-    if (b.def.type === 'tabs') { const ti = (b.def.tabs || []).findIndex(has); if (ti >= 0 && ti !== b.state.active) { b.state.active = ti; changed = true; } }
-    if (b.def.type === 'choices') { const oi = (b.def.options || []).findIndex(has); if (oi >= 0 && oi !== b.state.sel) { b.state.sel = oi; changed = true; } }
+    // Blok yang hanya menampilkan satu bagian sekaligus: [daftar di data, kunci status, nilai status untuk bagian ke-i]
+    const ONE = { tabs: ['tabs', 'active'], choices: ['options', 'sel'], steps: ['items', 'open'], symbols: ['groups', 'tab'], cara: ['tabs', 'tab'],
+      terminal: ['scenarios', 'sel'], table: ['modes', 'mode'], diagram: ['parts', 'sel', it => it.id], shot: ['parts', 'sel', it => it.id] }[b.def.type];
+    if (ONE) {
+      const list = b.def[ONE[0]] || [], i = list.findIndex(has);
+      if (i >= 0) { const v = ONE[2] ? ONE[2](list[i]) : i; if (b.state[ONE[1]] !== v) { b.state[ONE[1]] = v; changed = true; } }
+    }
     if (changed) refreshBlock(n);
   }
   const hit = markTerms(el, j.terms);
