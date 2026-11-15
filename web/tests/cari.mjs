@@ -129,6 +129,20 @@ try {
     if (!seen) fails.push(`cari "${q}" (${cid}) → "${items[i].slice(0, 60)}": tidak ada sorotan yang terlihat di layar`);
     total++;
   }
+  // Sorotan tidak menetap: hilang saat kotak Cari dibuka lagi, dan pudar sendiri beberapa detik setelah melompat
+  await page.evaluate(() => openSearch());
+  if (await page.$$eval('.cari-mark', ms => ms.filter(m => !m.closest('#modalRoot')).length)) fails.push('sorotan masih ada setelah kotak Cari dibuka lagi');
+  await page.evaluate(() => closeModal());
+  await page.goto(`${URL0}#/c/sif002-basis-data`);
+  await page.waitForFunction(() => !document.querySelector('#appMain .animate-spin'), null, { timeout: 15000 });
+  await page.evaluate(() => openSearch());
+  await page.fill('#cariQ', 'penghapus');
+  await page.waitForTimeout(600);
+  await page.click('[data-cari="0"]');
+  await page.waitForFunction(() => document.querySelector('.cari-mark'), null, { timeout: 5000 }).catch(() => {});
+  const gone = await page.waitForFunction(() => ![...document.querySelectorAll('.cari-mark')].some(m => !m.closest('#modalRoot')), null, { timeout: 9000 }).then(() => true, () => false);
+  if (!gone) fails.push('sorotan tidak hilang sendiri setelah beberapa detik');
+  total += 2;
 } finally {
   await browser.close();
   server.close();

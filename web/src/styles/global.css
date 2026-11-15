@@ -98,6 +98,7 @@
   ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
 
 /* Cari cepat: kata yang cocok ditandai stabilo kuning, bagian tujuan berkedip sebentar */
-.cari-mark { background: #ffe14d; color: inherit; border-radius: 3px; padding: 0 1px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.cari-mark { background: #ffe14d; color: inherit; border-radius: 3px; padding: 0 1px; transition: background-color .6s ease-out; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.cari-mark.cari-fade { background: transparent; }
 .cari-flash { animation: cari-flash 2.4s ease-out; }
 @keyframes cari-flash { 0%, 35% { box-shadow: 0 0 0 4px #ffe14d; } 100% { box-shadow: 0 0 0 4px transparent; } }

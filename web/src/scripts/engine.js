@@ -1733,6 +1733,7 @@ function snippetHTML(text, terms, max = 230) {
   return (start > 0 ? '… ' : '') + out + esc(text.slice(pos, end)) + (end < text.length ? ' …' : '');
 }
 function openSearch(cid) {
+  clearCariMarks();
   const courses = cariCourses();
   if (!courses.length) return;
   const cur = cid || (S.course && S.course.id);
@@ -1867,6 +1868,19 @@ function jumpTo(j) {
   const hit = markTerms(el, j.terms);
   (hit || el).scrollIntoView({ behavior: 'smooth', block: hit ? 'center' : 'start' });
   el.classList.add('cari-flash'); setTimeout(() => el.classList.remove('cari-flash'), 2400);
+  // Sorotan hanya penunjuk sementara: pudar sendiri setelah beberapa detik
+  clearTimeout(CARI.markTimer);
+  if (hit) CARI.markTimer = setTimeout(() => clearCariMarks(true), 6000);
+}
+// Hapus sorotan hasil pencarian (fade = pudar dulu, lalu dilepas dari teks)
+function clearCariMarks(fade) {
+  clearTimeout(CARI.markTimer);
+  // Sorotan di daftar hasil (di dalam kotak Cari) bukan bagian halaman: jangan disentuh
+  const ms = [...document.querySelectorAll('.cari-mark')].filter(m => !m.closest('#modalRoot'));
+  const unwrap = () => ms.forEach(m => { const p = m.parentNode; if (!p) return; m.replaceWith(...m.childNodes); p.normalize(); });
+  if (!fade) return unwrap();
+  ms.forEach(m => m.classList.add('cari-fade'));
+  CARI.markTimer = setTimeout(unwrap, 700);
 }
 function markTerms(root, terms) {
   if (!terms || !terms.length) return null;
