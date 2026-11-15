@@ -1828,14 +1828,22 @@ function jumpTo(j) {
     const squash = x => fold(String(x).replace(/<[^>]+>/g, ' ').replace(/&[#\w]+;/g, ' ')).replace(/[^a-z0-9]+/g, '');
     const key = squash(j.text).slice(0, 60), has = o => key && squash(flat(o)).includes(key);
     let changed = false;
-    if (b.def.type === 'reveal') (b.def.items || []).forEach((it, i) => { if (!b.state.open[i] && has(it)) { b.state.open[i] = true; changed = true; } });
     // Blok yang hanya menampilkan satu bagian sekaligus: [daftar di data, kunci status, nilai status untuk bagian ke-i]
-    const ONE = { tabs: ['tabs', 'active'], choices: ['options', 'sel'], steps: ['items', 'open'], symbols: ['groups', 'tab'], cara: ['tabs', 'tab'],
-      terminal: ['scenarios', 'sel'], table: ['modes', 'mode'], diagram: ['parts', 'sel', it => it.id], shot: ['parts', 'sel', it => it.id] }[b.def.type];
-    if (ONE) {
-      const list = b.def[ONE[0]] || [], i = list.findIndex(has);
-      if (i >= 0) { const v = ONE[2] ? ONE[2](list[i]) : i; if (b.state[ONE[1]] !== v) { b.state[ONE[1]] = v; changed = true; } }
-    }
+    const ONES = { tabs: ['tabs', 'active'], choices: ['options', 'sel'], steps: ['items', 'open'], symbols: ['groups', 'tab'], cara: ['tabs', 'tab'],
+      terminal: ['scenarios', 'sel'], table: ['modes', 'mode'], diagram: ['parts', 'sel', it => it.id], shot: ['parts', 'sel', it => it.id] };
+    // Buka bagian yang cocok, termasuk blok di dalam baris (row) dan di dalam tab yang terpilih
+    const open = k => {
+      const bk = BLOCKS[k]; if (!bk) return;
+      if (bk.def.type === 'reveal') (bk.def.items || []).forEach((it, i) => { if (!bk.state.open[i] && has(it)) { bk.state.open[i] = true; changed = true; } });
+      const ONE = ONES[bk.def.type];
+      if (ONE) {
+        const list = bk.def[ONE[0]] || [], i = list.findIndex(has);
+        if (i >= 0) { const v = ONE[2] ? ONE[2](list[i]) : i; if (bk.state[ONE[1]] !== v) { bk.state[ONE[1]] = v; changed = true; } }
+      }
+      if (bk.def.type === 'row') (bk.state.kids || []).forEach(c => { if (BLOCKS[c] && has(BLOCKS[c].def)) open(c); });
+      if (bk.def.type === 'tabs') ((bk.state.kids || [])[bk.state.active] || []).forEach(c => { if (BLOCKS[c] && has(BLOCKS[c].def)) open(c); });
+    };
+    open(n);
     if (changed) refreshBlock(n);
   }
   const hit = markTerms(el, j.terms);

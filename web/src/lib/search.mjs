@@ -5,7 +5,7 @@ import { library } from './library.mjs';
 
 const arr = x => (Array.isArray(x) ? x : []);
 // Kunci yang isinya bukan teks bacaan (gambar, warna, kode SVG, data awal lab, dsb.)
-const SKIP = new Set(['type', 'tone', 'svg', 'src', 'w', 'h', 'minw', 'id', 'target', 'row', 'col', 'style', 'icon', 'profile', 'seed', 'setup', 'url', 'img', 'alt', 'pill', 'ok', 'starter', 'solution', 'solusi', 'html_starter', 'behavior', 'check', 'tests', 'mode', 'grid', 'answerKey', 'ans']);
+const SKIP = new Set(['type', 'tone', 'svg', 'src', 'w', 'h', 'minw', 'id', 'target', 'row', 'col', 'style', 'icon', 'profile', 'seed', 'setup', 'url', 'img', 'alt', 'pill', 'starter', 'solution', 'solusi', 'html_starter', 'behavior', 'check', 'tests', 'mode', 'grid', 'answerKey', 'ans']);
 const ENT = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', '#39': "'" };
 const plain = s => String(s)
   .replace(/<(script|style|svg)[\s\S]*?<\/\1>/gi, ' ')
