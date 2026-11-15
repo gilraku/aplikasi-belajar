@@ -15,6 +15,16 @@ const plain = s => String(s)
   .replace(/\s+/g, ' ')
   .trim();
 const MAX = 320;
+// Kode program/SQL/keluaran terminal ditampilkan apa adanya (bukan HTML): jangan buang teks di antara < dan >
+const RAW = new Set(['code', 'sql', 'cmd', 'res', 'preview', 'output', 'cpp', 'js', 'css']);
+function rawPieces(s) {
+  const out = []; let cur = '';
+  String(s).split(/\n/).map(l => l.replace(/\s+/g, ' ').trim()).filter(Boolean).forEach(l => {
+    if (cur && (cur + ' ' + l).length > MAX) { out.push(cur); cur = l; } else cur = cur ? cur + ' ' + l : l;
+  });
+  if (cur) out.push(cur);
+  return out;
+}
 // Teks panjang (artikel materi) dipecah per paragraf/butir, lalu per kalimat bila masih kepanjangan
 function pieces(s) {
   const out = [];
@@ -31,7 +41,7 @@ function blockTexts(def) {
   const out = [];
   const walk = (v, key) => {
     if (v == null || SKIP.has(key)) return;
-    if (typeof v === 'string') { pieces(v).forEach(p => out.push(p)); return; }
+    if (typeof v === 'string') { (RAW.has(key) ? rawPieces(v) : pieces(v)).forEach(p => out.push(p)); return; }
     if (typeof v === 'number' || typeof v === 'boolean') return;
     if (Array.isArray(v)) {
       if (v.length && v.every(x => typeof x === 'string' || typeof x === 'number')) { const p = plain(v.join(' · ')); if (p) out.push(...(p.length > MAX * 2 ? v.flatMap(x => pieces(String(x))) : [p])); return; }

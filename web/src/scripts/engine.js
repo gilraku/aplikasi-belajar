@@ -1812,7 +1812,12 @@ function cariGo(i) {
 function jumpTo(j) {
   let el = null;
   if (j.kind === 'q') el = $('qz-' + j.i);
-  else if (j.kind === 'f') el = $('fc-' + j.i);
+  else if (j.kind === 'f') {
+    el = $('fc-' + j.i);
+    // Kalau kata yang dicari hanya ada di sisi jawaban, balik kartunya supaya jawabannya terlihat
+    const f = S.meeting && S.meeting.flashcards[j.i], fq = f ? fold(String(f.q || '').replace(/<[^>]+>/g, ' ')) : '';
+    if (el && f && !j.terms.every(t => fq.includes(t))) el.classList.add('flipped');
+  }
   else { const ids = S.blockIds && S.blockIds[j.tab], n = ids && ids[j.i]; el = n != null ? $('blk-' + n) : null; }
   if (!el) return;
   // Hasil yang dipilih bisa berada di bagian tersembunyi (jawaban "Lihat →" atau panel tab lain).
