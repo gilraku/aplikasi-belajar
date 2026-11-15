@@ -40,7 +40,10 @@ function pieces(s) {
 function blockTexts(def) {
   const out = [];
   const walk = (v, key) => {
-    if (v == null || SKIP.has(key)) return;
+    if (v == null) return;
+    // id biasanya pengenal internal (tanpa spasi), tapi blok say memakai id untuk terjemahan yang tampil: indeks bila berupa kalimat
+    if (key === 'id' && typeof v === 'string' && /\s/.test(v.trim())) { pieces(v).forEach(p => out.push(p)); return; }
+    if (SKIP.has(key)) return;
     if (typeof v === 'string') { (RAW.has(key) ? rawPieces(v) : pieces(v)).forEach(p => out.push(p)); return; }
     if (typeof v === 'number' || typeof v === 'boolean') return;
     if (Array.isArray(v)) {
