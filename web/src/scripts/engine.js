@@ -1815,16 +1815,20 @@ function jumpTo(j) {
   else if (j.kind === 'f') el = $('fc-' + j.i);
   else { const ids = S.blockIds && S.blockIds[j.tab], n = ids && ids[j.i]; el = n != null ? $('blk-' + n) : null; }
   if (!el) return;
-  let hit = markTerms(el, j.terms);
-  // Teks yang dicari bisa tersembunyi (jawaban "Lihat →" atau tab lain di dalam bagian): buka dulu, lalu tandai
+  // Hasil yang dipilih bisa berada di bagian tersembunyi (jawaban "Lihat →" atau panel tab lain).
+  // Tentukan panelnya dari teks hasil itu sendiri, buka, baru tandai katanya.
   const n = el.id && el.id.startsWith('blk-') ? el.id.slice(4) : null, b = n != null && BLOCKS[n];
-  if (!hit && b && j.terms.length) {
-    const has = o => { const f = fold(JSON.stringify(o || '').replace(/<[^>]+>/g, ' ')); return j.terms.every(t => f.includes(t)); };
+  if (b && j.text) {
+    const flat = o => { const out = []; const w = v => { if (typeof v === 'string') out.push(v); else if (v && typeof v === 'object') Object.values(v).forEach(w); }; w(o); return out.join(' '); };
+    const squash = x => fold(String(x).replace(/<[^>]+>/g, ' ').replace(/&[#\w]+;/g, ' ')).replace(/[^a-z0-9]+/g, '');
+    const key = squash(j.text).slice(0, 60), has = o => key && squash(flat(o)).includes(key);
     let changed = false;
-    if (b.def.type === 'reveal') (b.def.items || []).forEach((it, i) => { if (has(it)) { b.state.open[i] = true; changed = true; } });
+    if (b.def.type === 'reveal') (b.def.items || []).forEach((it, i) => { if (!b.state.open[i] && has(it)) { b.state.open[i] = true; changed = true; } });
     if (b.def.type === 'tabs') { const ti = (b.def.tabs || []).findIndex(has); if (ti >= 0 && ti !== b.state.active) { b.state.active = ti; changed = true; } }
-    if (changed) { refreshBlock(n); hit = markTerms(el, j.terms); }
+    if (b.def.type === 'choices') { const oi = (b.def.options || []).findIndex(has); if (oi >= 0 && oi !== b.state.sel) { b.state.sel = oi; changed = true; } }
+    if (changed) refreshBlock(n);
   }
+  const hit = markTerms(el, j.terms);
   (hit || el).scrollIntoView({ behavior: 'smooth', block: hit ? 'center' : 'start' });
   el.classList.add('cari-flash'); setTimeout(() => el.classList.remove('cari-flash'), 2400);
 }

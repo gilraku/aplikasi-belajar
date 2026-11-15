@@ -41,7 +41,8 @@ function blockTexts(def) {
     if (typeof v === 'object') {
       // Pilihan jawaban latihan: cukup jawaban benarnya
       if (Array.isArray(v.options) && 'answer' in v) { walk(v.answer, 'answer'); return; }
-      Object.entries(v).forEach(([k, x]) => { if (k !== 'options') walk(x, k); });
+      // Selain pilihan jawaban latihan (sudah ditangani di atas), options berisi penjelasan (mis. blok choices): ikut diindeks
+      Object.entries(v).forEach(([k, x]) => walk(x, k));
     }
   };
   walk(def, '');
