@@ -23,7 +23,9 @@ const lib=[BD, {
   meetings: [[1,3],[2,6],[3,9],[4,2],[5,5],[6,8],[7,1],[8,4]].map(([n,sd])=>spread(require('./data_bing_p'+n+'.js'),sd))
 }];
 // 📖 Materi lengkap per pertemuan
-const MAT={'dasar-sistem-informasi':require('./materi_dsi.js'),'bahasa-indonesia':require('./materi_bindo.js'),'aik':{...require('./materi_aik.js'),...require('./materi_aik_uas.js')},'pemrograman-web-dinamis':require('./materi_pwd.js'),'sif002-basis-data':require('./materi_bd.js'),'algoritma-pemrograman':require('./materi_alp.js'),'bahasa-inggris':require('./materi_bing.js')};
+const MAT={'dasar-sistem-informasi':require('./materi_dsi.js'),'bahasa-indonesia':require('./materi_bindo.js'),'aik':require('./materi_aik.js'),'pemrograman-web-dinamis':require('./materi_pwd.js'),'sif002-basis-data':require('./materi_bd.js'),'algoritma-pemrograman':require('./materi_alp.js'),'bahasa-inggris':require('./materi_bing.js')};
+// AIK P9–P14 (menuju UAS) ada di berkas materi terpisah
+MAT.aik=Object.assign({},MAT.aik,require('./materi_aik_uas.js'));
 Object.entries(MAT).forEach(([cid,mm])=>{const c=lib.find(x=>x.id===cid);Object.entries(mm).forEach(([mid,blocks])=>{const m=c.meetings.find(x=>x.id===mid);if(!m)throw new Error('materi '+cid+'/'+mid);m.materi=blocks;});});
 // ➕ Materi tambahan di luar modul
 const T=require('./tambahan.js');
