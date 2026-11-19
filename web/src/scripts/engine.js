@@ -945,6 +945,8 @@ ${cpp ? `<p class="text-xs text-slate-500">💡 C++ tidak bisa dijalankan di apl
   'trace-lab': TRACE_LAB,
   adegan: ADEGAN_BLOCK,
   penelusur: PENELUSUR_BLOCK,
+  bertahap: BERTAHAP_BLOCK,
+  'kode-jelas': KODE_JELAS_BLOCK,
   ...LABS,
 
   terminal: {

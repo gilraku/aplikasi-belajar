@@ -1,6 +1,7 @@
 // 📖 Materi Lengkap PWD P9–P13 (menuju UAS). Sumber: Modul JS 9, Modul PHP 10–13.
 // Bagian bertanda ➕ bukan dari modul. Setiap istilah dijelaskan: artinya, kapan dipakai, contoh, kesalahan umum.
 const ADG = require("./adegan_it.js");
+const BT = require("./bertahap_it.js");
 const A = (title, html, label) => ({ type: "article", label, title, html });
 const tip = (heading, html, tone) => ({ type: "callout", tone: tone || "tip", heading, html });
 const e = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -309,6 +310,7 @@ if (empty($nama)) {
 // "ahmad@kampus"       → false
 // "ahmad kampus@x.id"  → false
 ?>`, "Contoh dari modul. Tanda ! membalik hasil: !false = true, sehingga pesan error tampil."),
+  BT.pwdFormJelas,
   A("2d. Simpan ke File Teks dengan file_put_contents()", `<p>Sebelum memakai database, modul berlatih menyimpan data ke file teks. ${c('file_put_contents("data.txt", $data, FILE_APPEND)')} menulis isi ${c("$data")} ke ${c("data.txt")} (dibuat otomatis kalau belum ada, di folder yang sama dengan file PHP).</p>
 <p>${c("FILE_APPEND")} artinya <strong>tambahkan di akhir</strong>. Tanpa itu, isi file lama <strong>ditimpa</strong> dan hanya data terakhir yang tersisa. Akhiri setiap data dengan ${c('"\\n"')} (baris baru) agar satu data = satu baris. Ini yang dimaksud modul dengan "format yang terstruktur".</p>
 <p>Kapan cukup memakai file teks: latihan, log sederhana. Untuk data yang perlu dicari, diubah, dan dihapus (CRUD), file teks merepotkan; itulah alasan beralih ke MySQL di P12.</p>`),
@@ -587,6 +589,7 @@ ${ul(["<strong>Create</strong>: menambah data baru, misalnya mendaftarkan mahasi
     ["Delete", "`DELETE FROM … WHERE id = …`", "Link Hapus + confirm() (GET)", "true / false"]
   ]),
 
+  BT.pwdAlurTambah,
   ADG.pwdCrud,
   A("Query Dasar MySQL", `<p>Contoh di bawah memakai tabel ${c("mahasiswa")} dari P12. Teks ditulis di antara kutip tunggal (${c("'Ahmad'")}); angka seperti id tidak perlu kutip.</p>`, "Bagian 2"),
   A("2a. SELECT (Read)", `<p>${c("SELECT kolom FROM tabel WHERE syarat;")} mengambil data. ${c("*")} berarti semua kolom. ${c("WHERE")} menyaring baris; tanpa WHERE semua baris diambil.</p>
@@ -646,6 +649,7 @@ $stmt = mysqli_prepare($conn, "INSERT INTO mahasiswa (nim, nama, jurusan, email)
 mysqli_stmt_bind_param($stmt, "ssss", $nim, $nama, $jurusan, $email);
 mysqli_stmt_execute($stmt);
 ?>`, "Dengan prepared statement, nilai disimpan apa adanya (Jum'at tetap Jum'at). htmlspecialchars dipakai saat MENAMPILKAN data ke HTML, bukan saat menyimpan."),
+  BT.pwdInsertJelas,
   code("crud-mahasiswa.php", CRUD_RAPI, "Versi lengkap tugas: PHP pemroses di atas form, form edit terisi, semua query memakai prepared statement, data ditampilkan dengan htmlspecialchars. config.php sama dengan P12. Kode ini lolos pemeriksaan sintaks PHP 8.3.", "➕ Versi rapi tugas CRUD (Create, Read, Update, Delete)"),
   salah([
     `Menaruh ${c("include 'config.php'")} di bawah kode yang sudah memakai ${c("$conn")} → Undefined variable $conn.`,

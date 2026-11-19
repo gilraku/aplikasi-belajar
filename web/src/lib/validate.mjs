@@ -9,7 +9,7 @@ const IMG = /^materi\/[a-z0-9/_-]+\.(webp|png|jpg)$/;
 const imgOk = src => IMG.test(String(src)) && fs.existsSync(path.resolve(process.cwd(), 'public', String(src)));
 
 // Jenis blok yang dikenali mesin (objek R di src/scripts/engine.js)
-export const BLOCK_TYPES = ['text', 'article', 'ayat', 'code', 'playground', 'callout', 'cards', 'list', 'flow', 'row', 'tabs', 'choices', 'table', 'diagram', 'steps', 'shot', 'symbols', 'cara', 'reveal', 'say', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'lab-5k', 'lab-imbuhan', 'lab-kalimat', 'lab-kalimat-en', 'lab-jam', 'lab-rute', 'lab-bedah', 'adegan', 'penelusur', 'exercise'];
+export const BLOCK_TYPES = ['text', 'article', 'ayat', 'code', 'playground', 'callout', 'cards', 'list', 'flow', 'row', 'tabs', 'choices', 'table', 'diagram', 'steps', 'shot', 'symbols', 'cara', 'reveal', 'say', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'lab-5k', 'lab-imbuhan', 'lab-kalimat', 'lab-kalimat-en', 'lab-jam', 'lab-rute', 'lab-bedah', 'adegan', 'penelusur', 'bertahap', 'kode-jelas', 'exercise'];
 
 const str = z.string().trim().min(1, 'tidak boleh kosong');
 const optValue = o => (o && typeof o === 'object' ? o.value : o);
@@ -74,6 +74,30 @@ const Block = z.lazy(() => z.looseObject({
   if (b.type === 'penelusur') {
     if (!Array.isArray(b.nodes) || b.nodes.length !== 2) ctx.addIssue({ code: 'custom', path: ['nodes'], message: 'penelusur butuh tepat 2 simpul di nodes[]' });
     if (!Array.isArray(b.steps) || !b.steps.length || b.steps.some(x => !x || typeof x.say !== 'string')) ctx.addIssue({ code: 'custom', path: ['steps'], message: 'penelusur butuh minimal 1 langkah, masing-masing dengan say' });
+  }
+  if (b.type === 'bertahap') {
+    if (typeof b.svg !== 'string' || !b.svg.includes('<svg')) ctx.addIssue({ code: 'custom', path: ['svg'], message: 'bertahap butuh svg berupa teks <svg>' });
+    if (!Array.isArray(b.steps) || b.steps.length < 2 || b.steps.length > 7 || b.steps.some(x => !x || typeof x.t !== 'string' || typeof x.html !== 'string'))
+      ctx.addIssue({ code: 'custom', path: ['steps'], message: 'bertahap butuh 2–7 langkah { t, html }' });
+    else if (typeof b.svg === 'string') b.steps.forEach((x, i) => { if (!new RegExp('data-s="[^"]*\\b' + (i + 1) + '\\b').test(b.svg)) ctx.addIssue({ code: 'custom', path: ['steps', i], message: `langkah ${i + 1} tidak menyalakan bagian SVG mana pun (data-s)` }); });
+  }
+  if (b.type === 'kode-jelas') {
+    const kode = b.kode;
+    if (!Array.isArray(kode) || !kode.length || kode.some(x => typeof x !== 'string')) ctx.addIssue({ code: 'custom', path: ['kode'], message: 'kode-jelas butuh kode[] berupa baris teks' });
+    else {
+      if (!Array.isArray(b.catatan) || !b.catatan.length) ctx.addIssue({ code: 'custom', path: ['catatan'], message: 'kode-jelas butuh minimal 1 catatan' });
+      else {
+        const seen = new Set();
+        b.catatan.forEach((x, i) => {
+          if (!x || typeof x.judul !== 'string' || typeof x.arti !== 'string' || !Array.isArray(x.at) || !x.at.length || x.at.some(l => !Number.isInteger(l) || l < 0 || l >= kode.length || seen.has(l)))
+            ctx.addIssue({ code: 'custom', path: ['catatan', i], message: 'catatan butuh { at: [indeks baris yang ada, tidak dipakai catatan lain], judul, arti }' });
+          (x && Array.isArray(x.at) ? x.at : []).forEach(l => seen.add(l));
+        });
+      }
+      if (b.urut !== undefined && (!Array.isArray(b.urut) || b.urut.length !== kode.length || !Array.isArray(b.urutan)))
+        ctx.addIssue({ code: 'custom', path: ['urut'], message: 'urut harus sepanjang kode[] dan butuh urutan[] (nama tiap langkah)' });
+    }
+    if (!b.inti || typeof b.inti !== 'object') ctx.addIssue({ code: 'custom', path: ['inti'], message: 'kode-jelas butuh inti { judul, html } (tampil sebelum ada baris yang diklik)' });
   }
   if (b.type === 'lab-bedah') {
     if (!Array.isArray(b.items) || !b.items.length) ctx.addIssue({ code: 'custom', path: ['items'], message: 'lab-bedah butuh minimal 1 kalimat di items[]' });
