@@ -96,6 +96,7 @@ int main() {
     }
     return 0;
 }`, "Kode slide. Perhatikan <code>inner++</code> di dalam cout: postfix dari P3, jadi nilai lama dicetak dulu. Keluarannya adalah <strong>pola pertama</strong> pada Tugas Nested, tetapi tugas meminta <strong>batas dari pengguna</strong> serta memakai while <strong>dan</strong> for.", "Contoh Slide: Segitiga Angka"),
+  ADG.alpNested,
   { type: "code", label: "Tugas Nested", title: "Tiga Pola yang Diminta (Contoh Batas 10)", file: "keluaran.txt", code: `Pola 1                 Pola 2 (Input tinggi segitiga: 10)     Pola 3
 1                      1                                      1 2 3 4 5 6 7 8 9 10
 1 2                    2 3                                    1 2 3 4 5 6 7 8 9

@@ -1,5 +1,6 @@
 // Materi Lengkap Basis Data P4: Dari ERD ke Tabel + SQL DML
 const { C, box, arrow, path, svg, text, diagram } = require("./svg.js");
+const ADG = require("./adegan_it.js");
 const A = (title, html, label) => ({ type: "article", label, title, html });
 const tip = (heading, html, tone) => ({ type: "callout", tone: tone || "tip", heading, html });
 const rv = (label, title, items) => ({ type: "reveal", label, title, items });
@@ -151,6 +152,7 @@ SELECT * FROM mahasiswa WHERE nama LIKE '%a';    -- diakhiri huruf a
 SELECT * FROM peminjaman WHERE tgl_kembali IS NULL;  -- bukan = NULL!
 SELECT DISTINCT jurusan FROM mahasiswa;
 SELECT nama, ipk FROM mahasiswa ORDER BY ipk DESC LIMIT 3;`, note: "➕ Untuk NULL wajib IS NULL / IS NOT NULL; tulisan <code>= NULL</code> tidak pernah bernilai benar. ➕ LIKE: % = nol atau lebih karakter, _ = tepat satu karakter." },
+  ADG.bdWhere,
   ex("Latihan Interaktif", "Operator WHERE yang Tepat", ["Kebutuhan", "Operator"], ["BETWEEN", "IN", "LIKE", "IS NULL"], [
     ["IPK dari 3.00 sampai 3.50", "BETWEEN"], ["Jurusan SI atau TI", "IN"], ["Nama diawali huruf C", "LIKE"], ["Buku yang belum dikembalikan", "IS NULL"]
   ]),
