@@ -1,4 +1,5 @@
 // Materi Lengkap Basis Data P5: Normalisasi Data
+const ADG = require("./adegan_it.js");
 const { C, box, arrow, path, svg, text, diagram } = require("./svg.js");
 const A = (title, html, label) => ({ type: "article", label, title, html });
 const tip = (heading, html, tone) => ({ type: "callout", tone: tone || "tip", heading, html });
@@ -147,6 +148,7 @@ module.exports = [
 <p>Nama teknisnya: kolom yang hanya bergantung pada sebagian kunci disebut <strong>ketergantungan parsial</strong> (dibuang di 2NF), dan kolom yang bergantung lewat kolom perantara disebut <strong>ketergantungan transitif</strong> (dibuang di 3NF). Di atas 3NF masih ada BCNF dan 4NF, tetapi tidak dibahas di modul.</p>`, "Bagian 3"),
   parsialTransitif,
   tahap,
+  ADG.bdNormal,
   { type: "table", label: "Tabel Interaktif", title: "Praktik Terpandu Modul: Tabel yang Belum Normal", mono: true, headers: ["id_pinjam", "id_buku", "judul", "id_anggota", "nama_anggota", "tgl_pinjam"],
     rows: [["PJ0011", "BK003, BK005", "Jaringan Kom., Statistika", "AG002", "Nur Aisyah", "2026-11-02"], ["PJ0012", "BK003", "Jaringan Komputer Dasar", "AG004", "Dimas Prayoga", "2026-11-03"], ["PJ0013", "BK005", "Statistika untuk Inform.", "AG002", "Nur Aisyah", "2026-11-05"]],
     modes: [{ label: "1. Sel ganda", target: "cell", row: 0, col: 1, title: "Melanggar 1NF", text: "Pecah menjadi dua baris (BK003 dan BK005)." },

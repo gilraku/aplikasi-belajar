@@ -1,4 +1,5 @@
 // Materi Lengkap Algoritma & Pemrograman P7
+const ADG = require("./adegan_it.js");
 const { C, box, arrow, path, poly, svg, text, diagram } = require("./svg.js");
 const A = (title, html, label) => ({ type: "article", label, title, html });
 const tip = (heading, html, tone) => ({ type: "callout", tone: tone || "tip", heading, html });
@@ -54,6 +55,7 @@ int main() {
     modes: [{ label: "Tahap 4", target: "col", col: 3, title: "Akhir blok kembali ke tahap 2", text: "Setiap kali badan selesai, eksekusi kembali ke pengecekan kondisi." }] },
   A("do-while", `<p><strong>do-while</strong> menjalankan badan <strong>dulu</strong>, lalu memeriksa kondisi di akhir. Selama kondisi true, perulangan diulang. Akibatnya badan <strong>pasti dikerjakan minimal satu kali</strong>, sedangkan pada while badan mungkin tidak pernah dijalankan.</p>`, "Bagian 2"),
   two,
+  ADG.alpDoWhile,
   code("menu_ulang.cpp", `char lagi;
 do {
     int a, b;
