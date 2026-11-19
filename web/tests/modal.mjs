@@ -55,16 +55,20 @@ async function state(page) {
   });
 }
 
-for (const vp of [{ name: 'laptop', viewport: { width: 1280, height: 900 } }, { name: 'HP', viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true }]) {
+// "offline" = file HTML mandiri (Unduh .html): kerangkanya dari sumber/engine.html, mesinnya sama.
+for (const vp of [{ name: 'laptop', viewport: { width: 1280, height: 900 } }, { name: 'HP', viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
+  { name: 'offline', page: 'offline.html', viewport: { width: 1280, height: 900 } }]) {
+  const off = !!vp.page;
   const ctx = await browser.newContext({ viewport: vp.viewport, isMobile: vp.isMobile, hasTouch: vp.hasTouch, permissions: ['clipboard-read', 'clipboard-write'] });
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
   const page = await ctx.newPage();
   page.on('pageerror', e => fails.push(`[${vp.name}] error JS: ${e.message}`));
-  await page.goto(URL0 + '#/c/sif002-basis-data/m/p4');
-  await page.waitForSelector('#appHeader button[aria-label="Cari cepat"]');
+  await page.goto(URL0 + (vp.page || '') + '#/c/sif002-basis-data/m/p4');
+  await page.waitForSelector('#appHeader button[aria-label="Progres belajarku"]');
+  ok(await page.evaluate(() => document.getElementById('modalRoot').tagName === 'DIALOG' && document.getElementById('toastContainer').hasAttribute('popover')), `[${vp.name}] kerangka halaman belum memakai <dialog> / popover`);
   const tag = s => `[${vp.name}] ${s}`;
 
-  for (const M of MODALS) {
+  for (const M of MODALS.filter(M => !(off && M.name === 'Cari cepat'))) {
     for (const how of ['Esc', 'backdrop', 'Tutup']) {
       let opener = null;
       if (M.btn) { opener = page.locator(M.btn).first(); await opener.click(); }
@@ -83,7 +87,7 @@ for (const vp of [{ name: 'laptop', viewport: { width: 1280, height: 900 } }, { 
         let escaped = false;
         for (let i = 0; i < 40; i++) { await page.keyboard.press('Tab'); const st = await state(page); if (!st.inside && st.active !== 'BODY' && st.active) { escaped = st.active; break; } }
         ok(!escaped, tag(`${M.name}: Tab keluar ke halaman belakang (${escaped})`));
-        if (shotDir && M.name !== 'Tambah Materi') await page.screenshot({ path: `${shotDir}/${vp.name === 'HP' ? 'hp' : 'desk'}-${M.name.replace(/\s+/g, '-').toLowerCase()}.png` });
+        if (shotDir && !off && M.name !== 'Tambah Materi') await page.screenshot({ path: `${shotDir}/${vp.name === 'HP' ? 'hp' : 'desk'}-${M.name.replace(/\s+/g, '-').toLowerCase()}.png` });
         await page.keyboard.press('Escape');
       } else if (how === 'backdrop') {
         // klik di dalam jendela tidak menutup, klik di area gelap menutup
@@ -95,7 +99,8 @@ for (const vp of [{ name: 'laptop', viewport: { width: 1280, height: 900 } }, { 
       } else {
         await page.click('#modalRoot button[aria-label="Tutup"]');
       }
-      await page.waitForFunction(() => !document.getElementById('modalRoot').open, null, { timeout: 3000 }).catch(() => {});
+      // Isi jendela dikosongkan di event 'close', yang datang sesaat setelah jendela tertutup
+      await page.waitForFunction(() => { const d = document.getElementById('modalRoot'); return !d.open && !d.childElementCount; }, null, { timeout: 3000 }).catch(() => {});
       s = await state(page);
       ok(!s.open && s.kids === 0, tag(`${M.name}: tidak tertutup/dikosongkan lewat ${how}`));
       if (opener) ok(await opener.evaluate(b => document.activeElement === b), tag(`${M.name}: fokus tidak kembali ke tombol pembuka setelah ${how}`));
@@ -127,19 +132,20 @@ for (const vp of [{ name: 'laptop', viewport: { width: 1280, height: 900 } }, { 
       live: (document.getElementById('modalLive') || {}).textContent === t.textContent, modal: document.getElementById('modalRoot').open }; });
   // Wadah toast dibuka (showPopover) SETELAH jendela, jadi berada di atasnya di top layer; pesannya juga dibacakan dari dalam jendela.
   ok(top.modal && top.open && top.inView && top.live, tag(`toast tidak terlihat di atas modal ${JSON.stringify(top)}`));
-  if (shotDir) await page.screenshot({ path: `${shotDir}/${vp.name === 'HP' ? 'hp' : 'desk'}-toast-di-atas-modal.png` });
+  if (shotDir && !off) await page.screenshot({ path: `${shotDir}/${vp.name === 'HP' ? 'hp' : 'desk'}-toast-di-atas-modal.png` });
   await page.keyboard.press('Escape');
   await page.waitForFunction(() => document.getElementById('toastContainer').childElementCount === 0 && !document.getElementById('toastContainer').matches(':popover-open'), null, { timeout: 6000 })
     .then(() => ok(true), () => ok(false, tag('wadah toast tidak tersembunyi lagi setelah toast hilang')));
 
   // Konfirmasi mode ujian (dibuka dari tab Kuis)
-  await page.goto(URL0 + '#/c/sif002-basis-data/m/p4/quiz');
+  await page.goto(URL0 + (vp.page || '') + '#/c/sif002-basis-data/m/p4/quiz');
   await page.waitForFunction(() => typeof startExam === 'function' && document.querySelector('#appMain'));
   await page.evaluate(() => startExam());
   let s = await state(page);
   ok(s.modal && s.active === 'Batal', tag(`mode ujian: konfirmasi tidak modal / fokus bukan Batal (${s.active})`));
   await page.keyboard.press('Escape');
 
+  if (off) { await ctx.close(); continue; } // kotak Cari tidak ada di file mandiri
   // Enter saat keyboard masih menyusun kata (IME) tidak memindahkan fokus; Enter biasa memindahkan ke hasil pertama
   await page.waitForFunction(() => !document.getElementById('modalRoot').open);
   await page.evaluate(() => openSearch());
