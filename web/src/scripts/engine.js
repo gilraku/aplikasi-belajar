@@ -1688,7 +1688,8 @@ function closeModal() { const dlg = $('modalRoot'); if (dlg.open) { if (dlg.clos
 (function () {
   const dlg = $('modalRoot'); if (!dlg) return;
   // Esc / tombol Back menutup lewat browser: kosongkan isinya juga supaya sama dengan closeModal().
-  dlg.addEventListener('close', () => dlg.replaceChildren());
+  // Event 'close' datang belakangan (antre); kalau jendela sudah dibuka lagi dengan isi baru, isi itu jangan ikut dihapus.
+  dlg.addEventListener('close', () => { if (!dlg.open) dlg.replaceChildren(); });
   // Klik di area gelap (backdrop) menutup jendela, seperti sebelumnya. Klik di backdrop sampai ke <dialog> itu sendiri,
   // jadi dicek apakah titik kliknya di luar kotak jendela.
   dlg.addEventListener('click', e => {

@@ -102,6 +102,18 @@ for (const vp of [{ name: 'laptop', viewport: { width: 1280, height: 900 } }, { 
     }
   }
 
+  // Tutup lalu langsung buka jendela lain (event 'close' datang belakangan): isi jendela baru tidak boleh hilang
+  for (const how of ['Esc', 'Tutup']) {
+    await page.evaluate(() => openShareModal());
+    if (how === 'Esc') await page.keyboard.press('Escape'); else await page.click('#modalRoot button[aria-label="Tutup"]');
+    await page.evaluate(() => openProgressModal());
+    await page.evaluate(() => new Promise(r => setTimeout(r, 50)));
+    const st = await state(page);
+    ok(st.open && st.text.includes('Progres Belajarku'), tag(`buka jendela tepat setelah ditutup lewat ${how}: isinya hilang`));
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => !document.getElementById('modalRoot').open);
+  }
+
   // Batal di konfirmasi hapus progres kembali ke Progresku (jendela berganti isi tanpa ditutup)
   await page.evaluate(() => confirmResetProgress());
   await page.getByRole('button', { name: 'Batal' }).click();
