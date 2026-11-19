@@ -140,6 +140,29 @@ module.exports = {
     R('Quran.com', 'https://quran.com/', QURAN, 'AR', 'Cari ayat dari dalil kunci dengan cepat.', 'Dalil Kunci'),
     R('Sunnah.com', 'https://sunnah.com/', 'Sunnah.com', 'AR', 'Cari teks hadis dari dalil kunci.'),
   ],
+  'aik/p9': [
+    R('QS. Al-Qalam 68:4 (akhlak Nabi)', 'https://quran.com/68/4', QURAN, 'AR', 'Dalil akhlak Rasulullah yang agung.', 'Hakikat, Ciri'),
+    R('QS. Asy-Syams 91:7–10 (menyucikan jiwa)', 'https://quran.com/91/7-10', QURAN, 'AR', 'Ciri umum akhlaqul karimah yang pertama.', 'Hakikat, Ciri'),
+    R('QS. An-Nazi\'at 79:40–41 (menahan hawa nafsu)', 'https://quran.com/79/40-41', QURAN, 'AR', 'Ciri umum akhlaqul karimah yang ketiga.', 'Hakikat, Ciri'),
+  ],
+  'aik/p10': [
+    R('QS. Ali Imran 3:85', 'https://quran.com/3/85', QURAN, 'AR', 'Agama yang diterima di sisi Allah.', 'Pluralitas vs Pluralisme'),
+    R('QS. Al-Kafirun 109', 'https://quran.com/109', QURAN, 'AR', 'Batas toleransi beragama.', 'Pluralitas vs Pluralisme'),
+    R('QS. Al-Mumtahanah 60:8', 'https://quran.com/60/8', QURAN, 'AR', 'Berbuat baik dan adil kepada non-muslim yang tidak memerangi.', 'Pluralitas vs Pluralisme'),
+  ],
+  'aik/p11': [
+    R('QS. Al-Furqan 25:63–77 (ciri \'Ibad ar-Rahman)', 'https://quran.com/25/63-77', QURAN, 'AR', 'Ayat rujukan PHIWK poin aqidah 1.', 'Kehidupan Pribadi dalam Aqidah'),
+    R('Muhammadiyah', 'https://muhammadiyah.or.id/', 'PP Muhammadiyah', 'ID', 'Situs resmi Persyarikatan Muhammadiyah (penyusun PHIWM).', 'PHIWM dan PHIWK'),
+  ],
+  'aik/p13': [
+    R('QS. Al-Hujurat 49:10–13', 'https://quran.com/49/10-13', QURAN, 'AR', 'Persaudaraan, larangan mengolok-olok, prasangka, dan ghibah.', 'Adab Pergaulan Sesama Muslim'),
+    R('QS. An-Nur 24:27–31', 'https://quran.com/24/27-31', QURAN, 'AR', 'Adab meminta izin, salam, dan menjaga pandangan.', 'Pergaulan Antar Lawan Jenis'),
+  ],
+  'aik/p14': [
+    R('QS. Ar-Rum 30:21 (sakinah, mawaddah, rahmah)', 'https://quran.com/30/21', QURAN, 'AR', 'Dalil kedudukan keluarga.', 'Kedudukan Keluarga'),
+    R('QS. Luqman 31:12–19 (nasihat Luqman)', 'https://quran.com/31/12-19', QURAN, 'AR', 'Rujukan aktivitas mendidik anak.', 'Aktivitas Keluarga'),
+    R('QS. At-Tahrim 66:6', 'https://quran.com/66/6', QURAN, 'AR', 'Memelihara diri dan keluarga dari api neraka.', 'Aktivitas Keluarga'),
+  ],
 
   // ===================== PEMROGRAMAN WEB DINAMIS =====================
   'pemrograman-web-dinamis/p1': [
