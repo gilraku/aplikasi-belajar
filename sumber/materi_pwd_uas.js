@@ -163,6 +163,8 @@ M.p10 = [
     ["Contoh tugas", "Validasi form, ubah DOM", "Olah data form, simpan ke file/database"]
   ]),
 
+  ADG.pwdPhp,
+
   A("XAMPP: Server di Laptop Sendiri", `<p>PHP butuh server. Untuk belajar, server dipasang di laptop sendiri dengan <strong>XAMPP</strong>, paket open-source berisi <strong>Apache</strong> (server web), <strong>MySQL/MariaDB</strong> (server database), <strong>PHP</strong>, dan <strong>Perl</strong>. Huruf X berarti cross-platform: ada versi Windows, macOS, dan Linux.</p>
 <p>Langkah modul: unduh dari ${c("https://www.apachefriends.org")} → instal (pilih Apache dan PHP) → buka <strong>XAMPP Control Panel</strong> → klik <strong>Start</strong> pada Apache, dan MySQL kalau butuh database → simpan proyek di folder ${c("htdocs")} → buka ${c("http://localhost/nama_folder")}.</p>
 <p><strong>localhost</strong> berarti "komputer ini sendiri". <strong>htdocs</strong> adalah folder akar yang dilayani Apache: isi htdocs = isi ${c("http://localhost/")}. Saran modul: buat subfolder per proyek, misalnya ${c("htdocs/crud-mahasiswa")}.</p>
@@ -402,6 +404,7 @@ if (!$conn) {
     mysqli_close($conn);
 }
 ?>`, "Aktivitas modul. Modifikasinya: tampilkan nama database (\"Terhubung ke $database\"), lalu pindahkan koneksi ke config.php.", "Aktivitas modul"),
+  ADG.pwdConnect,
   tbl("Pesan Gagal Koneksi dan Artinya", ["Pesan (bagian akhir)", "Penyebab", "Perbaikan"], [
     ["No connection could be made … actively refused it / Connection refused", "MySQL belum berjalan", "Start MySQL di XAMPP"],
     ["Access denied for user 'root'@'localhost' (using password: YES)", "Password salah", "XAMPP: <code>\"\"</code>; MAMP: <code>\"root\"</code>"],
@@ -605,6 +608,7 @@ ${ul(["<strong>Create</strong>: menambah data baru, misalnya mendaftarkan mahasi
   A("Menjalankan Query dari PHP", `<p>Langkahnya selalu sama: ${c("include 'config.php';")} untuk mendapat ${c("$conn")}, susun query di string ${c("$sql")}, lalu jalankan ${c("mysqli_query($conn, $sql)")}.</p>
 <p>Untuk INSERT, UPDATE, dan DELETE, ${c("mysqli_query")} menghasilkan ${c("true")} kalau berhasil. Modul memakainya di ${c("if")} untuk menampilkan pesan sukses, dan menampilkan ${c("mysqli_error($conn)")} kalau gagal. Saran modul: selalu periksa keberhasilan query dan tampilkan pesan kepada pengguna.</p>
 <p>Untuk SELECT, hasilnya berupa <strong>result</strong>: kumpulan baris yang dibaca satu per satu. ${c("mysqli_num_rows($result)")} memberi jumlah barisnya. ${c("mysqli_fetch_assoc($result)")} mengambil <strong>satu</strong> baris sebagai array asosiatif, dengan nama kolom sebagai kunci (${c('$row["nama"]')}). Setiap pemanggilan maju ke baris berikutnya; setelah baris terakhir hasilnya ${c("null")}. Karena itu dipakai di ${c("while")}: perulangan berjalan sampai baris habis.</p>`, "Bagian 3"),
+  ADG.pwdFetch,
   { type: "reveal", label: "Tebak Hasil", title: "Isi $row di Setiap Putaran", desc: "<code>SELECT nim, nama FROM mahasiswa WHERE jurusan = 'Sistem Informasi'</code> menghasilkan 2 baris (Ahmad, Citra).", items: [
     { prompt: "`mysqli_num_rows($result)`", answer: "2", reason: "Dua mahasiswa SI." },
     { prompt: "Pemanggilan pertama `mysqli_fetch_assoc($result)`", answer: "[\"nim\" => \"2401010001\", \"nama\" => \"Ahmad\"]", reason: "Baris pertama; hanya kolom yang di-SELECT." },

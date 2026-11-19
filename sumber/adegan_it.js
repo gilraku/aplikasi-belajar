@@ -213,4 +213,121 @@ const pwdCrud = {
   ]
 };
 
-module.exports = { pwdRequest, pwdPesanHttp, bdJoin, alpLoop, alpDoWhile, bdNormal, pwdDom, alpIfElse, alpSwitch, pwdValidasi, pwdGetPost, pwdCrud };
+const PHP_SRC = "<!-- salam.php, disimpan di htdocs -->\n<h1>Salam</h1>\n<?php\n$nama = \"Ani\";\necho \"<p>Halo, $nama</p>\";\n?>";
+const pwdPhp = {
+  type: "adegan", label: "Adegan", title: "PHP Dijalankan di Server, Browser Hanya Menerima HTML",
+  desc: "Pilih cara membuka file, lalu bandingkan apa yang sampai ke browser.",
+  scene: "pwd-php",
+  alt: "Browser meminta salam.php lewat http://localhost. Apache menyerahkan file itu ke PHP, PHP menjalankan kode di antara <?php dan ?>, lalu hanya hasilnya yang dikirim: <h1>Salam</h1> dan <p>Halo, Ani</p>. View Page Source tidak memperlihatkan kode PHP. Kalau file dibuka dengan klik dua kali (file:///), tidak ada server yang menjalankan PHP, jadi yang tampil kode mentah.",
+  pilih: { label: "Dibuka lewat:", opsi: [
+    { v: "localhost", t: "http://localhost/salam.php" },
+    { v: "file", t: "klik dua kali file" }
+  ] },
+  code: PHP_SRC,
+  marks: [{ sorot: "jalan", t: "<?php" }, { sorot: "kirim", t: "echo \"<p>Halo, $nama</p>\";" }, { sorot: "sumber", t: "<h1>Salam</h1>" }],
+  steps: [
+    { sorot: "minta", html: "Alamat diketik di browser. Lewat <code>http://localhost/salam.php</code>, browser mengirim request ke <strong>Apache</strong>." },
+    { sorot: "jalan", html: "Apache melihat akhiran <code>.php</code> lalu menyerahkan file ke <strong>PHP</strong>. PHP membaca dari atas ke bawah: HTML di luar <code>&lt;?php … ?&gt;</code> disalin apa adanya, kode di dalamnya dijalankan." },
+    { sorot: "kirim", html: "<code>echo</code> menulis teks ke hasil. Yang dikirim ke browser hanya <strong>hasil</strong> itu (HTML biasa), bukan kodenya." },
+    { sorot: "sumber", html: "Klik kanan → <strong>View Page Source</strong> hanya menampilkan <code>&lt;h1&gt;Salam&lt;/h1&gt;</code> dan <code>&lt;p&gt;Halo, Ani&lt;/p&gt;</code>. Kode PHP (termasuk password database nanti) tidak pernah sampai ke pengunjung." },
+    { sorot: "file", html: "Kesalahan umum: membuka file dengan klik dua kali. Alamatnya menjadi <code>file:///…</code>, tidak ada server yang dipanggil, jadi PHP tidak dijalankan dan yang tampil kode mentah (atau file malah diunduh). Selalu buka lewat <code>http://localhost/…</code> dengan Apache dalam keadaan Start." }
+  ]
+};
+
+const CONN_ARGS = { ok: '"root", "", "db_mahasiswa"', mati: '"root", "", "db_mahasiswa"', password: '"root", "rahasia", "db_mahasiswa"', db: '"root", "", "db_mhs"' };
+const connCode = (k) => `${k === "mati" ? "// MySQL belum di-Start di XAMPP\n" : ""}$conn = mysqli_connect("localhost", ${CONN_ARGS[k]});\n\nif (!$conn) {\n    echo "Koneksi gagal: " . mysqli_connect_error();\n} else {\n    echo "Koneksi ke database berhasil!";\n}`;
+const connMarks = (k) => [
+  { sorot: "sambung", t: "mysqli_connect(" },
+  { sorot: "server", t: k === "mati" ? "// MySQL belum di-Start di XAMPP" : "\"localhost\"" },
+  { sorot: "login", t: k === "password" ? "\"root\", \"rahasia\"" : "\"root\", \"\"" },
+  { sorot: "db", t: k === "db" ? "\"db_mhs\"" : "\"db_mahasiswa\"" },
+  { sorot: "hasil", t: k === "ok" ? "echo \"Koneksi ke database berhasil!\";" : "mysqli_connect_error()" }
+];
+const pwdConnect = {
+  type: "adegan", label: "Adegan", title: "Tiga Pemeriksaan saat mysqli_connect",
+  desc: "Pilih keadaannya, lalu lihat di pemeriksaan mana koneksi berhenti.",
+  scene: "pwd-connect",
+  alt: "mysqli_connect membawa host, user, password, dan nama database ke MySQL. MySQL memeriksa tiga hal berurutan: server berjalan, user dan password cocok, database ada. Kalau semuanya lolos, PHP mendapat koneksi $conn. Kalau salah satu gagal, pemeriksaan berhenti di situ dan mysqli_connect_error() memberi alasannya.",
+  pilih: { label: "Keadaan:", opsi: ["ok", "mati", "password", "db"].map((k) => ({ v: k, t: { ok: "semua benar", mati: "MySQL belum Start", password: "password salah", db: "nama database salah" }[k], code: connCode(k), marks: connMarks(k) })) },
+  steps: [
+    { sorot: "sambung", html: "<code>mysqli_connect(host, user, password, database)</code> membawa empat data itu ke server MySQL. Urutannya harus tepat." },
+    { sorot: "server", html: "Pemeriksaan 1: server MySQL harus berjalan di <code>localhost</code>. Kalau MySQL belum di-Start di XAMPP, pesannya <em>Connection refused</em> (No connection could be made)." },
+    { sorot: "login", html: "Pemeriksaan 2: user dan password. Di XAMPP user <code>root</code> tanpa password (<code>\"\"</code>), di MAMP passwordnya <code>\"root\"</code>. Salah password: <em>Access denied for user 'root'@'localhost'</em>." },
+    { sorot: "db", html: "Pemeriksaan 3: database harus sudah dibuat dan ejaannya sama persis. Salah nama: <em>Unknown database 'db_mhs'</em>." },
+    { sorot: "hasil", html: "Semua lolos: <code>$conn</code> berisi koneksi yang dipakai <code>mysqli_query</code>. Ada yang gagal: <code>mysqli_connect_error()</code> menjelaskan sebabnya. Di PHP 8.1 ke atas, kegagalan langsung tampil sebagai <em>Fatal error</em> dengan pesan yang sama." }
+  ]
+};
+
+const fetchCode = (kw) => `$result = mysqli_query($conn, "SELECT nim, nama FROM mahasiswa");\n\n${kw} ($row = mysqli_fetch_assoc($result)) {\n    echo "<tr><td>" . $row["nim"] . "</td><td>" . $row["nama"] . "</td></tr>";\n}`;
+const fetchMarks = (kw) => [
+  { sorot: "query", t: "mysqli_query($conn, \"SELECT nim, nama FROM mahasiswa\")" },
+  { sorot: "ambil", t: "mysqli_fetch_assoc($result)" },
+  { sorot: "cetak", t: "echo \"<tr><td>\"" },
+  { sorot: kw === "while" ? "ulang" : "if", t: `${kw} (` }
+];
+const pwdFetch = {
+  type: "adegan", label: "Adegan", title: "while dan mysqli_fetch_assoc Mengisi Tabel",
+  desc: "Pilih while atau if, lalu hitung berapa baris yang tampil di halaman.",
+  scene: "pwd-fetch",
+  alt: "SELECT menghasilkan $result berisi 3 baris. Setiap pemanggilan mysqli_fetch_assoc mengambil satu baris ke $row, lalu echo menambahkannya sebagai baris tabel di halaman. Dengan while, ini diulang sampai fetch mengembalikan null, jadi ketiga baris tampil. Dengan if, fetch hanya dipanggil sekali, jadi hanya baris pertama yang tampil.",
+  pilih: { label: "Perulangan:", opsi: [
+    { v: "while", t: "while", code: fetchCode("while"), marks: fetchMarks("while") },
+    { v: "if", t: "if (keliru)", code: fetchCode("if"), marks: fetchMarks("if") }
+  ] },
+  steps: [
+    { sorot: "query", html: "<code>mysqli_query</code> menjalankan SELECT. Hasilnya <code>$result</code>: kumpulan baris yang menunggu dibaca, belum berupa tabel HTML." },
+    { sorot: "ambil", html: "<code>mysqli_fetch_assoc($result)</code> mengambil <strong>satu</strong> baris sebagai array asosiatif, misalnya <code>$row[\"nama\"]</code> = <code>\"Ahmad\"</code>, lalu penunjuknya maju ke baris berikutnya." },
+    { sorot: "cetak", html: "<code>echo</code> menyusun satu <code>&lt;tr&gt;</code> dari isi <code>$row</code>, sehingga tabel di halaman bertambah satu baris." },
+    { sorot: "ulang", html: "<code>while</code> mengulang pengambilan. Setelah baris habis, fetch mengembalikan <code>null</code>, kondisinya bernilai false, dan perulangan berhenti. Jumlah putaran = jumlah baris." },
+    { sorot: "if", html: "Kesalahan umum: memakai <code>if</code>. if hanya dijalankan sekali, jadi hanya baris pertama yang tampil. Baris lain tetap ada di database, hanya tidak pernah diambil." }
+  ]
+};
+
+const WH = (o) => `SELECT nama, ipk\nFROM mahasiswa\nWHERE jurusan = 'Sistem Informasi'${o ? `\nORDER BY ipk ${o}` : ""};`;
+const whMarks = (o) => [{ sorot: "where", t: "WHERE jurusan = 'Sistem Informasi'" }, { sorot: "pilih", t: "SELECT nama, ipk" }, o ? { sorot: "urut", t: `ORDER BY ipk ${o}` } : null].filter(Boolean);
+const bdWhere = {
+  type: "adegan", label: "Adegan", title: "WHERE Menyaring, ORDER BY Mengurutkan",
+  desc: "Pilih urutannya, lalu lihat baris mana yang lolos dan bagaimana urutannya.",
+  scene: "bd-where",
+  alt: "Tabel mahasiswa berisi Andi, Budi, Citra, dan Dian. WHERE jurusan = 'Sistem Informasi' memeriksa setiap baris dan Citra (Teknik Informatika) tidak lolos. Baris yang lolos masuk ke hasil dengan kolom nama dan ipk saja. ORDER BY ipk DESC mengurutkan dari ipk terbesar (Andi, Dian, Budi), ASC dari terkecil (Budi, Dian, Andi). Tanpa ORDER BY, urutan tidak dijamin.",
+  pilih: { label: "Urutan:", opsi: [
+    { v: "DESC", t: "ORDER BY ipk DESC", code: WH("DESC"), marks: whMarks("DESC") },
+    { v: "ASC", t: "ORDER BY ipk ASC", code: WH("ASC"), marks: whMarks("ASC") },
+    { v: "NONE", t: "tanpa ORDER BY", code: WH(""), marks: whMarks("") }
+  ] },
+  steps: [
+    { sorot: "where", html: "<code>WHERE</code> memeriksa setiap baris satu per satu. Baris yang syaratnya <strong>true</strong> lolos; Citra (Teknik Informatika) tidak." },
+    { sorot: "pilih", html: "Dari baris yang lolos, hanya kolom yang ditulis setelah <code>SELECT</code> yang diambil: <code>nama</code> dan <code>ipk</code>." },
+    { sorot: "urut", html: "<code>ORDER BY</code> dijalankan paling akhir dan mengurutkan hasil. <code>DESC</code> = besar ke kecil, <code>ASC</code> = kecil ke besar (bawaan kalau tidak ditulis)." },
+    { sorot: "tanpa", html: "Tanpa <code>ORDER BY</code>, MySQL boleh mengembalikan baris dalam urutan apa saja. Biasanya mengikuti urutan simpanan, tetapi tidak dijamin, jadi tulis ORDER BY kalau urutan penting." }
+  ]
+};
+
+const NEST_OK = "int outer = 1;\nwhile (outer <= 4) {\n    int inner = 1;               // direset setiap baris\n    while (inner <= outer)\n        cout << inner++ << \" \";\n    cout << endl;\n    outer++;\n}";
+const NEST_BAD = "int outer = 1;\nint inner = 1;                   // di luar: tidak direset\nwhile (outer <= 4) {\n    while (inner <= outer)\n        cout << inner++ << \" \";\n    cout << endl;\n    outer++;\n}";
+const nestMarks = (ok) => [
+  { sorot: "luar", t: "while (outer <= 4)" },
+  ok ? { sorot: "reset", t: "int inner = 1;               // direset setiap baris" } : { sorot: "tetap", t: "int inner = 1;                   // di luar: tidak direset" },
+  { sorot: "dalam", t: "while (inner <= outer)" },
+  { sorot: "baris", t: "cout << endl;" }
+];
+const alpNested = {
+  type: "adegan", label: "Adegan", title: "Nested while: Kenapa inner Harus Direset",
+  desc: "Pilih letak <code>int inner = 1;</code>, lalu ikuti kedua penghitung dan keluarannya.",
+  scene: "alp-nested",
+  alt: "Nested while dengan outer sampai 4. Di setiap putaran luar, inner direset ke 1 lalu loop dalam mencetak 1 sampai outer, sehingga layar berisi 1, 1 2, 1 2 3, 1 2 3 4. Kalau int inner = 1 ditulis di luar loop, inner tidak pernah kembali ke 1, jadi setiap baris hanya berisi satu angka: 1, 2, 3, 4.",
+  pilih: { label: "int inner = 1 ditulis:", opsi: [
+    { v: "reset", t: "di dalam loop luar", code: NEST_OK, marks: nestMarks(true) },
+    { v: "luar", t: "di luar loop", code: NEST_BAD, marks: nestMarks(false) }
+  ] },
+  steps: [
+    { sorot: "luar", html: "Loop luar memeriksa <code>outer &lt;= 4</code>. Satu putaran luar = satu baris keluaran." },
+    { sorot: "reset", html: "<code>int inner = 1;</code> di dalam loop luar membuat inner kembali ke 1 di awal <strong>setiap</strong> baris." },
+    { sorot: "tetap", html: "Kalau ditulis di luar, inner hanya diisi 1 sekali. Di baris berikutnya inner masih bernilai sisa putaran sebelumnya." },
+    { sorot: "dalam", html: "Loop dalam mencetak inner lalu menaikkannya (<code>inner++</code>), sampai <code>inner &lt;= outer</code> bernilai false." },
+    { sorot: "baris", html: "<code>cout &lt;&lt; endl;</code> pindah baris, <code>outer++</code>, lalu kembali ke pemeriksaan loop luar." },
+    { sorot: "selesai", html: "Saat outer menjadi 5, <code>5 &lt;= 4</code> false dan program selesai. Versi benar: 10 angka (1, 1 2, 1 2 3, 1 2 3 4). Versi keliru: 4 angka, satu per baris. Slide memakai batas 10; polanya sama." }
+  ]
+};
+
+module.exports = { pwdRequest, pwdPesanHttp, bdJoin, alpLoop, alpDoWhile, bdNormal, pwdDom, alpIfElse, alpSwitch, pwdValidasi, pwdGetPost, pwdCrud, pwdPhp, pwdConnect, pwdFetch, bdWhere, alpNested };

@@ -56,6 +56,8 @@ function blockTexts(def) {
     }
     // Umpan balik baris latihan (ok/no) baru muncul setelah dijawab
     if (ctx === 'exercise' && (key === 'ok' || key === 'no' || key === 'hints')) return;
+    // Tanda sorot adegan hanya potongan dari kodenya (sudah diindeks lewat code); kodenya bukan HTML
+    if (ctx === 'adegan' && key === 'marks') return;
     // Pilihan nilai adegan: yang tampil hanya label tombol dan kode pilihan pertama (kode pilihan lain baru muncul setelah diklik)
     if (ctx === 'adegan' && key === 'pilih' && v && typeof v === 'object') {
       walk(v.label, 'label', ctx);

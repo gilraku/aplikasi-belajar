@@ -1763,6 +1763,780 @@
     };
   }
 
+  // Panel kode gelap (gaya server) dengan baris yang bisa disorot satu per satu.
+  function darkPanel(g, x, y, w, h, title, lines, hl, o) {
+    o = o || {};
+    R.stand(g, x + 24, x + w - 24, y + h);
+    rr(g, x, y, w, h, 5);
+    inkFill(g, '#1d2731', 1.6);
+    if (title) mono(g, title, x + 8, y + 12, 6.8, '#9aa3ad');
+    const lh = o.lh || 13, y0 = y + (o.top || 26), size = o.size || 6.8;
+    lines.forEach((l, i) => {
+      const yy = y0 + i * lh;
+      const k = (hl && hl[i]) || 0;
+      if (k > 0) {
+        g.save();
+        g.globalAlpha *= k;
+        rr(g, x + 4, yy - 9, w - 8, lh - 1, 2);
+        g.fillStyle = 'rgba(255,225,77,0.22)';
+        g.fill();
+        ln(g, x + 4, yy - 8, x + 4, yy + 2, 2.2, HL);
+        g.restore();
+      }
+      const dim = o.dim && o.dim[i];
+      mono(g, l, x + 9, yy, size, dim ? '#6f7a85' : k > 0.5 ? '#ffffff' : l.trim().startsWith('//') || l.trim().startsWith('--') ? '#f2a39a' : '#c9d1d9');
+    });
+  }
+  // Rel request/response putus-putus antara dua papan.
+  function railPair(g, x0, x1, yq, ys, labels, off) {
+    g.save();
+    if (off) g.globalAlpha *= 0.35;
+    g.setLineDash([3, 4]);
+    ln(g, x0, yq, x1, yq, 1.2, '#b9bec4');
+    ln(g, x0, ys, x1, ys, 1.2, '#b9bec4');
+    g.restore();
+    g.save();
+    if (off) g.globalAlpha *= 0.35;
+    R.arrowHead(g, [x1, yq], 0, 6, 1.3, '#9aa1a8');
+    R.arrowHead(g, [x0, ys], Math.PI, 6, 1.3, '#9aa1a8');
+    if (labels) {
+      text(g, labels[0], (x0 + x1) / 2, yq - 10, 7.5, MUTED);
+      text(g, labels[1], (x0 + x1) / 2, ys + 16, 7.5, MUTED);
+    }
+    g.restore();
+  }
+  function badge(g, label, cx, cy, k, bad) {
+    if (k <= 0) return;
+    g.save();
+    g.globalAlpha *= clamp(k, 0, 1);
+    const w = monoW(g, label, 7) + 14;
+    rr(g, cx - w / 2, cy - 7.5, w, 15, 7.5);
+    inkFill(g, bad ? RED_SOFT : '#eaf3f0', 1.2, bad ? RED : GREEN);
+    mono(g, label, cx, cy + 2.5, 7, bad ? RED : GREEN, 'center');
+    g.restore();
+  }
+  const typePose = (T, a, b, pt, me) => {
+    const kb = lp(pt, me, 0, 1);
+    const k = E.soft(seg(T, a, a + 0.3)) * (1 - E.soft(seg(T, b, b + 0.3)));
+    const bob = Math.sin(T * 24) * 1.4 * seg(T, a + 0.25, a + 0.35) * (1 - seg(T, b - 0.1, b));
+    return [P({ hF: [kb[0] + bob, kb[1] - bob], hB: [-4, -54], head: [9, -115], chest: [4, -90] }), k];
+  };
+
+  // ------------------------------------------------------------------ 12. PWD P10: PHP dijalankan di server, browser hanya menerima HTML
+  {
+    const ME = -186;
+    const B = { x: -168, y: -176, w: 136, h: 114 };
+    const SV = { x: 66, y: -176, w: 140, h: 114 };
+    const RQ = -138, RS = -100;
+    const OK = { localhost: 1, file: 1 };
+    const SRC = ['<h1>Salam</h1>', '<?php', '$nama = "Ani";', 'echo "<p>Halo, $nama</p>";', '?>'];
+    const plan = (v) => ({ ok: v === 'localhost', url: v === 'localhost' ? 'localhost/salam.php' : 'file:///…/htdocs/salam.php', end: v === 'localhost' ? 7.4 : 5.4 });
+
+    function browser(g, p, urlK, pageK, srcK, rawK) {
+      R.stand(g, B.x + 26, B.x + B.w - 26, B.y + B.h);
+      rr(g, B.x, B.y, B.w, B.h, 5);
+      inkFill(g, C.paper, 1.6);
+      ln(g, B.x, B.y + 19, B.x + B.w, B.y + 19, 1.2);
+      rr(g, B.x + 5, B.y + 4, B.w - 10, 12, 6);
+      inkFill(g, '#f3f2ec', 1);
+      mono(g, typed(p.url, urlK), B.x + 10, B.y + 13, p.ok ? 6.6 : 6, INK);
+      if (pageK > 0) {
+        g.save();
+        g.globalAlpha *= pageK;
+        text(g, 'Salam', B.x + 10, B.y + 36, 12, INK, 'left');
+        stabilo(g, B.x + 9, B.y + 42, 48, 11, pageK);
+        text(g, 'Halo, Ani', B.x + 12, B.y + 51, 8, INK, 'left');
+        g.restore();
+      }
+      if (srcK > 0) {
+        // jendela View Page Source di bagian bawah halaman
+        const x = B.x + 8, y = B.y + 58, w = B.w - 16, h = 50;
+        g.save();
+        g.globalAlpha *= srcK;
+        rr(g, x, y, w, h, 4);
+        inkFill(g, '#fbfaf6', 1.3);
+        text(g, 'View Page Source', x + 6, y + 10, 6.4, MUTED, 'left');
+        ln(g, x, y + 14, x + w, y + 14, 1);
+        mono(g, '<h1>Salam</h1>', x + 6, y + 25, 6.4, INK);
+        mono(g, '<p>Halo, Ani</p>', x + 6, y + 35, 6.4, INK);
+        text(g, 'tidak ada kode PHP', x + w / 2, y + 46, 6.8, GREEN);
+        g.restore();
+      }
+      if (rawK > 0) {
+        g.save();
+        g.globalAlpha *= rawK;
+        SRC.forEach((l, i) => mono(g, l, B.x + 8, B.y + 33 + i * 11, 6.2, i === 0 ? INK : MUTED));
+        text(g, 'kode mentah, PHP tidak jalan', B.x + B.w / 2, B.y + 100, 7, RED);
+        g.restore();
+      }
+    }
+
+    SC['pwd-php'] = {
+      _v: 'localhost',
+      get dur() {
+        return plan(this._v in OK ? this._v : 'localhost').end;
+      },
+      width: 420,
+      label: 'Browser meminta salam.php lewat http://localhost. Apache menyerahkan file itu ke PHP. PHP menjalankan kode di antara <?php dan ?>, lalu yang dikirim ke browser hanya hasilnya: <h1>Salam</h1> dan <p>Halo, Ani</p>. View Page Source tidak memperlihatkan kode PHP. Kalau file dibuka dengan klik dua kali (file:///), tidak ada server yang menjalankan PHP, jadi yang tampil kode mentah.',
+      draw(g, S) {
+        const v = vOf(g, this, 'localhost', OK);
+        const p = plan(v);
+        let T = S.on ? S.u * this.dur : -1;
+        if (!S.on && (S.n > 0 || reducedNow())) T = this.dur;
+        const t = S.t;
+        let pose = breathe(REST(), t);
+        let urlK = 0, reqK = -1, resK = -1, pageK = 0, srcK = 0, rawK = 0, offK = 0, st = '';
+        const hl = [0, 0, 0, 0, 0];
+        if (T < 0) pose = mix(pose, CHIN, pulse(t, 6, 2.2, 2.2));
+        else {
+          const [TP, tk] = typePose(T, 0.1, 1.1, [B.x + 12, B.y + B.h + 4], ME);
+          pose = mix(pose, TP, tk);
+          urlK = seg(T, 0.3, 1.1);
+          if (p.ok) {
+            const look = E.soft(seg(T, 1.3, 1.6)) * (1 - E.soft(seg(T, 4.6, 4.9)));
+            pose = mix(pose, P({ hF: [12, -60], hB: [-4, -52], head: [10, -117] }), look);
+            pose = mix(pose, CHEER, E.back(seg(T, 5.6, 6.0)) * (1 - E.soft(seg(T, 6.6, 7.0))));
+            reqK = T >= 1.2 && T < 2.1 ? seg(T, 1.2, 2.05) : -1;
+            for (let i = 0; i < 5; i++) hl[i] = E.soft(seg(T, 2.2 + i * 0.32, 2.4 + i * 0.32)) * (1 - E.soft(seg(T, 2.55 + i * 0.32, 2.75 + i * 0.32)));
+            resK = T >= 3.9 && T < 4.75 ? seg(T, 3.9, 4.7) : -1;
+            pageK = seg(T, 4.7, 5.1);
+            srcK = E.out3(seg(T, 5.5, 5.9));
+            if (T < 1.2) st = 'minta';
+            else if (T < 2.1) st = 'minta';
+            else if (T < 3.9) st = 'jalan';
+            else if (T < 5.4) st = 'kirim';
+            else st = 'sumber';
+          } else {
+            offK = E.out3(seg(T, 1.3, 1.6));
+            rawK = seg(T, 1.6, 2.2);
+            pose = mix(pose, CHIN, E.soft(seg(T, 2.4, 2.8)) * (1 - E.soft(seg(T, 4.4, 4.9))));
+            st = T < 1.3 ? 'minta' : 'file';
+          }
+        }
+        step(g, st);
+        pose = legs(pose, 0, 0, { arms: false });
+
+        const x0 = B.x + B.w + 6, x1 = SV.x - 6;
+        railPair(g, x0, x1, RQ, RS, ['request', 'response'], !p.ok);
+        browser(g, p, urlK, pageK, srcK, rawK);
+        g.save();
+        if (!p.ok) g.globalAlpha *= 1 - 0.55 * offK;
+        text(g, 'server: Apache + PHP', SV.x + SV.w / 2, SV.y - 6, 8.5, GREEN);
+        darkPanel(g, SV.x, SV.y, SV.w, SV.h, 'htdocs/salam.php', SRC, hl, { lh: 14, top: 30 });
+        g.restore();
+        if (offK > 0) {
+          g.save();
+          g.globalAlpha *= offK;
+          text(g, 'tidak ada request', (x0 + x1) / 2, (RQ + RS) / 2 + 4, 7.5, RED);
+          text(g, 'server tidak dipanggil', SV.x + SV.w / 2, SV.y + SV.h + 14, 7.5, RED);
+          g.restore();
+        }
+        if (p.ok && T >= 2.2 && T < 4.2) {
+          g.save();
+          g.globalAlpha *= seg(T, 2.2, 2.4) * (1 - seg(T, 3.9, 4.2));
+          text(g, 'PHP dijalankan di sini', SV.x + SV.w / 2, SV.y + SV.h + 14, 7.5, GREEN);
+          g.restore();
+        }
+        fig(g, pose, ME, 0, { wave: S.wave, wt: S.wt });
+        if (reqK > 0 && reqK < 1) card(g, 'GET salam.php', lerp(x0 + 26, x1 - 26, E.soft(reqK)), RQ, { size: 6.4, h: 14, fill: '#fff' });
+        if (resK > 0 && resK < 1) {
+          const cx = lerp(x1 - 30, x0 + 30, E.soft(resK));
+          card(g, '<h1>Salam</h1>', cx, RS - 7, { size: 6, h: 12, fill: '#eaf3f0', ink: GREEN });
+          card(g, '<p>Halo, Ani</p>', cx, RS + 7, { size: 6, h: 12, fill: '#eaf3f0', ink: GREEN });
+        }
+        if (p.ok) sparks(g, B.x + B.w / 2, B.y - 6, seg(T, 5.0, 5.6), 14, 6, GREEN);
+      },
+    };
+  }
+
+  // ------------------------------------------------------------------ 13. PWD P12: mysqli_connect berhasil atau gagal
+  {
+    const ME = -186;
+    const PN = { x: -168, y: -160, w: 172, h: 56 };
+    const MY = { x: 58, y: -174, w: 148, h: 104 };
+    const OK = { ok: 1, mati: 1, password: 1, db: 1 };
+    const ARGS = { ok: '"root", "", "db_mahasiswa");', mati: '"root", "", "db_mahasiswa");', password: '"root", "rahasia", "db_mahasiswa");', db: '"root", "", "db_mhs");' };
+    const ERR = { mati: 'Connection refused', password: "Access denied for user 'root'", db: "Unknown database 'db_mhs'" };
+    const CHECKS = ['MySQL berjalan?', 'user & password cocok?', 'database ada?'];
+    const FAIL = { ok: 3, mati: 0, password: 1, db: 2 };
+    const C0 = 2.1, CS = 0.55;
+    const plan = (v) => {
+      const f = FAIL[v];
+      const done = C0 + Math.min(f + 1, 3) * CS;
+      return { v, f, ok: v === 'ok', done, end: done + 2.6 };
+    };
+
+    function mysql(g, p, lamps, off) {
+      text(g, 'MySQL', MY.x + MY.w / 2, MY.y - 6, 9, GREEN);
+      R.stand(g, MY.x + 26, MY.x + MY.w - 26, MY.y + MY.h);
+      rr(g, MY.x, MY.y, MY.w, MY.h, 5);
+      inkFill(g, off ? '#ecebe5' : C.paper, 1.6);
+      // lampu daya
+      circle(g, MY.x + 12, MY.y + 12, 4);
+      inkFill(g, off ? '#d5d4cd' : '#8fd19e', 1.1);
+      mono(g, off ? 'mati (belum Start)' : 'port 3306', MY.x + 21, MY.y + 15, 6.6, off ? RED : MUTED);
+      ln(g, MY.x, MY.y + 22, MY.x + MY.w, MY.y + 22, 1.1);
+      CHECKS.forEach((c, i) => {
+        const y = MY.y + 38 + i * 21;
+        const k = lamps[i];
+        const skipped = p.f < i && k < 0;
+        g.save();
+        if (skipped && p.done <= 99) g.globalAlpha *= 0.45;
+        text(g, c, MY.x + 8, y + 3, 7.2, INK, 'left');
+        lamp(g, MY.x + MY.w - 14, y, Math.max(0, k), i !== p.f, 6);
+        g.restore();
+      });
+      // daftar database (kecil)
+      mono(g, 'db: db_mahasiswa, phpmyadmin', MY.x + 8, MY.y + MY.h - 6, 5.6, MUTED);
+    }
+
+    SC['pwd-connect'] = {
+      _v: 'ok',
+      get dur() {
+        return plan(this._v in OK ? this._v : 'ok').end;
+      },
+      width: 420,
+      label: 'mysqli_connect membawa host, user, password, dan nama database ke MySQL. MySQL memeriksa tiga hal berurutan: server berjalan, user dan password cocok, database ada. Kalau semuanya lolos, PHP mendapat koneksi $conn. Kalau salah satu gagal, pemeriksaan berhenti di situ dan mysqli_connect_error() memberi alasannya: Connection refused, Access denied, atau Unknown database.',
+      draw(g, S) {
+        const v = vOf(g, this, 'ok', OK);
+        const p = plan(v);
+        let T = S.on ? S.u * this.dur : -1;
+        if (!S.on && (S.n > 0 || reducedNow())) T = this.dur;
+        const t = S.t;
+        let pose = breathe(REST(), t);
+        let typK = 0, qK = -1, resK = -1, outK = 0, st = '';
+        const lamps = [-1, -1, -1];
+        if (T < 0) pose = mix(pose, CHIN, pulse(t, 6, 2.2, 2.2));
+        else {
+          const [TP, tk] = typePose(T, 0.1, 1.0, [PN.x + 14, PN.y + PN.h + 2], ME);
+          pose = mix(pose, TP, tk);
+          const look = E.soft(seg(T, 1.2, 1.5)) * (1 - E.soft(seg(T, p.done + 0.6, p.done + 0.9)));
+          pose = mix(pose, P({ hF: [12, -60], hB: [-4, -52], head: [10, -117] }), look);
+          if (p.ok) pose = mix(pose, CHEER, E.back(seg(T, p.done + 1.0, p.done + 1.4)) * (1 - E.soft(seg(T, p.done + 1.9, p.done + 2.3))));
+          else pose = mix(pose, CHIN, E.soft(seg(T, p.done + 1.0, p.done + 1.4)) * (1 - E.soft(seg(T, p.end - 0.8, p.end - 0.3))));
+          typK = seg(T, 0.25, 1.0);
+          qK = T >= 1.15 && T < 2.05 ? seg(T, 1.15, 2.0) : -1;
+          for (let i = 0; i < 3 && i <= p.f; i++) if (T >= C0 + i * CS) lamps[i] = E.out3(seg(T, C0 + i * CS, C0 + i * CS + 0.3));
+          resK = T >= p.done && T < p.done + 0.75 ? seg(T, p.done, p.done + 0.7) : -1;
+          outK = E.out3(seg(T, p.done + 0.7, p.done + 1.0));
+          if (T < 1.15) st = 'sambung';
+          else if (T < C0) st = 'sambung';
+          else if (T < p.done) st = ['server', 'login', 'db'][Math.min(2, Math.floor((T - C0) / CS))];
+          else st = 'hasil';
+        }
+        step(g, st);
+        pose = legs(pose, 0, 0, { arms: false });
+
+        const L = ['$conn = mysqli_connect(', '  "localhost",', '  ' + ARGS[v]];
+        darkPanel(g, PN.x, PN.y, PN.w, PN.h, 'koneksi.php', L.map((l, i) => typed(l, seg(typK, i / 3, (i + 1) / 3))), null, { lh: 11, top: 25, size: 6.5 });
+        mysql(g, p, lamps, v === 'mati');
+        // keluaran echo
+        if (outK > 0) {
+          const x = PN.x, y = PN.y + PN.h + 12, w = PN.w;
+          g.save();
+          g.globalAlpha *= outK;
+          rr(g, x, y, w, 30, 4);
+          inkFill(g, p.ok ? '#eaf3f0' : RED_SOFT, 1.3, p.ok ? GREEN : RED);
+          if (p.ok) text(g, 'Koneksi ke database berhasil!', x + w / 2, y + 18, 8, GREEN);
+          else {
+            text(g, 'Koneksi gagal:', x + 8, y + 12, 7.5, RED, 'left');
+            mono(g, ERR[v], x + 8, y + 24, 6.4, RED);
+          }
+          g.restore();
+        }
+        fig(g, pose, ME, 0, { wave: S.wave, wt: S.wt });
+        if (qK > 0 && qK < 1) {
+          const q = arcPt([PN.x + PN.w, PN.y + 26], [MY.x + 8, MY.y + 30], 34, E.soft(qK));
+          card(g, 'mysqli_connect', q[0], q[1], { size: 6.6, h: 14 });
+        }
+        if (resK > 0 && resK < 1) {
+          const q = arcPt([MY.x, MY.y + 70], [PN.x + PN.w / 2 + 40, PN.y + PN.h + 6], -24, E.soft(resK));
+          card(g, p.ok ? '$conn' : 'false', q[0], q[1], { size: 7, h: 14, minW: 30, fill: p.ok ? '#eaf3f0' : RED_SOFT, ink: p.ok ? GREEN : RED });
+        }
+        if (p.ok) sparks(g, MY.x + MY.w / 2, MY.y - 16, seg(T, p.done + 0.2, p.done + 0.8), 14, 6, GREEN);
+      },
+    };
+  }
+
+  // ------------------------------------------------------------------ 14. PWD P13: while + mysqli_fetch_assoc mengisi tabel HTML
+  {
+    const ME = -186;
+    const RES = { x: -166, y: -176, w: 92, h: 92 };
+    const RB = { x: -62, y: -168, w: 114, h: 42 };
+    const BR = { x: 66, y: -176, w: 140, h: 100 };
+    const ROWS = [['2401010001', 'Ahmad'], ['2401010002', 'Budi'], ['2401010003', 'Citra']];
+    const OK = { while: 1, if: 1 };
+    const I0 = 0.7, IT = 1.35;
+    const plan = (v) => {
+      const n = v === 'while' ? 3 : 1;
+      const stop = I0 + n * IT; // pemanggilan terakhir (null) atau berhenti
+      return { v, n, loop: v === 'while', stop, end: stop + (v === 'while' ? 2.2 : 2.0) };
+    };
+    const slotY = (i) => RES.y + 30 + i * 19;
+
+    function result(g, taken, warnK) {
+      R.stand(g, RES.x + 16, RES.x + RES.w - 16, RES.y + RES.h);
+      rr(g, RES.x, RES.y, RES.w, RES.h, 5);
+      inkFill(g, '#f3f2ec', 1.6);
+      text(g, 'MySQL', RES.x + RES.w / 2, RES.y - 6, 9, GREEN);
+      mono(g, '$result', RES.x + 7, RES.y + 13, 7, INK);
+      text(g, '3 baris', RES.x + RES.w - 7, RES.y + 13, 6.6, MUTED, 'right');
+      ln(g, RES.x, RES.y + 18, RES.x + RES.w, RES.y + 18, 1.1);
+      ROWS.forEach((r, i) => {
+        if (i < taken) {
+          rr(g, RES.x + 6, slotY(i) - 6, RES.w - 12, 15, 3);
+          g.save();
+          g.setLineDash([2, 3]);
+          g.strokeStyle = '#c3c8cd';
+          g.lineWidth = 1;
+          g.stroke();
+          g.restore();
+          return;
+        }
+        rr(g, RES.x + 6, slotY(i) - 6, RES.w - 12, 15, 3);
+        inkFill(g, warnK > 0 ? mixCol(warnK) : '#fff', 1.2, warnK > 0.5 ? RED : INK);
+        mono(g, r[1], RES.x + 12, slotY(i) + 4.5, 7, INK);
+      });
+      if (warnK > 0) {
+        g.save();
+        g.globalAlpha *= warnK;
+        text(g, 'tidak pernah diambil', RES.x + RES.w / 2, RES.y + RES.h - 4, 6.6, RED);
+        g.restore();
+      }
+    }
+    const mixCol = (k) => (k > 0.5 ? RED_SOFT : '#fff');
+    function rowBox(g, cur, k, nul, lampK, ok, loop) {
+      R.stand(g, RB.x + 22, RB.x + RB.w - 22, RB.y + RB.h + 34);
+      rr(g, RB.x, RB.y, RB.w, RB.h, 5);
+      inkFill(g, C.paper, 1.6);
+      mono(g, '$row', RB.x + 7, RB.y + 12, 7.2, GREEN);
+      ln(g, RB.x, RB.y + 16, RB.x + RB.w, RB.y + 16, 1.1);
+      if (nul) mono(g, 'null', RB.x + RB.w / 2, RB.y + 33, 10, RED, 'center');
+      else if (cur >= 0) {
+        g.save();
+        g.globalAlpha *= clamp(k, 0, 1);
+        mono(g, `"nim"  => "${ROWS[cur][0]}"`, RB.x + 6, RB.y + 27, 5.8, INK);
+        mono(g, `"nama" => "${ROWS[cur][1]}"`, RB.x + 6, RB.y + 37, 5.8, INK);
+        g.restore();
+      }
+      // papan kondisi di bawahnya
+      const y = RB.y + RB.h + 6;
+      rr(g, RB.x + 8, y, RB.w - 16, 22, 4);
+      inkFill(g, C.paper, 1.3);
+      mono(g, loop ? 'while ($row) ?' : 'if ($row) ?', RB.x + 14, y + 14, 7, INK);
+      lamp(g, RB.x + RB.w - 20, y + 11, lampK, ok, 5.5);
+    }
+    function page(g, shown, newK) {
+      R.stand(g, BR.x + 26, BR.x + BR.w - 26, BR.y + BR.h);
+      rr(g, BR.x, BR.y, BR.w, BR.h, 5);
+      inkFill(g, C.paper, 1.6);
+      ln(g, BR.x, BR.y + 19, BR.x + BR.w, BR.y + 19, 1.2);
+      rr(g, BR.x + 5, BR.y + 4, BR.w - 10, 12, 6);
+      inkFill(g, '#f3f2ec', 1);
+      mono(g, 'localhost/index.php', BR.x + 10, BR.y + 13, 6.4, INK);
+      const tx = BR.x + 8, ty = BR.y + 28, tw = BR.w - 16;
+      rr(g, tx, ty, tw, 14, 2);
+      inkFill(g, '#f3f2ec', 1);
+      text(g, 'nim', tx + 6, ty + 10, 6.8, MUTED, 'left');
+      text(g, 'nama', tx + 72, ty + 10, 6.8, MUTED, 'left');
+      for (let i = 0; i < 3; i++) {
+        const y = ty + 14 + i * 16;
+        ln(g, tx, y + 16, tx + tw, y + 16, 0.8, LINE);
+        if (i >= shown) continue;
+        const k = i === shown - 1 ? newK : 1;
+        g.save();
+        g.globalAlpha *= clamp(k * 2, 0, 1);
+        if (k < 1) stabilo(g, tx + 2, y + 3, tw - 4, 11, 1 - k * 0.6);
+        mono(g, ROWS[i][0], tx + 6, y + 11, 6.6, INK);
+        mono(g, ROWS[i][1], tx + 72, y + 11, 6.6, INK);
+        g.restore();
+      }
+    }
+
+    SC['pwd-fetch'] = {
+      _v: 'while',
+      get dur() {
+        return plan(this._v in OK ? this._v : 'while').end;
+      },
+      width: 420,
+      label: 'SELECT menghasilkan $result berisi 3 baris. Setiap kali mysqli_fetch_assoc dipanggil, satu baris diambil ke $row lalu echo menambahkannya sebagai baris tabel di halaman. Dengan while, ini diulang sampai fetch mengembalikan null dan kondisi menjadi false, jadi ketiga baris tampil. Dengan if, fetch hanya dipanggil sekali, jadi hanya baris pertama yang tampil.',
+      draw(g, S) {
+        const v = vOf(g, this, 'while', OK);
+        const p = plan(v);
+        let T = S.on ? S.u * this.dur : -1;
+        if (!S.on && (S.n > 0 || reducedNow())) T = this.dur;
+        const t = S.t;
+        let pose = breathe(REST(), t);
+        let taken = 0, cur = -1, curK = 0, nul = false, lampK = 0, ok = true, shown = 0, newK = 1, flyA = -1, flyB = -1, warnK = 0, st = '';
+        if (T < 0) pose = mix(pose, CHIN, pulse(t, 6, 2.2, 2.2));
+        else {
+          const look = E.soft(seg(T, 0.1, 0.4)) * (1 - E.soft(seg(T, p.stop + 0.3, p.stop + 0.6)));
+          pose = mix(pose, P({ hF: [12, -60], hB: [-4, -52], head: [10, -117] }), look);
+          if (p.loop) pose = mix(pose, CHEER, E.back(seg(T, p.stop + 0.7, p.stop + 1.1)) * (1 - E.soft(seg(T, p.stop + 1.6, p.stop + 2.0))));
+          else pose = mix(pose, CHIN, E.soft(seg(T, p.stop + 0.7, p.stop + 1.1)) * (1 - E.soft(seg(T, p.end - 0.7, p.end - 0.25))));
+          st = 'query';
+          for (let k = 0; k < p.n; k++) {
+            const s0 = I0 + k * IT;
+            if (T < s0) break;
+            st = 'ambil';
+            flyA = T < s0 + 0.5 ? seg(T, s0, s0 + 0.45) : -1;
+            if (T >= s0 + 0.45) {
+              taken = k + 1;
+              cur = k;
+              curK = seg(T, s0 + 0.45, s0 + 0.6);
+            } else taken = k;
+            lampK = E.out3(seg(T, s0 + 0.5, s0 + 0.7));
+            ok = true;
+            if (T >= s0 + 0.75) st = 'cetak';
+            flyB = T >= s0 + 0.75 && T < s0 + 1.25 ? seg(T, s0 + 0.75, s0 + 1.2) : -1;
+            shown = k + (T >= s0 + 1.2 ? 1 : 0);
+            newK = T >= s0 + 1.2 ? seg(T, s0 + 1.2, s0 + 1.6) : 1;
+          }
+          if (T >= p.stop) {
+            if (p.loop) {
+              // pemanggilan keempat: baris habis
+              st = 'ulang';
+              nul = T >= p.stop + 0.3;
+              lampK = E.out3(seg(T, p.stop + 0.35, p.stop + 0.6));
+              ok = !nul;
+              if (!nul) lampK = 1;
+              cur = nul ? -1 : cur;
+            } else {
+              st = 'if';
+              warnK = E.out3(seg(T, p.stop + 0.2, p.stop + 0.6));
+            }
+          }
+        }
+        step(g, st);
+        pose = legs(pose, 0, 0, { arms: false });
+
+        result(g, taken, warnK);
+        rowBox(g, cur, curK, nul, lampK, ok, p.loop);
+        page(g, shown, newK);
+        if (T >= p.stop + 0.6) {
+          g.save();
+          g.globalAlpha *= seg(T, p.stop + 0.6, p.stop + 0.9);
+          text(g, p.loop ? 'baris habis, loop berhenti' : 'if hanya jalan sekali', RB.x + RB.w / 2, RB.y - 8, 7.5, p.loop ? GREEN : RED);
+          g.restore();
+        }
+        fig(g, pose, ME, 0, { wave: S.wave, wt: S.wt });
+        const k = Math.max(0, Math.min(p.n - 1, Math.floor((Math.max(T, 0) - I0) / IT)));
+        if (flyA > 0 && flyA < 1) {
+          const q = arcPt([RES.x + RES.w - 10, slotY(k)], [RB.x + RB.w / 2, RB.y + 30], 26, E.soft(flyA));
+          card(g, ROWS[k][1], q[0], q[1], { size: 7, h: 14, fill: '#fff' });
+        }
+        if (flyB > 0 && flyB < 1) {
+          const q = arcPt([RB.x + RB.w - 6, RB.y + 30], [BR.x + 50, BR.y + 50 + k * 16], 30, E.soft(flyB));
+          card(g, '<tr>' + ROWS[k][1], q[0], q[1], { size: 6.4, h: 13 });
+        }
+        if (p.loop) sparks(g, BR.x + BR.w / 2, BR.y - 6, seg(T, p.stop + 0.6, p.stop + 1.2), 14, 6, GREEN);
+      },
+    };
+  }
+
+  // ------------------------------------------------------------------ 15. Basis Data P4: WHERE menyaring, ORDER BY mengurutkan
+  {
+    const ME = -188;
+    const SRC = { x: -168, y: -170, w: 150 };
+    const RT = { x: 52, y: -150, w: 152 };
+    const RH = 16, HEAD = 30;
+    const DATA = [['Andi', 'SI', '3.45'], ['Budi', 'SI', '3.10'], ['Citra', 'TI', '3.78'], ['Dian', 'SI', '3.25']];
+    const KEEP = [0, 1, 3];
+    const OK = { DESC: 1, ASC: 1, NONE: 1 };
+    const ORDER = { DESC: [0, 3, 1], ASC: [1, 3, 0], NONE: [0, 1, 3] };
+    const S0 = 0.5, SS = 0.38, M0 = S0 + 4 * SS + 0.3, O0 = M0 + 3 * 0.3 + 0.7;
+    const plan = (v) => ({ v, order: ORDER[v], sort: v !== 'NONE', end: O0 + (v !== 'NONE' ? 1.0 : 0.3) + 2.0 });
+
+    function srcTable(g, scan, lamps, dimK) {
+      const H = HEAD + RH * 4 + 4;
+      R.stand(g, SRC.x + 26, SRC.x + SRC.w - 26, SRC.y + H);
+      rr(g, SRC.x, SRC.y, SRC.w, H, 5);
+      inkFill(g, C.paper, 1.6);
+      mono(g, 'mahasiswa', SRC.x + 8, SRC.y + 12, 7.4, INK);
+      const cols = [SRC.x + 8, SRC.x + 54, SRC.x + 94];
+      ['nama', 'jurusan', 'ipk'].forEach((c, i) => mono(g, c, cols[i], SRC.y + 26, 6.6, MUTED));
+      ln(g, SRC.x, SRC.y + HEAD, SRC.x + SRC.w, SRC.y + HEAD, 1.1);
+      DATA.forEach((r, i) => {
+        const y = SRC.y + HEAD + i * RH;
+        const keep = KEEP.includes(i);
+        g.save();
+        if (!keep) g.globalAlpha *= 1 - 0.6 * dimK;
+        if (scan === i) {
+          rr(g, SRC.x + 3, y + 1, SRC.w - 6, RH - 2, 2);
+          g.fillStyle = '#f3f2ec';
+          g.fill();
+        }
+        r.forEach((c, j) => mono(g, c, cols[j], y + 11.5, 7.2, INK));
+        if (!keep && dimK > 0) ln(g, SRC.x + 6, y + 8, SRC.x + 6 + (SRC.w - 34) * dimK, y + 8, 1.4, RED);
+        g.restore();
+        lamp(g, SRC.x + SRC.w - 12, y + RH / 2, lamps[i], keep, 5);
+      });
+    }
+    function resTable(g, p, moved, sortK, hlK) {
+      const H = HEAD + RH * 3 + 4;
+      R.stand(g, RT.x + 26, RT.x + RT.w - 26, RT.y + H);
+      rr(g, RT.x, RT.y, RT.w, H, 5);
+      inkFill(g, C.paper, 1.6);
+      text(g, 'hasil', RT.x + 8, RT.y + 12, 8, GREEN, 'left');
+      const cols = [RT.x + 10, RT.x + 90];
+      mono(g, 'nama', cols[0], RT.y + 26, 6.6, MUTED);
+      mono(g, 'ipk', cols[1], RT.y + 26, 6.6, MUTED);
+      if (hlK > 0) stabilo(g, cols[1] - 3, RT.y + 18, 24, 11, hlK);
+      if (hlK > 0) mono(g, 'ipk', cols[1], RT.y + 26, 6.6, INK);
+      ln(g, RT.x, RT.y + HEAD, RT.x + RT.w, RT.y + HEAD, 1.1);
+      KEEP.forEach((src, j) => {
+        if (j >= moved) return;
+        const to = p.order.indexOf(src);
+        const pos = lerp(j, to, E.soft(sortK));
+        const y = RT.y + HEAD + pos * RH;
+        mono(g, DATA[src][0], cols[0], y + 11.5, 7.2, INK);
+        mono(g, DATA[src][2], cols[1], y + 11.5, 7.2, INK);
+      });
+    }
+
+    SC['bd-where'] = {
+      _v: 'DESC',
+      get dur() {
+        return plan(this._v in OK ? this._v : 'DESC').end;
+      },
+      width: 420,
+      label: "Tabel mahasiswa berisi Andi, Budi, Citra, dan Dian. WHERE jurusan = 'Sistem Informasi' memeriksa setiap baris: Citra (Teknik Informatika) tidak lolos. Baris yang lolos masuk ke hasil dengan kolom nama dan ipk saja. ORDER BY ipk DESC mengurutkan dari ipk terbesar (Andi, Dian, Budi), ASC dari terkecil (Budi, Dian, Andi). Tanpa ORDER BY, urutan mengikuti penyimpanan dan tidak dijamin.",
+      draw(g, S) {
+        const v = vOf(g, this, 'DESC', OK);
+        const p = plan(v);
+        let T = S.on ? S.u * this.dur : -1;
+        if (!S.on && (S.n > 0 || reducedNow())) T = this.dur;
+        const t = S.t;
+        let pose = breathe(REST(), t);
+        let scan = -1, dimK = 0, moved = 0, fly = -1, flyJ = 0, sortK = 0, hlK = 0, noteK = 0, st = '';
+        const lamps = [0, 0, 0, 0];
+        if (T < 0) pose = mix(pose, CHIN, pulse(t, 6, 2.2, 2.2));
+        else {
+          const tapPt = lp([SRC.x + 10, SRC.y + HEAD + 4 * RH + 6], ME, 0, 1);
+          const point = E.soft(seg(T, 0.1, 0.4)) * (1 - E.soft(seg(T, M0 - 0.3, M0)));
+          pose = mix(pose, P({ hF: tapPt, hB: [-4, -54], head: [9, -114], chest: [4, -89] }), point);
+          const look = E.soft(seg(T, M0, M0 + 0.3)) * (1 - E.soft(seg(T, p.end - 1.9, p.end - 1.6)));
+          pose = mix(pose, P({ hF: [12, -60], hB: [-4, -52], head: [10, -117] }), look);
+          pose = mix(pose, CHEER, E.back(seg(T, p.end - 1.5, p.end - 1.1)) * (1 - E.soft(seg(T, p.end - 0.6, p.end - 0.2))));
+          for (let i = 0; i < 4; i++) {
+            const s = S0 + i * SS;
+            if (T >= s && T < s + SS) scan = i;
+            lamps[i] = E.out3(seg(T, s + 0.1, s + 0.3));
+          }
+          dimK = seg(T, S0 + 4 * SS, S0 + 4 * SS + 0.3);
+          for (let j = 0; j < 3; j++) {
+            const s = M0 + j * 0.3;
+            if (T >= s + 0.45) moved = j + 1;
+            else if (T >= s) {
+              fly = seg(T, s, s + 0.45);
+              flyJ = j;
+            }
+          }
+          if (p.sort) {
+            hlK = seg(T, O0, O0 + 0.3);
+            sortK = seg(T, O0 + 0.2, O0 + 1.0);
+          } else noteK = seg(T, O0, O0 + 0.3);
+          if (T < M0) st = 'where';
+          else if (T < O0) st = 'pilih';
+          else st = p.sort ? 'urut' : 'tanpa';
+        }
+        step(g, st);
+        pose = legs(pose, 0, 0, { arms: false });
+
+        srcTable(g, scan, lamps, dimK);
+        resTable(g, p, moved, sortK, hlK);
+        g.save();
+        g.globalAlpha *= 0.9;
+        text(g, "WHERE jurusan = 'SI'", SRC.x + SRC.w / 2, SRC.y - 8, 7.6, INK);
+        text(g, p.sort ? `ORDER BY ipk ${v}` : 'tanpa ORDER BY', RT.x + RT.w / 2, RT.y - 8, 7.6, p.sort ? INK : MUTED);
+        g.restore();
+        if (noteK > 0) {
+          g.save();
+          g.globalAlpha *= noteK;
+          text(g, 'urutan tidak dijamin', RT.x + RT.w / 2, RT.y - 20, 7.2, RED);
+          g.restore();
+        }
+        text(g, 'SI = Sistem Informasi', SRC.x + SRC.w / 2, SRC.y + HEAD + RH * 4 + 16, 6.6, MUTED);
+        fig(g, pose, ME, 0, { wave: S.wave, wt: S.wt });
+        if (fly > 0 && fly < 1) {
+          const src = KEEP[flyJ];
+          const q = arcPt([SRC.x + SRC.w - 24, SRC.y + HEAD + src * RH + 8], [RT.x + 40, RT.y + HEAD + flyJ * RH + 8], 30, E.soft(fly));
+          card(g, `${DATA[src][0]} ${DATA[src][2]}`, q[0], q[1], { size: 6.8, h: 14 });
+        }
+        sparks(g, RT.x + RT.w / 2, RT.y - 20, seg(T, p.end - 1.6, p.end - 1.0), 14, 6, GREEN);
+      },
+    };
+  }
+
+  // ------------------------------------------------------------------ 16. Algoritma P7: nested while, inner direset atau tidak
+  {
+    const ME = -188;
+    const BO = { x: -160, y: -158, w: 66, h: 50 };
+    const BI = { x: -82, y: -158, w: 66, h: 50 };
+    const TERM = { x: 12, y: -178, w: 194, h: 112 };
+    const OK = { reset: 1, luar: 1 };
+    const N = 4;
+    // Urutan kejadian: [jenis, durasi, data]. Diputar ulang dari awal untuk mendapat keadaan pada waktu T.
+    function events(reset) {
+      const ev = [];
+      let outer = 1, inner = 1;
+      while (true) {
+        ev.push({ k: 'cekL', d: 0.32, outer, inner, ok: outer <= N });
+        if (outer > N) break;
+        if (reset) {
+          inner = 1;
+          ev.push({ k: 'reset', d: 0.32, outer, inner });
+        } else if (outer > 1) ev.push({ k: 'tetap', d: 0.4, outer, inner });
+        while (inner <= outer) {
+          ev.push({ k: 'cetak', d: 0.42, outer, inner, ok: true });
+          inner++;
+        }
+        ev.push({ k: 'cekD', d: 0.34, outer, inner, ok: false });
+        ev.push({ k: 'baris', d: 0.3, outer: outer + 1, inner });
+        outer++;
+      }
+      let t = 0.5;
+      ev.forEach((e) => {
+        e.t = t;
+        t += e.d;
+      });
+      return { ev, end: t + 1.8 };
+    }
+    const PLAN = { reset: events(true), luar: events(false) };
+
+    function counter(g, b, name, val, flipK, prev) {
+      R.stand(g, b.x + 12, b.x + b.w - 12, b.y + b.h);
+      rr(g, b.x, b.y, b.w, b.h, 4);
+      inkFill(g, C.paper, 1.6);
+      mono(g, name, b.x + 6, b.y + 11, 7, MUTED);
+      ln(g, b.x, b.y + 15, b.x + b.w, b.y + 15, 1.1);
+      g.save();
+      g.beginPath();
+      g.rect(b.x + 2, b.y + 16, b.w - 4, b.h - 18);
+      g.clip();
+      const cx = b.x + b.w / 2, cy = b.y + 42;
+      if (flipK > 0 && flipK < 1 && prev !== val) {
+        const k = E.soft(flipK);
+        g.save();
+        g.globalAlpha *= 1 - k;
+        mono(g, String(prev), cx, cy - k * 26, 22, INK, 'center');
+        g.restore();
+        mono(g, String(val), cx, cy + (1 - k) * 26, 22, INK, 'center');
+      } else mono(g, String(val), cx, cy, 22, INK, 'center');
+      g.restore();
+    }
+    function sign(g, b, label, txt, k, ok) {
+      const y = b.y + b.h + 8;
+      rr(g, b.x - 4, y, b.w + 8, 30, 4);
+      inkFill(g, C.paper, 1.3);
+      mono(g, label, b.x + 2, y + 12, 6.4, INK);
+      if (k > 0) {
+        g.save();
+        g.globalAlpha *= k;
+        mono(g, txt, b.x + 2, y + 24, 6.2, MUTED);
+        mono(g, ok ? 'true' : 'false', b.x + b.w - 20, y + 24, 6.2, ok ? GREEN : RED, 'center');
+        g.restore();
+      }
+    }
+
+    SC['alp-nested'] = {
+      _v: 'reset',
+      get dur() {
+        return PLAN[this._v in OK ? this._v : 'reset'].end;
+      },
+      width: 420,
+      label: 'Nested while dengan outer sampai 4. Di setiap putaran luar, inner direset ke 1 lalu loop dalam mencetak 1 sampai outer, sehingga layar berisi 1, 1 2, 1 2 3, 1 2 3 4. Kalau int inner = 1 ditulis di luar loop, inner tidak pernah kembali ke 1, jadi setiap baris hanya berisi satu angka: 1, 2, 3, 4.',
+      draw(g, S) {
+        const v = vOf(g, this, 'reset', OK);
+        const pl = PLAN[v];
+        let T = S.on ? S.u * this.dur : -1;
+        if (!S.on && (S.n > 0 || reducedNow())) T = this.dur;
+        const t = S.t;
+        let pose = breathe(REST(), t);
+        let outer = 1, inner = 1, pO = 1, pI = 1, fO = 1, fI = 1, cur = null, curK = 0, st = '';
+        const lines = [[]];
+        let lastPrint = -1, tok = -1, tokVal = 0;
+        if (T < 0) pose = mix(pose, CHIN, pulse(t, 6, 2.2, 2.2));
+        else {
+          for (const e of pl.ev) {
+            if (T < e.t) break;
+            const k = seg(T, e.t, e.t + e.d);
+            cur = e;
+            curK = k;
+            if (e.k === 'reset') {
+              pI = inner;
+              inner = 1;
+              fI = seg(T, e.t, e.t + 0.25);
+            } else if (e.k === 'cetak') {
+              tok = T < e.t + e.d ? k : -1;
+              tokVal = e.inner;
+              if (T >= e.t + e.d * 0.8) {
+                lines[lines.length - 1].push(e.inner);
+                lastPrint = T - (e.t + e.d * 0.8);
+              }
+              pI = e.inner;
+              inner = e.inner + (T >= e.t + e.d * 0.6 ? 1 : 0);
+              fI = seg(T, e.t + e.d * 0.6, e.t + e.d);
+            } else if (e.k === 'baris') {
+              if (T >= e.t + 0.1) lines.push([]);
+              pO = outer;
+              outer = e.outer;
+              fO = seg(T, e.t + 0.05, e.t + 0.3);
+            }
+          }
+          const ending = pl.ev[pl.ev.length - 1].t + 0.4;
+          const look = E.soft(seg(T, 0.1, 0.4)) * (1 - E.soft(seg(T, ending, ending + 0.3)));
+          pose = mix(pose, P({ hF: [12, -60], hB: [-4, -52], head: [10, -117] }), look);
+          if (v === 'reset') pose = mix(pose, CHEER, E.back(seg(T, ending + 0.3, ending + 0.7)) * (1 - E.soft(seg(T, ending + 1.2, ending + 1.6))));
+          else pose = mix(pose, CHIN, E.soft(seg(T, ending + 0.3, ending + 0.7)) * (1 - E.soft(seg(T, pl.end - 0.7, pl.end - 0.25))));
+          if (cur) st = { cekL: 'luar', reset: 'reset', tetap: 'tetap', cetak: 'dalam', cekD: 'dalam', baris: 'baris' }[cur.k];
+          if (cur && cur.k === 'cekL' && !cur.ok) st = 'selesai';
+        }
+        step(g, st);
+        pose = legs(pose, 0, 0, { arms: false });
+
+        counter(g, BO, 'outer', outer, fO, pO);
+        counter(g, BI, 'inner', inner, fI, pI);
+        const oK = cur && cur.k === 'cekL' ? E.out3(curK * 3) : 0;
+        const iK = cur && (cur.k === 'cetak' || cur.k === 'cekD') ? E.out3(curK * 3) : 0;
+        sign(g, BO, 'outer <= 4 ?', cur && cur.k === 'cekL' ? `${cur.outer} <= 4` : '', oK, cur ? cur.ok : true);
+        sign(g, BI, 'inner<=outer?', cur && iK > 0 ? `${cur.inner} <= ${cur.outer}` : '', iK, cur ? cur.ok : true);
+        if (cur && (cur.k === 'reset' || cur.k === 'tetap')) {
+          g.save();
+          g.globalAlpha *= Math.min(1, curK * 4) * (1 - seg(curK, 0.8, 1));
+          if (cur.k === 'reset') card(g, 'inner = 1', BI.x + BI.w / 2, BI.y - 12, { size: 6.8, h: 14, fill: '#eaf3f0', ink: GREEN });
+          else card(g, `inner tetap ${cur.inner}`, BI.x + BI.w / 2, BI.y - 12, { size: 6.6, h: 14, fill: RED_SOFT, ink: RED });
+          g.restore();
+        }
+        // terminal keluaran
+        R.stand(g, TERM.x + 30, TERM.x + TERM.w - 30, TERM.y + TERM.h);
+        R.term(g, TERM.x, TERM.y, TERM.w, TERM.h, 'output');
+        lines.forEach((l, r) => {
+          l.forEach((n, c) => {
+            const isNew = r === lines.length - 1 && c === l.length - 1 && lastPrint >= 0 && lastPrint < 0.3;
+            g.save();
+            if (isNew) g.globalAlpha *= seg(lastPrint, 0, 0.2);
+            mono(g, String(n), TERM.x + 14 + c * 20, TERM.y + 32 + r * 20, 14, HL);
+            g.restore();
+          });
+        });
+        if (T >= pl.end - 1.4 && v === 'luar') {
+          g.save();
+          g.globalAlpha *= seg(T, pl.end - 1.4, pl.end - 1.1);
+          text(g, 'tiap baris hanya satu angka', TERM.x + TERM.w / 2, TERM.y + TERM.h + 14, 7.5, RED);
+          g.restore();
+        }
+        fig(g, pose, ME, 0, { wave: S.wave, wt: S.wt });
+        if (tok > 0 && tok < 0.8) {
+          const r = lines.length - 1, c = lines[r].length;
+          const q = arcPt([BI.x + BI.w / 2, BI.y + 30], [TERM.x + 18 + c * 20, TERM.y + 27 + r * 20], 40, E.soft(tok / 0.8));
+          card(g, String(tokVal), q[0], q[1], { size: 10, h: 18, minW: 16 });
+        }
+        if (v === 'reset') sparks(g, TERM.x + TERM.w / 2, TERM.y - 8, seg(T, pl.end - 1.4, pl.end - 0.8), 14, 6, GREEN);
+      },
+    };
+  }
+
   // Tema Sinau untuk runtime
   if (window.STICK && window.STICK.theme) {
     window.STICK.theme({
