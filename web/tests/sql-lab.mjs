@@ -154,6 +154,10 @@ INSERT INTO peminjaman VALUES ('PJ0001','BK001','AG001'), ('PJ0002','BK002','AG0
   const msg = (sql, db) => run(sql, db).text.split('\n\n').pop();
   let db = maria();
   ok('CREATE TABLE salinan AS SELECT * FROM buku; SELECT COUNT(*) FROM salinan;', 'COUNT(*)\n3\n1 baris', db);
+  // Tipe kolom salinan diambil dari kolom asal SELECT, bukan dari kolom senama di tabel lain
+  { const d = maria(); ok('CREATE TABLE s AS SELECT judul AS stok, id_pinjam, COUNT(*) AS n FROM peminjaman INNER JOIN buku ON peminjaman.id_buku = buku.id_buku GROUP BY judul, id_pinjam;', null, d);
+    const desc = run('DESCRIBE s;', d).text;
+    assert.match(desc, /stok \| varchar\(100\)/); assert.match(desc, /id_pinjam \| char\(6\)/); assert.match(desc, /n \| bigint/); n++; }
   err("INSERT INTO buku (id_buku, stok) VALUES ('BK009', 1);", 1364, maria());
   err("INSERT INTO buku VALUES ('BK0099','x',1);", 1406, maria());
   err("UPDATE buku SET stokk = 1 WHERE id_buku = 'BK001';", 1054, maria());
@@ -161,6 +165,13 @@ INSERT INTO peminjaman VALUES ('PJ0001','BK001','AG001'), ('PJ0002','BK002','AG0
   assert.match(msg("UPDATE buku SET stokk = 1 WHERE id_buku = 'BK001';"), /in 'field list'/);
   err("SELECT * FROM buku WHERE judul = Sistem Basis Data;", 1064, maria());
   err('SELECT * FROM buku LIMIT -3;', 1064, maria());
+  // Cek teks tanpa kutip tidak boleh menyentuh alias di dalam subquery
+  ok('SELECT * FROM buku WHERE id_buku IN (SELECT p.id_buku FROM peminjaman p);', null, maria());
+  ok('SELECT * FROM buku WHERE id_buku IN (SELECT p.id_buku FROM peminjaman p);');
+  ok('SELECT * FROM buku WHERE stok > (SELECT AVG(x.stok) FROM buku x) OR id_buku IN (SELECT pj.id_buku FROM peminjaman AS pj WHERE pj.tgl_kembali IS NULL);', null, maria());
+  ok('UPDATE buku SET stok = 1 WHERE id_buku IN (SELECT p.id_buku FROM peminjaman p);', null, maria());
+  err('SELECT * FROM buku WHERE id_buku IN (SELECT p.id_buku FROM peminjaman p WHERE p.id_anggota = Ahmad Fauzi);', 1064, maria());
+  err('DELETE FROM buku WHERE judul = Sistem Basis;', 1064, maria());
   ok('SELECT judul, COUNT(*) FROM buku;', null, maria());
   err('SELECT judul, COUNT(*) FROM buku;', 1140);
   assert.match(msg('SELECT id_buku FROM peminjaman INNER JOIN buku ON peminjaman.id_buku = buku.id_buku;', maria()), /Column 'id_buku' in SELECT is ambiguous/);

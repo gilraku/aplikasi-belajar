@@ -92,11 +92,11 @@ function runSqlLab(db, input) {
       if (q.error) return fail(q.code || 1064, q.error);
       const lower = q.labels.map(l => l.toLowerCase());
       if (lower.some((l, i) => lower.indexOf(l) !== i)) return fail(1060, 'Duplicate column name. Beri alias berbeda dengan AS.');
-      const source = l => schema.tables.flatMap(t => t.columns).find(c => c.name === l);
       const columns = lower.map((l, i) => {
-        const c = source(l);
+        const c = q.meta && q.meta[i];
         if (c) return { name: l, type: c.type, required: !!c.required, ...(c.def !== undefined ? { def: c.def } : {}) };
-        return { name: l, type: q.rows.every(r => r[i] == null || sqlIsNum(r[i]) || /^-?\d+(\.\d+)?$/.test(String(r[i]))) ? 'decimal(20,4)' : 'varchar(255)' };
+        const vals = q.rows.map(r => r[i]).filter(v => v != null).map(String);
+        return { name: l, type: vals.every(v => /^-?\d+$/.test(v)) && vals.length ? 'bigint' : vals.every(v => /^-?\d+(\.\d+)?$/.test(v)) ? 'decimal(20,4)' : 'varchar(255)' };
       });
       db.transaction = null;
       schema.tables.push({ name, columns, key: '', rows: q.rows.map(r => r.map(v => v == null ? null : String(v))) });
@@ -529,8 +529,12 @@ function sqlCompile(text, env) {
   let toks;
   try { toks = sqlTokens(text); } catch (e) { return e; }
   // Syarat WHERE: dua kata polos berurutan (WHERE judul = Sistem Basis Data) = teks lupa dikutip
-  if (env.bare) for (let k = 1; k < toks.length; k++) {
+  // Subquery (SELECT …) dilewati: alias tabel/kolom di dalamnya sah dan diperiksa saat subquery itu dikompilasi
+  if (env.bare) for (let k = 1, d = 0, sub = 0; k < toks.length; k++) {
     const a = toks[k - 1], b = toks[k], up = t => t.v.toUpperCase();
+    if (a.t === 'op' && a.v === '(') { d++; if (!sub && b.t === 'id' && up(b) === 'SELECT') sub = d; }
+    if (a.t === 'op' && a.v === ')') { if (sub === d) sub = 0; d--; }
+    if (sub) continue;
     if (a.t === 'id' && b.t === 'id' && !SQL_RESERVED.has(up(a)) && !SQL_RESERVED.has(up(b)) && !SQL_BARE_OK.has(up(a)) && !SQL_BARE_OK.has(up(b)) && toks[k + 1]?.v !== '(')
       return { error: `You have an error in your SQL syntax near '${text.slice(b.s, b.s + 30)}'. Nilai teks harus diapit kutip tunggal.`, code: 1064 };
   }
@@ -1287,5 +1291,7 @@ function sqlQuery(schema, command) {
   }
   if (m[1]) out = out.filter((r, i) => out.findIndex(x => x.map(sqlShow).join('\u0001').toLowerCase() === r.map(sqlShow).join('\u0001').toLowerCase()) === i);
   if (m[8]) { const offset = m[9] !== undefined ? +m[8] : +(m[10] || 0), count = m[9] !== undefined ? +m[9] : +m[8]; out = out.slice(offset, offset + count); }
-  return { labels: items.map(it => it.label), rows: out };
+  // meta: kolom asal untuk item yang berupa kolom polos (dipakai CREATE TABLE … AS SELECT), selain itu null
+  const meta = items.map(it => { const i = /^[a-z_]\w*(?:\.[a-z_]\w*)?$/i.test(it.expr) ? resolve(it.expr) : -1; return typeof i === 'number' && i >= 0 ? cols[i] : null; });
+  return { labels: items.map(it => it.label), rows: out, meta };
 }
