@@ -8,6 +8,7 @@
 const R = (judul, url, sumber, bahasa, ket, bagian) => ({ judul, url, sumber, bahasa, ket, ...(bagian ? { bagian } : {}) });
 
 const W3 = 'W3Schools', MDN = 'MDN Web Docs', LCPP = 'LearnCpp.com', CPPREF = 'cppreference.com', WIKI_ID = 'Wikipedia (Indonesia)', WIKI_EN = 'Wikipedia', MYSQL = 'Dokumentasi MySQL';
+const PHPNET = 'Dokumentasi PHP (php.net)', XAMPP = 'Apache Friends (XAMPP)';
 const QURAN = 'Quran.com (terjemahan bisa diganti ke Bahasa Indonesia)', BC = 'British Council LearnEnglish', CAM = 'Cambridge Dictionary';
 
 module.exports = {
@@ -216,6 +217,39 @@ module.exports = {
     R('Window.localStorage', 'https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage', MDN, 'EN', 'Menyimpan data di browser.', 'localStorage: Menyimpan Data di Browser'),
     R('Element.closest()', 'https://developer.mozilla.org/en-US/docs/Web/API/Element/closest', MDN, 'EN', 'Mencari induk terdekat yang cocok selector.', 'Menelusuri Pohon DOM'),
     R('Element.insertAdjacentHTML()', 'https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML', MDN, 'EN', 'Menyisipkan HTML di posisi tertentu tanpa menimpa isi.', 'Menempel di Posisi Tertentu'),
+  ],
+  'pemrograman-web-dinamis/p9': [
+    R('JavaScript Form Validation', 'https://www.w3schools.com/js/js_validation.asp', W3, 'EN', 'Sumber belajar dari modul: validasi form dengan contoh yang bisa dicoba.', 'Validasi Form: Isi yang Masuk'),
+    R('Client-side form validation', 'https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms/Form_validation', MDN, 'EN', 'Sumber belajar dari modul: validasi bawaan HTML5 dan dengan JavaScript.', 'Validasi Bawaan HTML5'),
+    R('Event: preventDefault()', 'https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault', MDN, 'EN', 'Membatalkan aksi bawaan browser, misalnya pengiriman form.', 'preventDefault: Tahan'),
+    R('Regular expressions', 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions', MDN, 'EN', 'Panduan regex di JavaScript: ^, $, [ ], +, \\d.', 'Regex Email'),
+  ],
+  'pemrograman-web-dinamis/p10': [
+    R('XAMPP', 'https://www.apachefriends.org/', XAMPP, 'EN', 'Situs resmi untuk mengunduh XAMPP (disebut di modul).', 'XAMPP: Server'),
+    R('PHP Tutorial', 'https://www.w3schools.com/php/', W3, 'EN', 'Sumber belajar dari modul: dasar PHP dengan contoh.', 'Sintaks Dasar PHP'),
+    R('Strings', 'https://www.php.net/manual/en/language.types.string.php', PHPNET, 'EN', 'Kutip tunggal vs ganda dan penyisipan variabel.', 'echo dan String'),
+    R('Comparison Operators', 'https://www.php.net/manual/en/language.operators.comparison.php', PHPNET, 'EN', 'Beda == dan === beserta tabel perbandingannya.', 'Kondisi if'),
+    R('date_default_timezone_set', 'https://www.php.net/manual/en/function.date-default-timezone-set.php', PHPNET, 'EN', 'Mengatur zona waktu untuk date().', 'Kondisi if'),
+  ],
+  'pemrograman-web-dinamis/p11': [
+    R('PHP Form Handling', 'https://www.w3schools.com/php/php_forms.asp', W3, 'EN', 'Sumber belajar dari modul: GET, POST, dan $_POST.', 'Metode GET'),
+    R('Dealing with Forms', 'https://www.php.net/manual/en/tutorial.forms.php', PHPNET, 'EN', 'Sumber belajar dari modul: tutorial resmi pengolahan form.', 'Mengolah Input di Server'),
+    R('htmlspecialchars', 'https://www.php.net/manual/en/function.htmlspecialchars.php', PHPNET, 'EN', 'Karakter apa saja yang diubah dan arti ENT_QUOTES.', 'htmlspecialchars'),
+    R('filter_var', 'https://www.php.net/manual/en/function.filter-var.php', PHPNET, 'EN', 'Validasi email dan jenis filter lain.', 'empty() dan filter_var()'),
+    R('file_put_contents', 'https://www.php.net/manual/en/function.file-put-contents.php', PHPNET, 'EN', 'Menulis ke file dan arti FILE_APPEND.', 'Simpan ke File Teks'),
+  ],
+  'pemrograman-web-dinamis/p12': [
+    R('PHP Connect to MySQL', 'https://www.w3schools.com/php/php_mysql_connect.asp', W3, 'EN', 'Contoh mysqli_connect dengan gaya prosedural seperti modul.', 'Menghubungkan PHP ke MySQL'),
+    R('mysqli_connect', 'https://www.php.net/manual/en/function.mysqli-connect.php', PHPNET, 'EN', 'Urutan parameter dan nilai kembalian.', 'Menghubungkan PHP ke MySQL'),
+    R('SQL CREATE TABLE', 'https://www.w3schools.com/sql/sql_create_table.asp', W3, 'EN', 'Membuat tabel dan tipe data kolom.', 'Merancang Tabel mahasiswa'),
+    R('include', 'https://www.php.net/manual/en/function.include.php', PHPNET, 'EN', 'Cara kerja include dan bedanya dengan require.', 'config.php dan include'),
+  ],
+  'pemrograman-web-dinamis/p13': [
+    R('PHP MySQL Database', 'https://www.w3schools.com/php/php_mysql_intro.asp', W3, 'EN', 'Sumber belajar dari modul: insert, select, update, delete dengan PHP.', 'Query Dasar MySQL'),
+    R('MySQL Improved Extension (mysqli)', 'https://www.php.net/manual/en/book.mysqli.php', PHPNET, 'EN', 'Sumber belajar dari modul: dokumentasi resmi mysqli.', 'Menjalankan Query dari PHP'),
+    R('mysqli_result::fetch_assoc', 'https://www.php.net/manual/en/mysqli-result.fetch-assoc.php', PHPNET, 'EN', 'Mengambil satu baris hasil sebagai array asosiatif.', 'Menjalankan Query dari PHP'),
+    R('Prepared Statements (mysqli)', 'https://www.php.net/manual/en/mysqli.quickstart.prepared-statements.php', PHPNET, 'EN', 'Cara resmi mencegah SQL Injection dengan mysqli.', 'SQL Injection dan Prepared Statement'),
+    R('SQL Injection', 'https://www.w3schools.com/sql/sql_injection.asp', W3, 'EN', 'Contoh serangan 1=1 dan pencegahannya.', 'SQL Injection dan Prepared Statement'),
   ],
   'pemrograman-web-dinamis/p8': [
     R('HTML Tutorial', 'https://www.w3schools.com/html/', W3, 'EN', 'Ulang HTML.'),

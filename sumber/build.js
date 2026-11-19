@@ -11,7 +11,7 @@ const lib=[BD, {
   meetings: [spread(require('./data_aik_p1.js'),1), spread(require('./data_aik_p2.js'),4), spread(require('./data_aik_p3.js'),7), spread(require('./data_aik_p4.js'),0), spread(require('./data_aik_p5.js'),5), spread(require('./data_aik_p6.js'),8), spread(require('./data_aik_p7.js'),2), spread(require('./data_aik_p8.js'),3), ...[[9,6],[10,9],[11,2],[13,5],[14,8]].map(([n,sd])=>spread(require('./data_aik_p'+n+'.js'),sd))]
 }, {
   id: 'pemrograman-web-dinamis', nama: 'Pemrograman Web Dinamis', prodi: 'PJJ Sistem Informasi', kampus: 'Universitas Siber Muhammadiyah', dosen: 'Wicaksono Yuli Sulistyo, S.Kom., M.Kom., CSA.',
-  meetings: [spread(require('./data_pwd_p1.js'),5), spread(require('./data_pwd_p2.js'),8), spread(require('./data_pwd_p3.js'),1), spread(require('./data_pwd_p4.js'),4), spread(require('./data_pwd_p5.js'),7), spread(require('./data_pwd_p6.js'),0), spread(require('./data_pwd_p7.js'),3), spread(require('./data_pwd_p8.js'),6)]
+  meetings: [spread(require('./data_pwd_p1.js'),5), spread(require('./data_pwd_p2.js'),8), spread(require('./data_pwd_p3.js'),1), spread(require('./data_pwd_p4.js'),4), spread(require('./data_pwd_p5.js'),7), spread(require('./data_pwd_p6.js'),0), spread(require('./data_pwd_p7.js'),3), spread(require('./data_pwd_p8.js'),6), ...[[9,2],[10,5],[11,8],[12,1],[13,4]].map(([n,sd])=>spread(require('./data_pwd_p'+n+'.js'),sd))]
 }, {
   id: 'dasar-sistem-informasi', nama: 'Dasar-dasar Sistem Informasi', prodi: 'PJJ Sistem Informasi', kampus: 'Universitas Siber Muhammadiyah', dosen: 'Khairina Eka Setyaputri',
   meetings: [spread(require('./data_dsi_p1.js'),2), spread(require('./data_dsi_p2.js'),5), spread(require('./data_dsi_p3.js'),8), spread(require('./data_dsi_p4.js'),1), spread(require('./data_dsi_p5.js'),4), spread(require('./data_dsi_p6.js'),7), spread(require('./data_dsi_p7.js'),0), spread(require('./data_dsi_p8.js'),3)]
@@ -26,6 +26,8 @@ const lib=[BD, {
 const MAT={'dasar-sistem-informasi':require('./materi_dsi.js'),'bahasa-indonesia':require('./materi_bindo.js'),'aik':require('./materi_aik.js'),'pemrograman-web-dinamis':require('./materi_pwd.js'),'sif002-basis-data':require('./materi_bd.js'),'algoritma-pemrograman':require('./materi_alp.js'),'bahasa-inggris':require('./materi_bing.js')};
 // AIK P9–P14 (menuju UAS) ada di berkas materi terpisah
 MAT.aik=Object.assign({},MAT.aik,require('./materi_aik_uas.js'));
+// PWD P9–P13 (menuju UAS) juga di berkas materi terpisah
+MAT['pemrograman-web-dinamis']=Object.assign({},MAT['pemrograman-web-dinamis'],require('./materi_pwd_uas.js'));
 Object.entries(MAT).forEach(([cid,mm])=>{const c=lib.find(x=>x.id===cid);Object.entries(mm).forEach(([mid,blocks])=>{const m=c.meetings.find(x=>x.id===mid);if(!m)throw new Error('materi '+cid+'/'+mid);m.materi=blocks;});});
 // ➕ Materi tambahan di luar modul
 const T=require('./tambahan.js');
