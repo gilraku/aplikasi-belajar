@@ -240,7 +240,7 @@ module.exports = {
   ],
   'pemrograman-web-dinamis/p12': [
     R('PHP Connect to MySQL', 'https://www.w3schools.com/php/php_mysql_connect.asp', W3, 'EN', 'Contoh mysqli_connect dengan gaya prosedural seperti modul.', 'Menghubungkan PHP ke MySQL'),
-    R('mysqli_connect', 'https://www.php.net/manual/en/function.mysqli-connect.php', PHPNET, 'EN', 'Urutan parameter dan nilai kembalian.', 'Menghubungkan PHP ke MySQL'),
+    R('mysqli_connect (mysqli::__construct)', 'https://www.php.net/manual/en/mysqli.construct.php', PHPNET, 'EN', 'Urutan parameter dan nilai kembalian.', 'Menghubungkan PHP ke MySQL'),
     R('SQL CREATE TABLE', 'https://www.w3schools.com/sql/sql_create_table.asp', W3, 'EN', 'Membuat tabel dan tipe data kolom.', 'Merancang Tabel mahasiswa'),
     R('include', 'https://www.php.net/manual/en/function.include.php', PHPNET, 'EN', 'Cara kerja include dan bedanya dengan require.', 'config.php dan include'),
   ],
