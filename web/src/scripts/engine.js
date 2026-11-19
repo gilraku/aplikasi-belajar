@@ -90,7 +90,7 @@ window.addEventListener('message', e => {
   const m = e.data; if (!m || typeof m !== 'object' || m.__pg == null) return;
   const f = document.getElementById('pg-frame-' + m.__pg); if (!f || e.source !== f.contentWindow) return;
   const box = document.getElementById('pg-console-' + m.__pg); if (!box) return;
-  if (box.dataset.fresh !== '1') { box.innerHTML = ''; box.dataset.fresh = '1'; }
+  if (box.dataset.fresh !== '1') { box.replaceChildren(); box.dataset.fresh = '1'; }
   const line = document.createElement('div'); line.className = (PG_COLORS[m.t] || 'text-slate-200') + ' whitespace-pre-wrap break-words';
   line.textContent = (PG_ICON[m.t] || '› ') + String(m.m).slice(0, 2000); box.appendChild(line); box.scrollTop = box.scrollHeight;
 });
@@ -150,8 +150,13 @@ function showToast(message, type = 'info') {
   const t = document.createElement('div');
   t.className = `${bg} text-white px-4 py-3 rounded-xl shadow-lg text-sm font-semibold pointer-events-auto transition-all duration-300`;
   t.textContent = message;
-  $('toastContainer').appendChild(t);
-  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3400);
+  const box = $('toastContainer');
+  box.appendChild(t);
+  const live = $('modalRoot').open && $('modalLive'); if (live) live.textContent = message;
+  // Wadah toast berupa popover="manual" (top layer) supaya tetap terlihat di atas jendela <dialog> yang sedang terbuka.
+  // Ditutup lalu dibuka lagi agar selalu berada paling atas di top layer.
+  if (box.showPopover) { try { if (box.matches(':popover-open')) box.hidePopover(); box.showPopover(); } catch (e) {} }
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => { t.remove(); if (!box.children.length && box.hidePopover) { try { box.hidePopover(); } catch (e) {} } }, 300); }, 3400);
 }
 async function copyText(text) {
   try { await navigator.clipboard.writeText(text); return true; } catch (e) {
@@ -1151,7 +1156,7 @@ function renderHeader() {
 function renderNext() {
   const box = $('appNext'); if (!box) return;
   const c = S.course, m = S.meeting;
-  if (!m) { box.innerHTML = ''; return; }
+  if (!m) { box.replaceChildren(); return; }
   const tabs = availableTabs(m), ti = tabs.findIndex(t => t.id === S.tab), nextTab = tabs[ti + 1];
   const mi = c.meetings.indexOf(m), prevM = c.meetings[mi - 1], nextM = c.meetings[mi + 1];
   const short = x => `P${esc(x.nomor)}: ${esc(x.judul)}`;
@@ -1218,7 +1223,7 @@ function fetchMeeting(c, m) {
 function loadMeetingThen(c, m, forced) {
   const seq = routeSeq;
   if (!$('appHeader').innerHTML) renderHeader();
-  $('appNext').innerHTML = '';
+  $('appNext').replaceChildren();
   $('appMain').innerHTML = `<div class="py-16 flex flex-col items-center gap-3 text-slate-500"><div class="w-9 h-9 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin"></div>
     <p class="text-sm font-semibold">Memuat ${esc(c.nama)} • Pertemuan ${esc(m.nomor)}…</p></div>`;
   fetchMeeting(c, m).then(() => { if (seq === routeSeq) route(forced); }).catch(() => {
@@ -1384,7 +1389,7 @@ function confirmDelete(cid, mid) {
   if (!m) return;
   openModal(`<h3 class="text-lg font-extrabold text-slate-900">Hapus materi ini?</h3>
     <p class="text-sm text-slate-600 mt-2">Pertemuan ${esc(m.nomor)}: <strong>${esc(m.judul)}</strong> (${esc(c.nama)}) akan dihapus dari browser ini. Materi bawaan dari file tidak ikut terhapus.</p>
-    <div class="flex justify-end gap-2 mt-5"><button onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200">Batal</button>
+    <div class="flex justify-end gap-2 mt-5"><button autofocus onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200">Batal</button>
     <button onclick="deleteImported('${esc(cid)}','${esc(mid)}');closeModal();showToast('Materi dihapus.');route()" class="px-4 py-2 rounded-xl text-sm font-bold bg-rose-600 text-white hover:bg-rose-700">Hapus</button></div>`, 'max-w-md');
 }
 
@@ -1599,7 +1604,7 @@ function startExam(quick = false) {
   const sim = quick === 'sim';
   openModal(`<h3 class="text-lg font-extrabold text-slate-900">${sim ? `🎯 Mulai ${simName(S.meeting)}?` : quick ? 'Mulai Simulasi Cepat?' : '📝 Mulai mode ujian?'}</h3>
     <ul class="text-sm text-slate-600 mt-2 list-disc pl-5 space-y-1"><li>${sim ? `Kerjakan ${simIdx(S.meeting).length} soal ${simName(S.meeting) === 'Simulasi UTS' ? 'simulasi UTS berurutan, seperti kuis simulasi di LMS' : 'kuis LMS berurutan, dengan nilai di akhir seperti di LMS'}.` : quick ? 'Kerjakan 25 soal yang diambil dari berbagai topik.' : `Kerjakan semua ${S.meeting.quiz.length} soal.`}</li><li>Jawaban tersimpan di browser ini dan pembahasan muncul setelah selesai.</li></ul>
-    <div class="flex justify-end gap-2 mt-5"><button onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200">Batal</button>
+    <div class="flex justify-end gap-2 mt-5"><button autofocus onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200">Batal</button>
     <button onclick="beginExam(${sim ? "'sim'" : !!quick})" class="px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700">Mulai</button></div>`, 'max-w-md');
 }
 function beginExam(quick = false) {
@@ -1644,7 +1649,7 @@ function finishExam(force) {
   if (left && !force) {
     openModal(`<h3 class="text-lg font-extrabold text-slate-900">Masih ada ${left} soal belum dijawab</h3>
       <p class="text-sm text-slate-600 mt-2">Soal yang kosong tidak mendapat nilai. Tetap selesai sekarang?</p>
-      <div class="flex justify-end gap-2 mt-5"><button onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200">Lanjut mengerjakan</button>
+      <div class="flex justify-end gap-2 mt-5"><button autofocus onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200">Lanjut mengerjakan</button>
       <button onclick="finishExam(true)" class="px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700">Selesai</button></div>`, 'max-w-md');
     return;
   }
@@ -1663,13 +1668,36 @@ function resetQuiz() { S.exam = null; S.quizFilter = 'all'; S.prog.quiz = {}; sa
 // =====================================================================
 //  MODAL: Bagikan / Unduh & Tambah Materi
 // =====================================================================
+// Jendela modal memakai <dialog> asli + showModal(): halaman di belakang otomatis tidak bisa difokus (inert), fokus tetap
+// di dalam jendela, Esc dan tombol Back di Android menutupnya, dan fokus kembali ke tombol pembukanya saat ditutup.
 function openModal(html, width = 'max-w-lg') {
-  $('modalRoot').innerHTML = `<div class="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 overflow-y-auto" onclick="if(event.target===this)closeModal()">
-    <div class="relative w-full ${width} bg-white rounded-2xl shadow-2xl p-5 sm:p-6 my-auto">
-      <button onclick="closeModal()" class="absolute top-3 right-3 p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100" aria-label="Tutup">${svg('x')}</button>${html}</div></div>`;
+  const dlg = $('modalRoot');
+  dlg.className = `modal-dlg w-[calc(100%-2rem)] ${width} bg-white rounded-2xl shadow-2xl p-5 sm:p-6`;
+  // #modalLive: saat jendela terbuka, halaman di luarnya (termasuk wadah toast) tidak dibacakan pembaca layar,
+  // jadi pesan toast juga ditulis ke sini.
+  dlg.innerHTML = `<button type="button" onclick="closeModal()" class="absolute top-3 right-3 p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100" aria-label="Tutup">${svg('x')}</button>${html}<p id="modalLive" class="sr-only" role="status"></p>`;
+  const h = dlg.querySelector('h2, h3');
+  if (h) { h.id = 'modalTitle'; dlg.setAttribute('aria-labelledby', 'modalTitle'); } else dlg.removeAttribute('aria-labelledby');
+  if (!dlg.open) { if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', ''); }
+  // Fokus awal: tombol yang diberi autofocus (mis. "Batal" di konfirmasi hapus); kalau tidak ada, tombol Tutup.
+  const f = dlg.querySelector('[autofocus]') || dlg.querySelector('button');
+  if (f) f.focus({ preventScroll: true });
+  dlg.scrollTop = 0;
 }
-function closeModal() { $('modalRoot').innerHTML = ''; }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+function closeModal() { const dlg = $('modalRoot'); if (dlg.open) { if (dlg.close) dlg.close(); else dlg.removeAttribute('open'); } dlg.replaceChildren(); }
+(function () {
+  const dlg = $('modalRoot'); if (!dlg) return;
+  // Esc / tombol Back menutup lewat browser: kosongkan isinya juga supaya sama dengan closeModal().
+  // Event 'close' datang belakangan (antre); kalau jendela sudah dibuka lagi dengan isi baru, isi itu jangan ikut dihapus.
+  dlg.addEventListener('close', () => { if (!dlg.open) dlg.replaceChildren(); });
+  // Klik di area gelap (backdrop) menutup jendela, seperti sebelumnya. Klik di backdrop sampai ke <dialog> itu sendiri,
+  // jadi dicek apakah titik kliknya di luar kotak jendela.
+  dlg.addEventListener('click', e => {
+    if (e.target !== dlg) return;
+    const r = dlg.getBoundingClientRect();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) closeModal();
+  });
+})();
 
 // =====================================================================
 //  CARI CEPAT: cari istilah/kalimat di semua pertemuan satu mata kuliah
@@ -1749,7 +1777,7 @@ function openSearch(cid) {
   </div>`, 'max-w-2xl');
   const inp = $('cariQ');
   inp.addEventListener('input', () => { clearTimeout(CARI.timer); CARI.timer = setTimeout(runSearch, 150); });
-  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const first = document.querySelector('#cariOut [data-cari]'); if (first && CARI.results.length) first.focus(); } });
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); const first = document.querySelector('#cariOut [data-cari]'); if (first && CARI.results.length) first.focus(); } });
   setTimeout(() => { inp.focus(); inp.select(); }, 30);
   runSearch();
 }
@@ -1991,7 +2019,7 @@ function importProgressFile(input) { const f = input.files && input.files[0]; if
 function confirmResetProgress() {
   openModal(`<h3 class="text-lg font-extrabold text-slate-900">Hapus semua progres?</h3>
     <p class="text-sm text-slate-600 mt-2">Semua jawaban latihan, sesi dan hasil ujian, flashcard yang ditandai paham, dan progres belajar di browser ini akan dihapus. Tidak bisa dibatalkan.</p>
-    <div class="flex justify-end gap-2 mt-5"><button onclick="openProgressModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200">Batal</button>
+    <div class="flex justify-end gap-2 mt-5"><button autofocus onclick="openProgressModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200">Batal</button>
     <button onclick="PROGRESS.reset();S.exam=null;S.examReview=false;S.lastExamResult=null;closeModal();if(S.course&&S.meeting)S.prog=loadProgress(S.course,S.meeting);route(curHash());showToast('Progres dihapus. Mulai lagi dari awal!')" class="px-4 py-2 rounded-xl text-sm font-bold bg-rose-600 text-white hover:bg-rose-700">Hapus</button></div>`, 'max-w-md');
 }
 // Gambar materi (materi/….webp) disisipkan sebagai data URI supaya file .html unduhan tetap bergambar tanpa internet
