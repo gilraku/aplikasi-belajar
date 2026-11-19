@@ -50,38 +50,57 @@ try {
         if (await el.count() !== 1) { fail(`${cur}: elemen adegan tidak ada`); continue; }
         await el.scrollIntoViewIfNeeded();
         const keys = b.steps.map(s => s.sorot);
-        // catat setiap langkah yang menyala sampai adegan selesai
-        const seen = await page.evaluate(async ({ scene, reduced }) => {
+        const opts = (b.pilih && b.pilih.opsi) || [null];
+        const sel = `#appMain .adg:has(stick-scene[scene="${b.scene}"])`;
+        // catat setiap langkah yang menyala sampai adegan selesai (sekali per pilihan nilai)
+        const watch = (n0) => page.evaluate(async ({ scene, reduced, n0 }) => {
           const el = document.querySelector(`stick-scene[scene="${scene}"]`);
           const box = el.closest('.adg'), lit = new Set();
           const t0 = performance.now();
           while (performance.now() - t0 < 15000) {
             box.querySelectorAll('li.is-on[data-sorot]').forEach(li => lit.add(li.dataset.sorot));
             const v = el.v;
-            if (v && !reduced && v.n >= 1 && !v.on) break;
+            if (v && !reduced && v.n > n0 && !v.on) break;
             if (reduced && performance.now() - t0 > 1500) break;
             await new Promise(r => setTimeout(r, 40));
           }
+          // sesudah selesai: tetap di keadaan akhir (langkah terakhir menyala), tidak kembali ke awal
+          await new Promise(r => setTimeout(r, 600));
           const cv = el.querySelector('canvas');
           const g = cv.getContext('2d'), d = g.getImageData(0, 0, cv.width, cv.height).data;
           let ink = 0; for (let i = 3; i < d.length; i += 16) if (d[i] > 0) ink++;
-          return { lit: [...lit], ink, plays: el.v ? el.v.n : -1, final: el.dataset.step || '' };
-        }, { scene: b.scene, reduced });
-        if (seen.ink < 200) fail(`${cur}: kanvas kosong`);
-        if (!reduced) {
-          if (seen.plays < 1) fail(`${cur}: adegan tidak diputar saat terlihat`);
-          const miss = keys.filter(k => !seen.lit.includes(k));
-          if (miss.length) fail(`${cur}: langkah tidak pernah menyala: ${miss.join(', ')}`);
-          // marks pada kode harus ketemu teksnya
-          const marks = await page.locator(`#appMain .adg:has(stick-scene[scene="${b.scene}"]) .adg-p`).count();
-          if (marks !== (b.marks || []).length) fail(`${cur}: ${(b.marks || []).length - marks} potongan kode (marks) tidak ditemukan di code`);
-          await page.locator(`#appMain .adg:has(stick-scene[scene="${b.scene}"]) .adg-btn`).click();
-          if (!(await page.evaluate(s => document.querySelector(`stick-scene[scene="${s}"]`).v.on, b.scene))) fail(`${cur}: Putar lagi tidak memulai adegan`);
-        } else {
-          if (seen.plays !== 0) fail(`${cur}: adegan bergerak padahal reduced motion`);
-          if (seen.final !== keys[keys.length - 1]) fail(`${cur}: keadaan diam bukan langkah terakhir (${seen.final || 'kosong'})`);
-          if (await page.locator(`#appMain .adg:has(stick-scene[scene="${b.scene}"]) .adg-btn`).count() !== 1) fail(`${cur}: tombol Putar lagi hilang`);
+          return { lit: [...lit], ink, plays: el.v ? el.v.n : -1, final: el.dataset.step || '', v: el.dataset.v || '' };
+        }, { scene: b.scene, reduced, n0 });
+        const litAll = new Set();
+        for (let i = 0; i < opts.length; i++) {
+          const o = opts[i];
+          const tag = o ? ` [${o.t}]` : '';
+          let n0 = 0;
+          if (o && i > 0) {
+            n0 = await page.evaluate(s => document.querySelector(`stick-scene[scene="${s}"]`).v.n, b.scene);
+            await page.locator(`${sel} .adg-chip`).nth(i).click();
+            if (await page.locator(`${sel} .adg-chip[aria-pressed="true"]`).innerText() !== o.t) fail(`${cur}${tag}: tombol pilihan tidak aktif`);
+          }
+          const seen = await watch(n0);
+          seen.lit.forEach(k => litAll.add(k));
+          if (seen.ink < 200) fail(`${cur}${tag}: kanvas kosong`);
+          if (o && seen.v !== o.v) fail(`${cur}${tag}: data-v adegan ${seen.v}, seharusnya ${o.v}`);
+          if (!seen.final || !keys.includes(seen.final)) fail(`${cur}${tag}: keadaan akhir tidak menyalakan langkah (${seen.final || 'kosong'})`);
+          if (!o && seen.final !== keys[keys.length - 1]) fail(`${cur}: keadaan akhir bukan langkah terakhir (${seen.final})`);
+          if (!reduced) {
+            if (seen.plays <= n0) fail(`${cur}${tag}: adegan tidak diputar`);
+            // marks pada kode harus ketemu teksnya
+            const want = ((o && o.marks) || b.marks || []).length;
+            const marks = await page.locator(`${sel} .adg-p`).count();
+            if (marks !== want) fail(`${cur}${tag}: ${want - marks} potongan kode (marks) tidak ditemukan di code`);
+          } else if (seen.plays !== 0) fail(`${cur}${tag}: adegan bergerak padahal reduced motion`);
         }
+        if (!reduced) {
+          const miss = keys.filter(k => !litAll.has(k));
+          if (miss.length) fail(`${cur}: langkah tidak pernah menyala: ${miss.join(', ')}`);
+          await page.locator(`${sel} .adg-btn`).click();
+          if (!(await page.evaluate(s => document.querySelector(`stick-scene[scene="${s}"]`).v.on, b.scene))) fail(`${cur}: Putar lagi tidak memulai adegan`);
+        } else if (await page.locator(`${sel} .adg-btn`).count() !== 1) fail(`${cur}: tombol Putar lagi hilang`);
       } else if (!reduced) {
         const box = page.locator('#appMain .pnl').first();
         await box.scrollIntoViewIfNeeded();

@@ -111,4 +111,106 @@ const pwdDom = {
   ]
 };
 
-module.exports = { pwdRequest, pwdPesanHttp, bdJoin, alpLoop, alpDoWhile, bdNormal, pwdDom };
+// ---------- Adegan dengan pilihan nilai ("pilih"): satu adegan, beberapa masukan ----------
+
+const alpIfElse = {
+  type: "adegan", label: "Adegan", title: "Kartu Nilai Melewati Kondisi Satu per Satu",
+  desc: "Pilih nilai g, lalu lihat cabang mana yang dijalankan.",
+  scene: "alp-ifelse",
+  alt: "Kartu nilai g dibawa ke kondisi pertama g >= 80. Kalau false, kartu pindah ke kondisi berikutnya g >= 60. Kalau semua false, kartu masuk ke else. Cabang pertama yang true dijalankan dan mencetak hurufnya; cabang sesudahnya dilewati.",
+  pilih: { label: "Coba g =", opsi: [{ v: "85", t: "85" }, { v: "70", t: "70" }, { v: "45", t: "45" }] },
+  code: "if (g >= 80) {\n    cout << \"A\";\n} else if (g >= 60) {\n    cout << \"B\";\n} else {\n    cout << \"C\";\n}",
+  marks: [{ sorot: "c1", t: "if (g >= 80)" }, { sorot: "c2", t: "else if (g >= 60)" }, { sorot: "else", t: "} else {" }],
+  steps: [
+    { sorot: "c1", html: "Kondisi pertama <code>g &gt;= 80</code> selalu diperiksa paling dulu." },
+    { sorot: "c2", html: "Hanya kalau kondisi pertama <code>false</code>, <code>else if (g &gt;= 60)</code> diperiksa. Karena sudah pasti g &lt; 80, syaratnya cukup <code>g &gt;= 60</code>." },
+    { sorot: "else", html: "Kalau semua kondisi <code>false</code>, blok <code>else</code> dijalankan. <code>else</code> tidak punya kondisi sendiri." },
+    { sorot: "out", html: "Cabang pertama yang <code>true</code> dijalankan, lalu program keluar dari seluruh rangkaian. Apa pun nilainya, tepat <strong>satu</strong> huruf yang dicetak." }
+  ]
+};
+
+const SW_BASE = "switch (h) {\n    case 1:\n        cout << \"Senin \";\n        break;\n    case 2:\n        cout << \"Selasa \";\n        break;   // keluar dari switch\n    case 3:\n        cout << \"Rabu \";\n        break;\n    default:\n        cout << \"Tidak valid\";\n}";
+const SW_NB = "switch (h) {\n    case 1:\n        cout << \"Senin \";\n        break;\n    case 2:\n        cout << \"Selasa \";\n        // break lupa ditulis\n    case 3:\n        cout << \"Rabu \";\n        break;   // baru berhenti di sini\n    default:\n        cout << \"Tidak valid\";\n}";
+const alpSwitch = {
+  type: "adegan", label: "Adegan", title: "switch Langsung Melompat ke case yang Cocok",
+  desc: "Pilih nilai h. Pilihan ketiga memperlihatkan akibat lupa menulis <code>break</code>.",
+  scene: "alp-switch",
+  alt: "Nilai h dihitung sekali, lalu switch langsung melompat ke case yang nilainya sama. Perintah case itu dijalankan dan break keluar dari switch. Tanpa break, eksekusi tembus ke case berikutnya tanpa dicek sampai bertemu break. Kalau tidak ada case yang cocok, default yang dijalankan.",
+  pilih: { label: "Coba h =", opsi: [
+    { v: "2", t: "2", code: SW_BASE, marks: [{ sorot: "nilai", t: "switch (h)" }, { sorot: "cocok", t: "case 2:" }, { sorot: "jalan", t: "cout << \"Selasa \";" }, { sorot: "break", t: "break;   // keluar dari switch" }] },
+    { v: "9", t: "9", code: SW_BASE, marks: [{ sorot: "nilai", t: "switch (h)" }, { sorot: "default", t: "default:" }] },
+    { v: "2nb", t: "2, tanpa break", code: SW_NB, marks: [{ sorot: "nilai", t: "switch (h)" }, { sorot: "cocok", t: "case 2:" }, { sorot: "jalan", t: "cout << \"Selasa \";" }, { sorot: "tembus", t: "// break lupa ditulis" }, { sorot: "break", t: "break;   // baru berhenti di sini" }] }
+  ] },
+  steps: [
+    { sorot: "nilai", html: "Ekspresi <code>h</code> dihitung <strong>satu kali</strong>." },
+    { sorot: "cocok", html: "switch langsung melompat ke <code>case</code> yang nilainya sama. case lain tidak dicek satu per satu." },
+    { sorot: "jalan", html: "Perintah di case itu dijalankan." },
+    { sorot: "tembus", html: "Tanpa <code>break</code>, eksekusi <strong>tembus</strong> (fall-through) ke case berikutnya <em>tanpa dicek</em>, sampai bertemu break atau akhir switch. Hasilnya <code>Selasa Rabu</code>." },
+    { sorot: "break", html: "<code>break</code> keluar dari switch, lompat ke baris setelah <code>}</code>." },
+    { sorot: "default", html: "Tidak ada case yang cocok (misalnya h = 9), jadi <code>default</code> dijalankan. default di urutan terakhir tidak perlu break." }
+  ]
+};
+
+const pwdValidasi = {
+  type: "adegan", label: "Adegan", title: "Data Dicek Dulu Sebelum Masuk Tabel",
+  desc: "Pilih isian NIM, lalu lihat apa yang dilakukan kode validasi.",
+  scene: "pwd-validasi",
+  alt: "Tombol Daftar ditekan. Event submit ditangkap JavaScript dan e.preventDefault() menahan pengiriman form. NIM diperiksa dengan regex 10 digit. Kalau salah, pesan error muncul di bawah kolom dan tabel tidak berubah. Kalau benar, baris baru ditambahkan ke tabel lalu form dikosongkan.",
+  pilih: { label: "Coba NIM =", opsi: [{ v: "salah", t: "12345" }, { v: "benar", t: "2401010001" }] },
+  code: "form.addEventListener(\"submit\", function (e) {\n    e.preventDefault();\n    const nim = nimInput.value;\n    let isValid = true;\n    if (!/^\\d{10}$/.test(nim)) {\n        nimError.textContent = \"NIM harus 10 digit\";\n        isValid = false;\n    }\n    if (isValid) {\n        tambahBaris(nim, namaInput.value);\n        form.reset();\n    }\n});",
+  marks: [{ sorot: "submit", t: "form.addEventListener(\"submit\"" }, { sorot: "cegah", t: "e.preventDefault();" }, { sorot: "cek", t: "!/^\\d{10}$/.test(nim)" }, { sorot: "error", t: "nimError.textContent = \"NIM harus 10 digit\";" }, { sorot: "simpan", t: "tambahBaris(nim, namaInput.value);" }],
+  steps: [
+    { sorot: "submit", html: "Tombol <strong>Daftar</strong> ditekan. Form memicu event <code>submit</code>, dan fungsi yang dipasang dengan <code>addEventListener</code> dijalankan." },
+    { sorot: "cegah", html: "<code>e.preventDefault()</code> menahan aksi bawaan (kirim form dan muat ulang halaman), supaya pesan error tidak ikut hilang." },
+    { sorot: "cek", html: "NIM dicek dengan regex <code>/^\\d{10}$/</code>: harus tepat 10 angka." },
+    { sorot: "error", html: "Kalau salah: pesan error ditulis di bawah kolom, <code>isValid</code> menjadi false, dan tabel <strong>tidak</strong> berubah." },
+    { sorot: "simpan", html: "Kalau semua benar: baris baru ditambahkan ke tabel, lalu <code>form.reset()</code> mengosongkan form." }
+  ]
+};
+
+const GP = (m) => `<form action="proses.php" method="${m}">\n    <input name="nama"> <button>Kirim</button>\n</form>\n\n<?php // proses.php\n$nama = htmlspecialchars($_${m}["nama"]);\necho "Halo, $nama";`;
+const GPM = (m) => [{ sorot: "kirim", t: `method="${m}"` }, { sorot: "baca", t: `$_${m}["nama"]` }, { sorot: "balas", t: "echo \"Halo, $nama\";" }];
+const pwdGetPost = {
+  type: "adegan", label: "Adegan", title: "Form Dikirim dengan GET atau POST",
+  desc: "Pilih metodenya, lalu perhatikan URL dan cara data dibawa ke server.",
+  scene: "pwd-getpost",
+  alt: "Form berisi nama Ani dikirim ke proses.php. Dengan GET, data ditempel di URL sebagai ?nama=Ani sehingga terlihat. Dengan POST, data dibawa di badan request dan URL tetap bersih. Server membaca $_GET atau $_POST lalu membalas Halo, Ani.",
+  pilih: { label: "Metode:", opsi: [{ v: "GET", t: "GET", code: GP("GET"), marks: GPM("GET") }, { v: "POST", t: "POST", code: GP("POST"), marks: GPM("POST") }] },
+  steps: [
+    { sorot: "isi", html: "Nama <code>Ani</code> diisi, tombol <strong>Kirim</strong> ditekan." },
+    { sorot: "kirim", html: "<strong>GET</strong>: data ditempel di URL (<code>proses.php?nama=Ani</code>), terlihat dan ikut tersimpan di riwayat. <strong>POST</strong>: data dibawa di badan request, URL tetap <code>proses.php</code>." },
+    { sorot: "baca", html: "PHP di server membaca isian dengan <code>$_GET[\"nama\"]</code> atau <code>$_POST[\"nama\"]</code>, sesuai metode form." },
+    { sorot: "balas", html: "<code>echo</code> menyusun HTML balasan: <code>Halo, Ani</code>." },
+    { sorot: "tampil", html: "Browser menampilkan halaman balasan dari server." }
+  ]
+};
+
+const CRUD = {
+  INSERT: "$sql = \"INSERT INTO mahasiswa (nama, jurusan)\n        VALUES ('Dewi', 'MI')\";",
+  UPDATE: "$sql = \"UPDATE mahasiswa SET jurusan = 'MI'\n        WHERE id = 3\";",
+  DELETE: "$sql = \"DELETE FROM mahasiswa\n        WHERE id = 2\";",
+  NOWHERE: "$sql = \"UPDATE mahasiswa SET jurusan = 'MI'\";\n// WHERE lupa ditulis"
+};
+const crudCode = (k) => `${CRUD[k]}\n$hasil = mysqli_query($conn, $sql);\necho mysqli_affected_rows($conn) . " baris berubah";`;
+const crudMarks = (k, cari) => [{ sorot: "susun", t: "$sql = " }, cari, { sorot: "kirim", t: "mysqli_query($conn, $sql)" }, { sorot: "hasil", t: "mysqli_affected_rows($conn)" }].filter(Boolean);
+const pwdCrud = {
+  type: "adegan", label: "Adegan", title: "Query dari PHP Mengubah Tabel MySQL",
+  desc: "Pilih jenis query, lalu lihat baris mana yang berubah.",
+  scene: "pwd-crud",
+  alt: "PHP menyusun query SQL lalu mengirimnya dengan mysqli_query. INSERT menambah baris baru di akhir. UPDATE dan DELETE mencari baris yang cocok dengan WHERE lalu mengubah atau menghapusnya. Jumlah baris yang berubah kembali ke PHP. UPDATE tanpa WHERE mengubah semua baris.",
+  pilih: { label: "Query:", opsi: [
+    { v: "INSERT", t: "INSERT", code: crudCode("INSERT"), marks: crudMarks("INSERT", { sorot: "ubah", t: "VALUES ('Dewi', 'MI')" }) },
+    { v: "UPDATE", t: "UPDATE", code: crudCode("UPDATE"), marks: crudMarks("UPDATE", { sorot: "cari", t: "WHERE id = 3" }) },
+    { v: "DELETE", t: "DELETE", code: crudCode("DELETE"), marks: crudMarks("DELETE", { sorot: "cari", t: "WHERE id = 2" }) },
+    { v: "NOWHERE", t: "UPDATE tanpa WHERE", code: crudCode("NOWHERE"), marks: crudMarks("NOWHERE", { sorot: "cari", t: "// WHERE lupa ditulis" }) }
+  ] },
+  steps: [
+    { sorot: "susun", html: "PHP menyusun perintah SQL sebagai string di <code>$sql</code>." },
+    { sorot: "kirim", html: "<code>mysqli_query($conn, $sql)</code> mengirim perintah itu ke MySQL lewat koneksi <code>$conn</code>." },
+    { sorot: "cari", html: "UPDATE dan DELETE memeriksa setiap baris dengan <code>WHERE</code>. Hanya baris yang cocok yang diubah atau dihapus. <strong>Tanpa WHERE, semua baris kena.</strong>" },
+    { sorot: "ubah", html: "Tabel berubah: INSERT menambah baris di akhir (id dibuat otomatis oleh AUTO_INCREMENT), UPDATE mengganti isi kolom, DELETE menghapus barisnya." },
+    { sorot: "hasil", html: "<code>mysqli_affected_rows($conn)</code> memberi tahu berapa baris yang berubah. Angka yang lebih besar dari perkiraan adalah tanda WHERE salah atau lupa ditulis." }
+  ]
+};
+
+module.exports = { pwdRequest, pwdPesanHttp, bdJoin, alpLoop, alpDoWhile, bdNormal, pwdDom, alpIfElse, alpSwitch, pwdValidasi, pwdGetPost, pwdCrud };

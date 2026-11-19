@@ -1,5 +1,6 @@
 // 📖 Materi Lengkap PWD P9–P13 (menuju UAS). Sumber: Modul JS 9, Modul PHP 10–13.
 // Bagian bertanda ➕ bukan dari modul. Setiap istilah dijelaskan: artinya, kapan dipakai, contoh, kesalahan umum.
+const ADG = require("./adegan_it.js");
 const A = (title, html, label) => ({ type: "article", label, title, html });
 const tip = (heading, html, tone) => ({ type: "callout", tone: tone || "tip", heading, html });
 const e = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -68,6 +69,7 @@ form.addEventListener("submit", function(event) {
   A("Validasi Form: Isi yang Masuk Harus Benar", `<p><strong>Validasi</strong> adalah memeriksa isian pengguna sebelum diproses: apakah sudah diisi, panjangnya cukup, formatnya benar. Tujuannya (modul): data yang masuk valid, lengkap, dan sesuai format, sehingga tidak ada data rusak yang masuk ke database aplikasi CRUD nanti.</p>
 <p>Pola yang dipakai di aktivitas dan tugas modul:</p>
 <ol class="list-decimal pl-5 space-y-1"><li>Panggil ${c("event.preventDefault()")}.</li><li>Buat penanda ${c("let isValid = true;")}.</li><li>Kosongkan semua pesan error lama (${c('nimError.textContent = "";')}). Tanpa langkah ini, pesan dari percobaan sebelumnya tetap tampil walau isian sudah diperbaiki.</li><li>Cek kolom satu per satu. Kalau salah, tulis pesannya di ${c('<span class="error">')} di bawah kolom itu dan ubah ${c("isValid = false")}. Semua kolom tetap dicek supaya semua kesalahan tampil sekaligus.</li><li>Setelah semua cek, kalau ${c("isValid")} masih true: proses datanya, lalu ${c("form.reset()")}.</li></ol>`, "Bagian 3"),
+  ADG.pwdValidasi,
   tbl("Lima Jenis Cek di Modul", ["Jenis", "Kode", "Contoh ditolak", "Contoh lolos"], [
     ["Field wajib", "`if (!nama.value)`", "<code>\"\"</code>", "<code>\"Ahmad\"</code>"],
     ["Panjang minimal", "`if (nama.value.length < 3)`", "<code>\"Al\"</code>", "<code>\"Ali\"</code>"],
@@ -274,6 +276,7 @@ M.p11 = [
     { prompt: "Kolom `<input id=\"nim\">` tanpa atribut name ➕", answer: "Tidak ikut terkirim", reason: "Hanya kolom ber-name yang dikirim." }
   ] },
 
+  ADG.pwdGetPost,
   A("Mengolah Input di Server: Ambil, Bersihkan, Validasi, Simpan", `<p>Modul 11 menyusun pengolahan form menjadi empat langkah. Urutannya penting: data dicek dulu sebelum disimpan atau ditampilkan.</p>`, "Bagian 2"),
   A("2a. Ambil dengan isset()", `<p>Membaca ${c('$_POST["nama"]')} padahal kolom itu tidak terkirim (misalnya halaman baru dibuka dengan GET) menghasilkan <em>Warning: Undefined array key "nama"</em>. ${c("isset()")} memeriksa apakah variabel atau kunci itu <strong>ada</strong> dan bukan null.</p>
 <p>Pola di modul memakai <strong>operator ternary</strong> ${c("kondisi ? nilaiJikaTrue : nilaiJikaFalse")}:</p>
@@ -581,6 +584,7 @@ ${ul(["<strong>Create</strong>: menambah data baru, misalnya mendaftarkan mahasi
     ["Delete", "`DELETE FROM … WHERE id = …`", "Link Hapus + confirm() (GET)", "true / false"]
   ]),
 
+  ADG.pwdCrud,
   A("Query Dasar MySQL", `<p>Contoh di bawah memakai tabel ${c("mahasiswa")} dari P12. Teks ditulis di antara kutip tunggal (${c("'Ahmad'")}); angka seperti id tidak perlu kutip.</p>`, "Bagian 2"),
   A("2a. SELECT (Read)", `<p>${c("SELECT kolom FROM tabel WHERE syarat;")} mengambil data. ${c("*")} berarti semua kolom. ${c("WHERE")} menyaring baris; tanpa WHERE semua baris diambil.</p>
 <p>Contoh modul: ${c("SELECT * FROM mahasiswa;")} (semua data) dan ${c("SELECT nim, nama FROM mahasiswa WHERE jurusan = 'Sistem Informasi';")} (hanya nim dan nama mahasiswa SI). ➕ Bisa ditambah ${c("ORDER BY nama")} untuk mengurutkan.</p>`),

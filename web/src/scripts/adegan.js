@@ -160,9 +160,9 @@
       width: 420,
       label: 'Seseorang mengetik alamat halaman di browser. Browser mengirim request GET ke server, server mengambil file profil.html, lalu mengirim response 200 OK berisi HTML, dan browser menampilkan halamannya.',
       draw(g, S) {
-        const RED_T = 6.4;
         let T = S.on ? S.u * this.dur : -1;
-        if (!S.on && reducedNow()) T = RED_T;
+        // Setelah diputar (dan saat gerak dikurangi) adegan diam di keadaan akhir, tidak kembali ke awal.
+        if (!S.on && (S.n > 0 || reducedNow())) T = this.dur;
         const t = S.t;
         let pose = breathe(REST(), t);
         let sp = breathe(REST(), t + 2);
@@ -173,7 +173,7 @@
         }
         sp = mix(sp, P({ hF: [10, -62], hB: [-4, -52], head: [9, -114] }), pulse(t, 7, 4, 1.6) * (T < 0 ? 1 : 1 - E.soft(seg(T, 0, 0.35))));
         if (T >= 0) {
-          fade = 1 - seg(T, this.dur - 0.5, this.dur);
+          fade = 1;
           const urlPt = lp([B.x + 8, B.y + 14], USER, 0, 1);
           const bob = Math.sin(T * 26) * 1.6 * seg(T, 0.45, 0.55) * (1 - seg(T, 1.35, 1.45));
           const reach = E.soft(seg(T, 0.05, 0.45)) * (1 - E.soft(seg(T, 1.75, 2.1)));
@@ -295,7 +295,8 @@
       label: 'Tuas JOIN ditarik. Kolom prodi di tabel mahasiswa dicocokkan dengan kolom kode di tabel prodi. Ani dan Budi punya pasangan, Dodi (MI) dan prodi TE tidak. Hasil INNER JOIN hanya berisi dua baris yang cocok.',
       draw(g, S) {
         let T = S.on ? S.u * this.dur : -1;
-        if (!S.on && reducedNow()) T = 5.6;
+        // Setelah diputar (dan saat gerak dikurangi) adegan diam di keadaan akhir, tidak kembali ke awal.
+        if (!S.on && (S.n > 0 || reducedNow())) T = this.dur;
         const t = S.t;
         let pose = breathe(REST(), t + 1);
         let a = -0.42, fade = 1, st = '';
@@ -304,7 +305,7 @@
         if (T < 0) {
           pose = mix(pose, CHIN, pulse(t, 6.5, 2.5, 2.2));
         } else {
-          fade = 1 - seg(T, this.dur - 0.5, this.dur);
+          fade = 1;
           const pull = E.soft(seg(T, 0.45, 0.9)) * (1 - E.soft(seg(T, 1.35, 1.8)));
           a = lerp(-0.42, 0.45, pull);
           const reach = E.soft(seg(T, 0.05, 0.45)) * (1 - E.soft(seg(T, 1.35, 1.7)));
@@ -352,7 +353,7 @@
         if (probe.k > 0) {
           const p0 = [A.x + A.w, ry(A, 2) + ROW / 2];
           const k = probe.k;
-          const fadeP = 1 - seg(T, this.dur - 0.5, this.dur);
+          const fadeP = 1;
           g.save();
           g.globalAlpha *= fadeP;
           g.setLineDash([2, 3]);
@@ -485,14 +486,15 @@
       label: 'Perulangan for (int i = 1; i <= 3; i++): papan i mulai dari 1, lampu memeriksa i <= 3, angka i dicetak ke layar, lalu i ditambah satu. Saat i bernilai 4 lampu merah dan perulangan berhenti. Layar berisi 1 2 3.',
       draw(g, S) {
         let T = S.on ? S.u * this.dur : -1;
-        if (!S.on && reducedNow()) T = END + 1.2;
+        // Setelah diputar (dan saat gerak dikurangi) adegan diam di keadaan akhir, tidak kembali ke awal.
+        if (!S.on && (S.n > 0 || reducedNow())) T = this.dur;
         const t = S.t;
         let pose = breathe(REST(), t);
         let val = null, flipK = 0, nextVal = 1, popK = 0, lampK = 0, ok = true, out = 0, newK = 1, tokK = -1, fade = 1, st = '';
         if (T < 0) {
           pose = mix(pose, CHIN, pulse(t, 6, 2.2, 2.2));
         } else {
-          fade = 1 - seg(T, this.dur - 0.5, this.dur);
+          fade = 1;
           const tapPt = lp([CNT.x + 12, CNT.y + 34], ME, 0, 1);
           const TAP = P({ hF: tapPt, hB: [-4, -54], head: [9, -113], chest: [4, -89] });
           const LOOKUP = P({ hF: [12, -60], hB: [-4, -52], head: [10, -118] });
@@ -523,7 +525,8 @@
               else st = 'tambah';
               if (T >= s0 + 0.6) tokK = seg(T, s0 + 0.6, s0 + 1.2);
               out = k + (T >= s0 + 1.2 ? 1 : 0);
-              newK = seg(T, s0 + 1.2, s0 + 1.4);
+              // Hanya angka yang baru dicetak di putaran ini yang memudar masuk; angka putaran sebelumnya tetap tampil.
+              newK = T >= s0 + 1.2 ? seg(T, s0 + 1.2, s0 + 1.4) : 1;
               if (T >= s0 + 1.45) {
                 flipK = seg(T, s0 + 1.45, s0 + 1.75);
                 val = k + 1;
@@ -631,7 +634,8 @@
       label: 'Dua jalur dengan n = 0. Di jalur while kondisi dicek dulu, hasilnya false, jadi badan loop tidak pernah dijalankan. Di jalur do-while badan dijalankan dulu, mencetak 0 lalu n menjadi -1, baru kemudian kondisi dicek dan hasilnya false. Badan while dijalankan 0 kali, badan do-while 1 kali.',
       draw(g, S) {
         let T = S.on ? S.u * this.dur : -1;
-        if (!S.on && reducedNow()) T = 5.4;
+        // Setelah diputar (dan saat gerak dikurangi) adegan diam di keadaan akhir, tidak kembali ke awal.
+        if (!S.on && (S.n > 0 || reducedNow())) T = this.dur;
         const t = S.t;
         let pw = breathe(REST(), t), pd = breathe(REST(), t + 1.7);
         let xw = W.home, xd = D.home, gw = STILL, gd = STILL, sw = 1, sd = 1;
@@ -640,7 +644,7 @@
         pw = mix(pw, CHIN, pulse(t, 6.2, 2, 2.2) * idleK);
         pd = mix(pd, CHIN, pulse(t, 7.1, 4.5, 2.2) * idleK);
         if (T >= 0) {
-          const fade = 1 - seg(T, this.dur - 0.5, this.dur);
+          const fade = 1;
           // jalur while
           let ws = T < 4 ? walkSeg(T, 0.8, 1.4, W.home, W.stop) : walkSeg(T, 6.0, 6.6, W.stop, W.home);
           xw = ws.x; gw = gaitOf(ws, sw);
@@ -780,13 +784,14 @@
       label: 'Tabel peminjaman menyimpan judul buku berulang: Basis Data ditulis dua kali. Kolom judul dipindah ke tabel buku sendiri, salinan ganda digabung jadi satu baris, dan tabel peminjaman cukup menyimpan id_buku sebagai kunci tamu yang menunjuk ke tabel buku.',
       draw(g, S) {
         let T = S.on ? S.u * this.dur : -1;
-        if (!S.on && reducedNow()) T = 5.2;
+        // Setelah diputar (dan saat gerak dikurangi) adegan diam di keadaan akhir, tidak kembali ke awal.
+        if (!S.on && (S.n > 0 || reducedNow())) T = this.dur;
         const t = S.t;
         let pose = breathe(REST(), t);
         pose = mix(pose, CHIN, pulse(t, 6.4, 2.4, 2.2) * (T < 0 ? 1 : 1 - E.soft(seg(T, 0, 0.35))));
         let dup = 0, mv = 0, bK = 0, merge = 0, fkK = 0, linkK = 0, st = '', back = 0;
         if (T >= 0) {
-          const fade = 1 - seg(T, this.dur - 0.6, this.dur);
+          const fade = 1;
           const point = E.soft(seg(T, 0.3, 0.7)) * (1 - E.soft(seg(T, 1.3, 1.6)));
           pose = mix(pose, P({ hF: [40, -100], hB: [-4, -54], head: [10, -116] }), point);
           const pull = E.soft(seg(T, 1.6, 1.9)) * (1 - E.soft(seg(T, 2.7, 3.0)));
@@ -795,7 +800,7 @@
           pose = mix(pose, CHEER, cheer);
           dup = seg(T, 0.6, 1.2) * (1 - seg(T, 5.4, 5.9));
           mv = E.soft(seg(T, 1.8, 2.8));
-          back = E.soft(seg(T, this.dur - 0.6, this.dur));
+          back = 0;
           bK = seg(T, 2.3, 2.8) * fade;
           merge = seg(T, 3.1, 3.8) * fade;
           fkK = seg(T, 3.8, 4.0) * fade;
@@ -893,7 +898,8 @@
       label: 'Tombol Ubah diklik. Event click menjalankan fungsi di script.js. document.getElementById("judul") menemukan elemen h1 di halaman, lalu innerText-nya diganti sehingga tulisan Halo berubah menjadi Selamat datang tanpa memuat ulang halaman.',
       draw(g, S) {
         let T = S.on ? S.u * this.dur : -1;
-        if (!S.on && reducedNow()) T = 5.6;
+        // Setelah diputar (dan saat gerak dikurangi) adegan diam di keadaan akhir, tidak kembali ke awal.
+        if (!S.on && (S.n > 0 || reducedNow())) T = this.dur;
         const t = S.t;
         let pose = breathe(REST(), t);
         let pressK = 0, tokK = -1, foundK = 0, changeK = 0, st = '';
@@ -901,7 +907,7 @@
         if (T < 0) {
           pose = mix(pose, CHIN, pulse(t, 6, 2.2, 2.2));
         } else {
-          const fade = 1 - seg(T, this.dur - 0.5, this.dur);
+          const fade = 1;
           const btnPt = lp([BTN.x + 8, BTN.y + 8], ME, 0, 1);
           const reach = E.soft(seg(T, 0.2, 0.6)) * (1 - E.soft(seg(T, 1.2, 1.5)));
           pose = mix(pose, P({ hF: btnPt, hB: [-4, -54], head: [9, -113], chest: [4, -89] }), reach);
@@ -949,6 +955,813 @@
     };
   }
 
+  // ------------------------------------------------------------------ Varian: tombol "coba nilai lain"
+  // Blok adegan dengan "pilih" menaruh nilai pilihan di data-v pada <stick-scene>; adegan membacanya di sini.
+  function vOf(g, sc, def, ok) {
+    const el = g.canvas && g.canvas.parentElement;
+    let v = el && el.dataset ? el.dataset.v : '';
+    if (!v || (ok && !(v in ok))) v = def;
+    sc._v = v;
+    return v;
+  }
+  // Kartu nilai (kertas kuning) yang dibawa dari satu tempat ke tempat lain.
+  function card(g, label, cx, cy, o) {
+    o = o || {};
+    const size = o.size || 8.5;
+    const w = Math.max(o.minW || 0, monoW(g, label, size) + 12), h = o.h || 17;
+    g.save();
+    if (o.alpha != null) g.globalAlpha *= o.alpha;
+    rr(g, cx - w / 2, cy - h / 2, w, h, 4);
+    inkFill(g, o.fill || HL, 1.4, o.ink || INK);
+    mono(g, label, cx, cy + size * 0.36, size, o.ink || INK, 'center');
+    g.restore();
+  }
+  // Lampu bulat: hijau dengan centang (true) atau merah dengan silang (false).
+  function lamp(g, x, y, k, ok, r) {
+    r = r || 6.5;
+    circle(g, x, y, r);
+    inkFill(g, '#f1f1ed', 1.3);
+    if (k <= 0) return;
+    g.save();
+    g.globalAlpha *= clamp(k, 0, 1);
+    circle(g, x, y, r);
+    inkFill(g, ok ? '#cfe6de' : RED_SOFT, 1.3, ok ? GREEN : RED);
+    if (ok) R.tick(g, x, y, k, 0.7, GREEN);
+    else {
+      ln(g, x - 2.8, y - 2.8, x + 2.8, y + 2.8, 1.5, RED);
+      ln(g, x - 2.8, y + 2.8, x + 2.8, y - 2.8, 1.5, RED);
+    }
+    g.restore();
+  }
+
+  // ------------------------------------------------------------------ 7. Algoritma P4: if / else if / else
+  {
+    const ME = -186;
+    const CH = [
+      { x: -100, cond: 'g >= 80', lim: 80, out: 'A' },
+      { x: 10, cond: 'g >= 60', lim: 60, out: 'B' },
+      { x: 120, cond: 'else', lim: -Infinity, out: 'C' },
+    ];
+    const SW = 94, SY = -176, SH = 40, RAIL = -118;
+    const TRAY = { w: 46, h: 36, y: -50 };
+    const VALS = { 85: 85, 70: 70, 45: 45 };
+    const TR = 0.65, CK = 0.75;
+    const HAND = [ME + 24, -74];
+    const s0 = (k) => 0.75 + k * (TR + CK);
+    const plan = (v) => {
+      const val = VALS[v];
+      const m = CH.findIndex((c) => val >= c.lim);
+      const tM = s0(m) + TR + (m === 2 ? 0.25 : CK);
+      return { val, m, tM, end: tM + 2.7 };
+    };
+    // Papan kondisi di atas, nampan keluaran di bawah, rel kartu di antaranya.
+    function board(g, c, i, val, lampK, ok, dim, litK) {
+      const x0 = c.x - SW / 2;
+      g.save();
+      if (dim > 0) g.globalAlpha *= 1 - 0.6 * dim;
+      R.stand(g, x0 + 10, x0 + SW - 10, SY + SH);
+      rr(g, x0, SY, SW, SH, 4);
+      inkFill(g, C.paper, 1.6);
+      mono(g, i === 2 ? 'else' : c.cond + ' ?', x0 + 8, SY + 15, 9, INK);
+      if (i < 2) {
+        lamp(g, x0 + SW - 12, SY + 11, lampK, ok);
+        if (lampK > 0) {
+          g.save();
+          g.globalAlpha *= lampK;
+          mono(g, `${val} >= ${c.lim}`, x0 + 8, SY + 31, 7.5, MUTED);
+          mono(g, ok ? 'true' : 'false', x0 + 61, SY + 31, 7.5, ok ? GREEN : RED);
+          g.restore();
+        }
+      } else mono(g, 'semua false', x0 + 8, SY + 31, 7.5, lampK > 0 ? GREEN : '#a8aeb5');
+      // nampan cout
+      const tx = c.x - TRAY.w / 2;
+      R.stand(g, tx + 9, tx + TRAY.w - 9, TRAY.y + TRAY.h, 3);
+      rr(g, tx, TRAY.y, TRAY.w, TRAY.h, 4);
+      inkFill(g, litK > 0 ? HL_SOFT : C.paper, 1.4);
+      mono(g, 'cout', c.x, TRAY.y + 10, 6.5, MUTED, 'center');
+      if (litK > 0) {
+        const z = E.back(clamp(litK, 0, 1));
+        g.save();
+        g.translate(c.x, TRAY.y + 26);
+        g.scale(z, z);
+        stabilo(g, -9, -10, 18, 13, 1);
+        mono(g, c.out, 0, 2, 15, INK, 'center');
+        g.restore();
+      } else mono(g, c.out, c.x, TRAY.y + 28, 13, '#c3c8cd', 'center');
+      g.restore();
+      if (dim > 0) {
+        g.save();
+        g.globalAlpha *= dim;
+        text(g, 'dilewati', c.x, RAIL + 4, 8, MUTED);
+        g.restore();
+      }
+    }
+
+    SC['alp-ifelse'] = {
+      _v: '85',
+      get dur() {
+        return plan(this._v in VALS ? this._v : '85').end;
+      },
+      width: 420,
+      label: 'Percabangan if, else if, else untuk nilai huruf. Kartu nilai g dibawa ke kondisi pertama g >= 80. Kalau false kartu pindah ke kondisi berikutnya, kalau true kartu masuk ke cabang itu dan mencetak hurufnya. Hanya satu cabang yang dijalankan, sisanya dilewati.',
+      draw(g, S) {
+        const v = vOf(g, this, '85', VALS);
+        const p = plan(v);
+        let T = S.on ? S.u * this.dur : -1;
+        if (!S.on && (S.n > 0 || reducedNow())) T = this.dur;
+        const t = S.t;
+        const HOLD = P({ hF: lp(HAND, ME, 0, 1), hB: [-4, -54], head: [9, -114], chest: [3, -90] });
+        // Putar ulang: kartu dan pose memegang kartu muncul pelan, tidak meloncat dari keadaan akhir.
+        const inK = T < 0 || !S.n ? 1 : E.soft(seg(T, 0, 0.35));
+        let pose = breathe(mix(REST(), HOLD, T < 0 ? 1 : inK * (1 - E.soft(seg(T, 0.55, 0.9)))), t);
+        let st = '';
+        let cardAt = T >= 0 && T < s0(0) ? HAND : null;
+        const lampK = [0, 0, 0], litK = [0, 0, 0], dim = [0, 0, 0];
+        if (T < 0) {
+          cardAt = HAND;
+        } else {
+          // kartu berangkat dari tangan ke papan pertama, lalu pindah papan sampai ada yang true
+          const look = E.soft(seg(T, 0.8, 1.1)) * (1 - E.soft(seg(T, p.tM + 0.4, p.tM + 0.7)));
+          pose = mix(pose, P({ hF: [12, -60], hB: [-4, -52], head: [10, -117] }), look);
+          const cheer = E.back(seg(T, p.tM + 0.9, p.tM + 1.3)) * (1 - E.soft(seg(T, p.tM + 1.9, p.tM + 2.3)));
+          pose = mix(pose, CHEER, cheer);
+          for (let k = 0; k <= p.m; k++) {
+            const a = s0(k);
+            if (T >= a) {
+              const from = k === 0 ? HAND : [CH[k - 1].x, RAIL];
+              const kk = E.soft(seg(T, a, a + TR));
+              cardAt = k === 0 ? arcPt(from, [CH[0].x, RAIL], 30, kk) : [lerp(from[0], CH[k].x, kk), RAIL];
+              st = ['c1', 'c2', 'else'][k];
+            }
+            if (k < 2) lampK[k] = E.out3(seg(T, a + TR + 0.1, a + TR + 0.35));
+          }
+          if (p.m === 2) lampK[2] = E.out3(seg(T, s0(2) + TR, s0(2) + TR + 0.25));
+          if (T >= p.tM) {
+            const d = E.in(seg(T, p.tM, p.tM + 0.4));
+            cardAt = [CH[p.m].x, lerp(RAIL, TRAY.y + 22, d)];
+            litK[p.m] = seg(T, p.tM + 0.35, p.tM + 0.7);
+            for (let k = p.m + 1; k < 3; k++) dim[k] = E.soft(seg(T, p.tM + 0.5, p.tM + 0.9));
+            st = T < p.tM + 0.35 ? st : 'out';
+            if (T >= p.tM + 0.4) cardAt = null;
+          }
+        }
+        step(g, st);
+        pose = legs(pose, 0, 0, { arms: false });
+        CH.forEach((c, i) => board(g, c, i, p.val, lampK[i], p.val >= c.lim, dim[i], litK[i]));
+        // rel kartu
+        g.save();
+        g.setLineDash([3, 4]);
+        ln(g, CH[0].x - SW / 2 + 4, RAIL + 12, CH[2].x + SW / 2 - 4, RAIL + 12, 1.1, '#c3c8cd');
+        g.restore();
+        fig(g, pose, ME, 0, { wave: S.wave, wt: S.wt });
+        if (cardAt) card(g, `g = ${p.val}`, cardAt[0], cardAt[1], { alpha: T >= 0 && T < s0(0) ? inK : 1 });
+        sparks(g, CH[p.m].x, TRAY.y - 8, seg(T, p.tM + 0.5, p.tM + 1.1), 14, 6, GREEN);
+      },
+    };
+  }
+
+  // ------------------------------------------------------------------ 8. Algoritma P5: switch-case dan break
+  {
+    const ME = -190;
+    const DIAL = { x: -152, y: -150, w: 50, h: 50 };
+    const DOORS = [
+      { x: -60, lab: 'case 1', val: 1, out: 'Senin' },
+      { x: 2, lab: 'case 2', val: 2, out: 'Selasa' },
+      { x: 64, lab: 'case 3', val: 3, out: 'Rabu' },
+      { x: 128, lab: 'default', val: null, out: 'Tidak valid' },
+    ];
+    const DW = 56, DY = -178, DH = 36, RAIL = -124, EXIT = 196;
+    const TERM = { x: -88, y: -82, w: 274, h: 50 };
+    const HAND = [ME + 22, -74];
+    const OK = { 2: 1, 9: 1, '2nb': 1 };
+    function plan(v) {
+      const h = v === '9' ? 9 : 2, nb = v === '2nb';
+      const m = DOORS.findIndex((d) => d.val === h);
+      const start = m < 0 ? 3 : m;
+      // tanpa break eksekusi tembus ke case berikutnya, sampai bertemu break atau akhir switch
+      const uniq = [start];
+      while (uniq[uniq.length - 1] < 3 && nb && DOORS[uniq[uniq.length - 1]].val === 2) uniq.push(uniq[uniq.length - 1] + 1);
+      // waktu: masuk dial, lompat ke pintu pertama, lalu tiap pintu yang dijalankan mencetak keluarannya
+      const tJump = 1.25, tArr = 2.0;
+      const at = [];
+      let tt = tArr;
+      uniq.forEach((k, i) => {
+        if (i > 0) tt += 0.55; // jatuh ke pintu berikutnya tanpa cek
+        at.push({ k, t: tt });
+        tt += 0.95;
+      });
+      const tExit = tt;
+      return { h, nb, start, runs: uniq, at, tJump, tArr, tExit, end: tExit + 0.7 + 2.0 };
+    }
+    function door(g, d, i, lampK, ok, runK, brkK, nb, dim) {
+      const x0 = d.x - DW / 2;
+      g.save();
+      if (dim > 0) g.globalAlpha *= 1 - 0.55 * dim;
+      ln(g, d.x, DY + DH, d.x, RAIL - 8, 2, INK);
+      rr(g, x0, DY, DW, DH, 4);
+      inkFill(g, runK > 0 ? HL_SOFT : C.paper, 1.5);
+      mono(g, d.lab, d.x - 3, DY + 14, 8, INK, 'center');
+      if (d.val != null) lamp(g, x0 + DW - 7, DY + 10, lampK, ok, 4.5);
+      // label break: ada (hijau) atau dilepas (coret)
+      const hasBrk = d.val != null && !(nb && d.val === 2);
+      if (d.val != null) {
+        const bx = d.x, by = DY + 28;
+        if (hasBrk) {
+          rr(g, bx - 16, by - 6, 32, 11, 3);
+          inkFill(g, brkK > 0 ? '#cfe6de' : '#f3f2ec', 1, brkK > 0 ? GREEN : '#b9bec4');
+          mono(g, 'break', bx, by + 2.5, 6.4, brkK > 0 ? GREEN : MUTED, 'center');
+        } else {
+          mono(g, 'break', bx, by + 2.5, 6.4, RED, 'center');
+          ln(g, bx - 15, by, bx + 15, by, 1.3, RED);
+        }
+      }
+      g.restore();
+    }
+    function dial(g, h, k) {
+      const { x, y, w, h: hh } = DIAL;
+      R.stand(g, x + 10, x + w - 10, y + hh);
+      rr(g, x, y, w, hh, 5);
+      inkFill(g, '#f3f2ec', 1.6);
+      mono(g, 'switch', x + w / 2, y + 12, 7, MUTED, 'center');
+      mono(g, '(h)', x + w / 2, y + 21, 7, MUTED, 'center');
+      if (k > 0) {
+        g.save();
+        g.globalAlpha *= k;
+        mono(g, String(h), x + w / 2, y + 42, 17, INK, 'center');
+        g.restore();
+      } else mono(g, '?', x + w / 2, y + 42, 15, '#c3c8cd', 'center');
+    }
+    function terminal(g, outs) {
+      R.stand(g, TERM.x + 30, TERM.x + TERM.w - 30, TERM.y + TERM.h);
+      R.term(g, TERM.x, TERM.y, TERM.w, TERM.h, 'output');
+      let cx = TERM.x + 10;
+      for (const o of outs) {
+        if (o.k <= 0) continue;
+        g.save();
+        g.globalAlpha *= seg(o.k, 0, 0.5);
+        mono(g, o.s, cx, TERM.y + 35, 10, HL);
+        g.restore();
+        cx += monoW(g, o.s, 10) + 6;
+      }
+    }
+
+    SC['alp-switch'] = {
+      _v: '2',
+      get dur() {
+        return plan(this._v in OK ? this._v : '2').end;
+      },
+      width: 420,
+      label: 'switch (h): nilai h dihitung sekali lalu langsung dicocokkan ke case yang sama nilainya. Perintah case itu dijalankan, lalu break keluar dari switch. Kalau break dilepas, eksekusi tembus ke case berikutnya. Kalau tidak ada case yang cocok, default yang dijalankan.',
+      draw(g, S) {
+        const v = vOf(g, this, '2', OK);
+        const p = plan(v);
+        let T = S.on ? S.u * this.dur : -1;
+        if (!S.on && (S.n > 0 || reducedNow())) T = this.dur;
+        const t = S.t;
+        const HOLDP = P({ hF: lp(HAND, ME, 0, 1), hB: [-4, -54], head: [9, -114], chest: [3, -90] });
+        const inK = T < 0 || !S.n ? 1 : E.soft(seg(T, 0, 0.35));
+        let pose = breathe(mix(REST(), HOLDP, T < 0 ? 1 : inK * (1 - E.soft(seg(T, 0.6, 0.95)))), t);
+        let st = '', cardAt = null, dialK = 0, tok = null;
+        const lampK = [0, 0, 0, 0], runK = [0, 0, 0, 0], brkK = [0, 0, 0, 0], dim = [0, 0, 0, 0];
+        const outs = [];
+        if (T < 0) cardAt = HAND;
+        else {
+          const look = E.soft(seg(T, 0.9, 1.2)) * (1 - E.soft(seg(T, p.tExit + 0.2, p.tExit + 0.5)));
+          pose = mix(pose, P({ hF: [12, -60], hB: [-4, -52], head: [10, -117] }), look);
+          const cheer = E.back(seg(T, p.tExit + 0.6, p.tExit + 1.0)) * (1 - E.soft(seg(T, p.tExit + 1.6, p.tExit + 2.0)));
+          pose = mix(pose, CHEER, cheer);
+          // kartu masuk dial: h dihitung sekali
+          if (T < 0.95) cardAt = arcPt(HAND, [DIAL.x + DIAL.w / 2, DIAL.y + 30], 26, E.soft(seg(T, 0.3, 0.95)));
+          dialK = seg(T, 0.95, 1.15);
+          st = 'nilai';
+          // lompat langsung ke pintu yang cocok (tanpa mengecek pintu satu per satu)
+          const first = DOORS[p.start];
+          if (T >= p.tJump) {
+            const k = E.soft(seg(T, p.tJump, p.tArr));
+            tok = arcPt([DIAL.x + DIAL.w, RAIL], [first.x, RAIL], 46, k);
+            st = p.start === 3 ? 'default' : 'cocok';
+          }
+          if (p.start < 3) lampK[p.start] = E.out3(seg(T, p.tArr - 0.1, p.tArr + 0.2));
+          p.at.forEach((a, i) => {
+            if (T < a.t - (i > 0 ? 0.55 : 0)) return;
+            const d = DOORS[a.k];
+            if (i > 0) {
+              // tembus: jalan lurus ke pintu berikutnya tanpa cek
+              const prev = DOORS[p.at[i - 1].k];
+              tok = [lerp(prev.x, d.x, E.soft(seg(T, a.t - 0.55, a.t))), RAIL];
+              if (T < a.t) st = 'tembus';
+            }
+            if (T >= a.t) {
+              tok = [d.x, RAIL];
+              runK[a.k] = 1;
+              st = i > 0 ? 'tembus' : p.start === 3 ? 'default' : 'jalan';
+              outs.push({ s: d.out, k: seg(T, a.t + 0.25, a.t + 0.7) });
+            }
+          });
+          if (T >= p.tExit) {
+            const last = DOORS[p.at[p.at.length - 1].k];
+            const hasBrk = last.val != null && !(p.nb && last.val === 2);
+            if (hasBrk) brkK[p.at[p.at.length - 1].k] = 1;
+            tok = arcPt([last.x, RAIL], [EXIT, RAIL], 22, E.soft(seg(T, p.tExit, p.tExit + 0.6)));
+            if (T >= p.tExit + 0.6) tok = null;
+            st = hasBrk ? 'break' : 'default';
+            for (let k = 0; k < 4; k++) if (!p.runs.includes(k)) dim[k] = E.soft(seg(T, p.tExit, p.tExit + 0.4));
+          }
+        }
+        step(g, st);
+        pose = legs(pose, 0, 0, { arms: false });
+
+        dial(g, p.h, dialK);
+        DOORS.forEach((d, i) => door(g, d, i, lampK[i], true, runK[i], brkK[i], p.nb, dim[i]));
+        // rel dan tanda akhir switch
+        g.save();
+        g.setLineDash([3, 4]);
+        ln(g, DIAL.x + DIAL.w + 4, RAIL + 10, EXIT - 6, RAIL + 10, 1.1, '#c3c8cd');
+        g.restore();
+        mono(g, '}', EXIT, RAIL + 4, 16, INK, 'center');
+        text(g, 'akhir', EXIT, RAIL + 22, 7.5, MUTED);
+        terminal(g, outs);
+        fig(g, pose, ME, 0, { wave: S.wave, wt: S.wt });
+        if (cardAt) card(g, `h = ${p.h}`, cardAt[0], cardAt[1], { alpha: T >= 0 && T < 0.35 ? inK : 1 });
+        if (tok) card(g, String(p.h), tok[0], tok[1], { minW: 18 });
+        sparks(g, EXIT, RAIL - 12, seg(T, p.tExit + 0.5, p.tExit + 1.1), 12, 6, GREEN);
+      },
+    };
+  }
+
+  // ------------------------------------------------------------------ 9. PWD P9: validasi form sebelum data masuk tabel
+  {
+    const ME = -194;
+    const F = { x: -170, y: -184, w: 108, h: 132 };
+    const NIMBOX = { x: F.x + 8, y: F.y + 30, w: F.w - 16, h: 16 };
+    const NAMABOX = { x: F.x + 8, y: F.y + 74, w: F.w - 16, h: 16 };
+    const BTN = { x: F.x + 8, y: F.y + 104, w: 46, h: 18 };
+    const CK = { x: -40, y: -180, w: 86, h: 44 };
+    const TB = { x: 66, y: -180, w: 136, rh: 16 };
+    const OK = { salah: 1, benar: 1 };
+    const NIM = { salah: '12345', benar: '2401010001' };
+    const plan = (v) => ({ ok: v === 'benar', nim: NIM[v], end: v === 'benar' ? 6.4 : 5.6 });
+
+    function form(g, nim, nimK, errK, clearK, pressK) {
+      R.stand(g, F.x + 20, F.x + F.w - 20, F.y + F.h);
+      rr(g, F.x, F.y, F.w, F.h, 5);
+      inkFill(g, C.paper, 1.6);
+      text(g, 'Form Daftar', F.x + 8, F.y + 13, 8.5, INK, 'left');
+      ln(g, F.x, F.y + 18, F.x + F.w, F.y + 18, 1.1);
+      text(g, 'NIM', F.x + 8, F.y + 27, 7, MUTED, 'left');
+      rr(g, NIMBOX.x, NIMBOX.y, NIMBOX.w, NIMBOX.h, 3);
+      inkFill(g, errK > 0 ? RED_SOFT : '#fff', errK > 0 ? 1.5 : 1.1, errK > 0 ? RED : INK);
+      g.save();
+      g.globalAlpha *= nimK * (1 - clearK);
+      mono(g, nim, NIMBOX.x + 5, NIMBOX.y + 11, 7.4, INK);
+      g.restore();
+      if (errK > 0) {
+        g.save();
+        g.globalAlpha *= errK;
+        text(g, 'NIM harus 10 digit', NIMBOX.x, NIMBOX.y + 26, 7.2, RED, 'left');
+        g.restore();
+      }
+      text(g, 'Nama', F.x + 8, F.y + 71, 7, MUTED, 'left');
+      rr(g, NAMABOX.x, NAMABOX.y, NAMABOX.w, NAMABOX.h, 3);
+      inkFill(g, '#fff', 1.1);
+      g.save();
+      g.globalAlpha *= 1 - clearK;
+      mono(g, 'Ani', NAMABOX.x + 5, NAMABOX.y + 11, 7.4, INK);
+      g.restore();
+      const dy = pressK * 1.5;
+      rr(g, BTN.x, BTN.y + dy, BTN.w, BTN.h, 4);
+      inkFill(g, pressK > 0.3 ? '#ffd60a' : HL, 1.4);
+      text(g, 'Daftar', BTN.x + BTN.w / 2, BTN.y + 12.5 + dy, 8, INK);
+    }
+    function checker(g, lampK, ok, nimK, nim) {
+      R.stand(g, CK.x + 16, CK.x + CK.w - 16, CK.y + CK.h);
+      rr(g, CK.x, CK.y, CK.w, CK.h, 4);
+      inkFill(g, C.paper, 1.6);
+      mono(g, 'NIM 10 digit?', CK.x + 7, CK.y + 15, 7.6, INK);
+      lamp(g, CK.x + CK.w - 10, CK.y + 30, lampK, ok);
+      if (lampK > 0) {
+        g.save();
+        g.globalAlpha *= lampK;
+        mono(g, ok ? 'true' : 'false', CK.x + 7, CK.y + 34, 7.6, ok ? GREEN : RED);
+        g.restore();
+      }
+      text(g, 'submit → cek', CK.x + CK.w / 2, CK.y - 6, 7.5, MUTED);
+    }
+    function table(g, rowK) {
+      const h = 18 + TB.rh * 2 + 4;
+      R.stand(g, TB.x + 24, TB.x + TB.w - 24, TB.y + h);
+      rr(g, TB.x, TB.y, TB.w, h, 4);
+      inkFill(g, C.paper, 1.6);
+      mono(g, 'nim', TB.x + 8, TB.y + 12, 7, MUTED);
+      mono(g, 'nama', TB.x + 88, TB.y + 12, 7, MUTED);
+      ln(g, TB.x, TB.y + 17, TB.x + TB.w, TB.y + 17, 1.1);
+      mono(g, '2401010002', TB.x + 8, TB.y + 29, 7.4, INK);
+      mono(g, 'Budi', TB.x + 88, TB.y + 29, 7.4, INK);
+      if (rowK > 0) {
+        g.save();
+        g.globalAlpha *= clamp(rowK * 2, 0, 1);
+        stabilo(g, TB.x + 4, TB.y + 35, TB.w - 8, 12, rowK);
+        mono(g, '2401010001', TB.x + 8, TB.y + 45, 7.4, INK);
+        mono(g, 'Ani', TB.x + 88, TB.y + 45, 7.4, INK);
+        g.restore();
+      } else text(g, '(baris baru)', TB.x + TB.w / 2, TB.y + 45, 7, '#b9bec4');
+    }
+
+    SC['pwd-validasi'] = {
+      _v: 'salah',
+      get dur() {
+        return plan(this._v in OK ? this._v : 'salah').end;
+      },
+      width: 420,
+      label: 'Tombol Daftar ditekan. Event submit ditangkap JavaScript dan preventDefault menahan pengiriman. NIM diperiksa: kalau bukan 10 digit, pesan error muncul di bawah kolom dan tabel tidak berubah. Kalau benar, baris baru ditambahkan ke tabel lalu form dikosongkan.',
+      draw(g, S) {
+        const v = vOf(g, this, 'salah', OK);
+        const p = plan(v);
+        let T = S.on ? S.u * this.dur : -1;
+        if (!S.on && (S.n > 0 || reducedNow())) T = this.dur;
+        const t = S.t;
+        let pose = breathe(REST(), t);
+        let pressK = 0, subK = -1, cardK = -1, lampK = 0, errK = 0, rowK = 0, clearK = 0, rowTok = -1, stopK = 0, st = '';
+        if (T < 0) pose = mix(pose, CHIN, pulse(t, 6, 2.2, 2.2));
+        else {
+          const btnPt = lp([BTN.x + 10, BTN.y + 8], ME, 0, 1);
+          const reach = E.soft(seg(T, 0.15, 0.55)) * (1 - E.soft(seg(T, 1.0, 1.35)));
+          pose = mix(pose, P({ hF: btnPt, hB: [-4, -54], head: [9, -113], chest: [4, -89] }), reach);
+          pressK = E.soft(seg(T, 0.6, 0.7)) * (1 - E.soft(seg(T, 0.8, 0.95)));
+          const look = E.soft(seg(T, 1.3, 1.6)) * (1 - E.soft(seg(T, 3.6, 3.9)));
+          pose = mix(pose, P({ hF: [12, -60], hB: [-4, -52], head: [10, -117] }), look);
+          subK = T >= 0.8 && T < 1.5 ? seg(T, 0.8, 1.45) : -1;
+          stopK = E.out3(seg(T, 1.45, 1.75));
+          cardK = T >= 2.0 && T < 2.65 ? seg(T, 2.0, 2.6) : -1;
+          lampK = E.out3(seg(T, 2.6, 2.85));
+          if (T < 1.45) st = 'submit';
+          else if (T < 2.0) st = 'cegah';
+          else if (T < 2.95) st = 'cek';
+          if (!p.ok) {
+            errK = seg(T, 3.0, 3.35);
+            if (T >= 2.95) st = 'error';
+            const shrug = E.soft(seg(T, 3.5, 3.8)) * (1 - E.soft(seg(T, 4.5, 4.8)));
+            pose = mix(pose, P({ hF: [24, -80], hB: [12, -82], head: [4, -116], hang: 0 }), shrug);
+          } else {
+            rowTok = T >= 3.0 && T < 3.7 ? seg(T, 3.0, 3.65) : -1;
+            rowK = seg(T, 3.6, 4.0);
+            clearK = seg(T, 4.0, 4.3);
+            if (T >= 2.95) st = 'simpan';
+            const cheer = E.back(seg(T, 4.4, 4.8)) * (1 - E.soft(seg(T, 5.4, 5.8)));
+            pose = mix(pose, CHEER, cheer);
+          }
+        }
+        step(g, st);
+        pose = legs(pose, 0, 0, { arms: false });
+
+        form(g, p.nim, 1, errK, clearK, pressK);
+        checker(g, lampK, p.ok, 0, p.nim);
+        table(g, rowK);
+        // preventDefault: lencana di atas form, halaman tidak dimuat ulang
+        if (stopK > 0) {
+          g.save();
+          g.globalAlpha *= stopK;
+          const w = monoW(g, 'e.preventDefault()', 6.8) + 10;
+          rr(g, F.x + F.w / 2 - w / 2, F.y - 18, w, 13, 6.5);
+          inkFill(g, '#eaf3f0', 1.1, GREEN);
+          mono(g, 'e.preventDefault()', F.x + F.w / 2, F.y - 9, 6.8, GREEN, 'center');
+          g.restore();
+        }
+        fig(g, pose, ME, 0, { wave: S.wave, wt: S.wt });
+        if (subK > 0 && subK < 1) {
+          const q = arcPt([BTN.x + BTN.w, BTN.y], [CK.x + 10, CK.y + 20], 40, E.soft(subK));
+          card(g, 'submit', q[0], q[1], { size: 7, h: 14 });
+        }
+        if (cardK > 0 && cardK < 1) {
+          const q = arcPt([NIMBOX.x + 40, NIMBOX.y + 8], [CK.x + 30, CK.y + 48], 34, E.soft(cardK));
+          card(g, p.nim, q[0], q[1], { size: 7, h: 14 });
+        }
+        if (rowTok > 0 && rowTok < 1) {
+          const q = arcPt([CK.x + CK.w / 2, CK.y + CK.h], [TB.x + 40, TB.y + 42], 30, E.soft(rowTok));
+          card(g, '2401010001 Ani', q[0], q[1], { size: 6.8, h: 14 });
+        }
+        if (p.ok) sparks(g, TB.x + TB.w / 2, TB.y - 6, seg(T, 3.9, 4.5), 14, 6, GREEN);
+      },
+    };
+  }
+
+  // ------------------------------------------------------------------ 10. PWD P11: form dikirim dengan GET atau POST
+  {
+    const ME = -182;
+    const B = { x: -168, y: -184, w: 128, h: 112 };
+    const SV = { x: 78, y: -184, w: 122, h: 112 };
+    const BTN = { x: B.x + 8, y: B.y + 82, w: 42, h: 16 };
+    const RQ = -132, RS = -100;
+    const OK = { GET: 1, POST: 1 };
+    const plan = (v) => ({ get: v === 'GET', m: v, end: 6.6 });
+
+    function browser(g, url, urlK, pageK, pressK, warnK, isGet) {
+      R.stand(g, B.x + 26, B.x + B.w - 26, B.y + B.h);
+      rr(g, B.x, B.y, B.w, B.h, 5);
+      inkFill(g, C.paper, 1.6);
+      ln(g, B.x, B.y + 19, B.x + B.w, B.y + 19, 1.2);
+      rr(g, B.x + 5, B.y + 4, B.w - 10, 12, 6);
+      inkFill(g, '#f3f2ec', 1);
+      mono(g, typed(url, urlK), B.x + 10, B.y + 13, 6.6, INK);
+      if (warnK > 0) {
+        g.save();
+        g.globalAlpha *= warnK;
+        text(g, isGet ? 'data terlihat di URL' : 'URL tetap bersih', B.x + B.w / 2, B.y + 30, 7.2, isGet ? RED : GREEN);
+        g.restore();
+      }
+      g.save();
+      g.globalAlpha *= 1 - pageK;
+      text(g, 'nama', B.x + 10, B.y + 68, 7, MUTED, 'left');
+      rr(g, B.x + 34, B.y + 59, 56, 13, 3);
+      inkFill(g, '#fff', 1.1);
+      mono(g, 'Ani', B.x + 39, B.y + 68.5, 7.2, INK);
+      const dy = pressK * 1.5;
+      rr(g, BTN.x, BTN.y + dy, BTN.w, BTN.h, 4);
+      inkFill(g, pressK > 0.3 ? '#ffd60a' : HL, 1.3);
+      text(g, 'Kirim', BTN.x + BTN.w / 2, BTN.y + 11.5 + dy, 7.6, INK);
+      g.restore();
+      if (pageK > 0) {
+        g.save();
+        g.globalAlpha *= pageK;
+        stabilo(g, B.x + 10, B.y + 46, 60, 13, pageK);
+        text(g, 'Halo, Ani', B.x + 13, B.y + 56, 9.5, INK, 'left');
+        words(g, B.x + 10, B.y + 76, 70, 5, '#c7ccd1', 2);
+        g.restore();
+      }
+    }
+    function server(g, isGet, hl) {
+      R.stand(g, SV.x + 24, SV.x + SV.w - 24, SV.y + SV.h);
+      rr(g, SV.x, SV.y, SV.w, SV.h, 5);
+      inkFill(g, '#1d2731', 1.6);
+      mono(g, 'proses.php', SV.x + 8, SV.y + 13, 7, '#9aa3ad');
+      text(g, 'server', SV.x + SV.w / 2, SV.y - 6, 9, GREEN);
+      const L = [isGet ? '$nama = $_GET' : '$nama = $_POST', '        ["nama"];', 'echo "Halo, $nama";'];
+      L.forEach((l, i) => {
+        const y = SV.y + 26 + i * 14;
+        const k = i < 2 ? hl[0] : hl[1];
+        if (k > 0) {
+          g.save();
+          g.globalAlpha *= k;
+          rr(g, SV.x + 4, y - 9, SV.w - 8, 13, 2);
+          g.fillStyle = 'rgba(255,225,77,0.22)';
+          g.fill();
+          ln(g, SV.x + 4, y - 8, SV.x + 4, y + 3, 2.2, HL);
+          g.restore();
+        }
+        mono(g, l, SV.x + 9, y, 7, k > 0.5 ? '#ffffff' : '#c9d1d9');
+      });
+    }
+    function rails(g) {
+      const x0 = B.x + B.w + 6, x1 = SV.x - 6;
+      g.save();
+      g.setLineDash([3, 4]);
+      ln(g, x0, RQ, x1, RQ, 1.2, '#b9bec4');
+      ln(g, x0, RS, x1, RS, 1.2, '#b9bec4');
+      g.restore();
+      R.arrowHead(g, [x1, RQ], 0, 6, 1.3, '#9aa1a8');
+      R.arrowHead(g, [x0, RS], Math.PI, 6, 1.3, '#9aa1a8');
+      text(g, 'request', (x0 + x1) / 2, RQ - 30, 8, MUTED);
+      text(g, 'response', (x0 + x1) / 2, RS + 20, 8, MUTED);
+    }
+    // Amplop: GET terbuka dengan data tertulis di luar, POST tertutup dengan data di dalam (body).
+    function envelope(g, cx, cy, isGet, openK) {
+      const w = 54, h = 26;
+      rr(g, cx - w / 2, cy - h / 2, w, h, 3);
+      inkFill(g, isGet ? '#fff' : '#f3f2ec', 1.4);
+      if (isGet) {
+        mono(g, 'GET', cx, cy - 3, 6.6, MUTED, 'center');
+        mono(g, '?nama=Ani', cx, cy + 8, 7, RED, 'center');
+      } else {
+        const f = 1 - openK;
+        R.poly(g, [[cx - w / 2, cy - h / 2], [cx, cy - h / 2 + 12 * f], [cx + w / 2, cy - h / 2]], false);
+        g.strokeStyle = INK;
+        g.lineWidth = 1.2;
+        g.stroke();
+        mono(g, 'POST', cx, cy + 9, 6.6, MUTED, 'center');
+        if (openK > 0) {
+          g.save();
+          g.globalAlpha *= openK;
+          card(g, 'nama=Ani', cx, cy - h / 2 - 9 * openK, { size: 6.8, h: 13, fill: '#fff' });
+          g.restore();
+        }
+      }
+    }
+
+    SC['pwd-getpost'] = {
+      _v: 'GET',
+      get dur() {
+        return plan(this._v in OK ? this._v : 'GET').end;
+      },
+      width: 420,
+      label: 'Form berisi nama Ani dikirim ke proses.php. Dengan GET, data ditempel di URL sebagai ?nama=Ani sehingga terlihat. Dengan POST, data dibawa di badan request dan URL tetap bersih. Server membaca $_GET atau $_POST, lalu membalas Halo, Ani yang tampil di browser.',
+      draw(g, S) {
+        const v = vOf(g, this, 'GET', OK);
+        const p = plan(v);
+        let T = S.on ? S.u * this.dur : -1;
+        if (!S.on && (S.n > 0 || reducedNow())) T = this.dur;
+        const t = S.t;
+        let pose = breathe(REST(), t);
+        let pressK = 0, envK = -1, openK = 0, resK = -1, pageK = 0, warnK = 0, st = '';
+        let url = 'form.php', urlK = 1;
+        const hl = [0, 0];
+        if (T < 0) pose = mix(pose, CHIN, pulse(t, 6, 2.2, 2.2));
+        else {
+          const btnPt = lp([BTN.x + 6, BTN.y + 9], ME, 0, 1);
+          const reach = E.soft(seg(T, 0.15, 0.55)) * (1 - E.soft(seg(T, 1.0, 1.3)));
+          pose = mix(pose, P({ hF: btnPt, hB: [-4, -54], head: [9, -113], chest: [4, -89] }), reach);
+          pressK = E.soft(seg(T, 0.6, 0.7)) * (1 - E.soft(seg(T, 0.8, 0.95)));
+          const wait = E.soft(seg(T, 1.4, 1.7)) * (1 - E.soft(seg(T, 4.1, 4.4)));
+          pose = mix(pose, CHIN, wait);
+          const cheer = E.back(seg(T, 4.6, 5.0)) * (1 - E.soft(seg(T, 5.6, 6.0)));
+          pose = mix(pose, CHEER, cheer);
+          if (T >= 0.85) {
+            url = p.get ? 'proses.php?nama=Ani' : 'proses.php';
+            urlK = seg(T, 0.85, 1.45);
+          }
+          warnK = E.out3(seg(T, 1.5, 1.8));
+          envK = T >= 1.0 && T < 2.35 ? seg(T, 1.0, 2.3) : -1;
+          openK = p.get ? 0 : seg(T, 2.3, 2.7);
+          hl[0] = E.soft(seg(T, 2.4, 2.6)) * (1 - E.soft(seg(T, 3.0, 3.2)));
+          hl[1] = E.soft(seg(T, 3.0, 3.2)) * (1 - E.soft(seg(T, 3.6, 3.8)));
+          resK = T >= 3.4 && T < 4.35 ? seg(T, 3.4, 4.3) : -1;
+          pageK = seg(T, 4.25, 4.65);
+          if (T < 1.0) st = 'isi';
+          else if (T < 2.35) st = 'kirim';
+          else if (T < 3.0) st = 'baca';
+          else if (T < 4.25) st = 'balas';
+          else st = 'tampil';
+        }
+        step(g, st);
+        pose = legs(pose, 0, 0, { arms: false });
+
+        rails(g);
+        browser(g, url, urlK, pageK, pressK, warnK, p.get);
+        server(g, p.get, hl);
+        fig(g, pose, ME, 0, { wave: S.wave, wt: S.wt });
+        const x0 = B.x + B.w + 30, x1 = SV.x - 30;
+        if (envK > 0 && envK < 1) envelope(g, lerp(x0, x1, E.soft(envK)), RQ, p.get, 0);
+        if (!p.get && T >= 2.3 && T < 3.0) {
+          g.save();
+          g.globalAlpha *= 1 - seg(T, 2.8, 3.0);
+          envelope(g, x1, RQ, false, openK);
+          g.restore();
+        }
+        if (resK > 0 && resK < 1) card(g, 'Halo, Ani', lerp(x1, x0, E.soft(resK)), RS, { size: 7.2, h: 15, fill: '#eaf3f0', ink: GREEN });
+        sparks(g, B.x + 40, B.y + 40, seg(T, 4.4, 5.0), 14, 6, GREEN);
+      },
+    };
+  }
+
+  // ------------------------------------------------------------------ 11. PWD P13: query CRUD mengubah tabel MySQL
+  {
+    const ME = -184;
+    const PN = { x: -168, y: -164, w: 150, h: 64 };
+    const TB = { x: 34, y: -184, w: 166, rh: 15 };
+    const ROWS = [['1', 'Ahmad', 'SI'], ['2', 'Budi', 'TI'], ['3', 'Citra', 'SI']];
+    const OK = { INSERT: 1, UPDATE: 1, DELETE: 1, NOWHERE: 1 };
+    const SQLS = {
+      INSERT: ['INSERT INTO mahasiswa', '  (nama, jurusan)', "VALUES ('Dewi', 'MI')"],
+      UPDATE: ['UPDATE mahasiswa', "SET jurusan = 'MI'", 'WHERE id = 3'],
+      DELETE: ['DELETE FROM mahasiswa', 'WHERE id = 2'],
+      NOWHERE: ['UPDATE mahasiswa', "SET jurusan = 'MI'", '-- WHERE lupa ditulis'],
+    };
+    const HIT = { INSERT: [], UPDATE: [2], DELETE: [1], NOWHERE: [0, 1, 2] };
+    const plan = (v) => ({ v, sql: SQLS[v], hit: HIT[v], n: v === 'INSERT' ? 1 : HIT[v].length, bad: v === 'NOWHERE', end: 6.4 });
+
+    function panel(g, lines, typK, badK) {
+      R.stand(g, PN.x + 30, PN.x + PN.w - 30, PN.y + PN.h);
+      rr(g, PN.x, PN.y, PN.w, PN.h, 5);
+      inkFill(g, '#1d2731', 1.6);
+      mono(g, 'crud.php  $sql =', PN.x + 8, PN.y + 12, 6.8, '#9aa3ad');
+      lines.forEach((l, i) => {
+        const k = seg(typK, i / lines.length, (i + 1) / lines.length);
+        const red = l.startsWith('--');
+        mono(g, typed(l, k), PN.x + 8, PN.y + 26 + i * 12, 7, red ? '#f2a39a' : '#e9edf1');
+      });
+    }
+    function table(g, p, scan, hitK, chgK, gone, newK) {
+      const rows = ROWS.map((r) => r.slice());
+      const H = 30 + TB.rh * 4;
+      R.stand(g, TB.x + 26, TB.x + TB.w - 26, TB.y + H);
+      rr(g, TB.x, TB.y, TB.w, H, 5);
+      inkFill(g, C.paper, 1.6);
+      text(g, 'MySQL', TB.x + TB.w / 2, TB.y - 6, 9, GREEN);
+      mono(g, 'mahasiswa', TB.x + 8, TB.y + 12, 7.4, INK);
+      const cols = [TB.x + 10, TB.x + 36, TB.x + 108];
+      ['id', 'nama', 'jurusan'].forEach((c, i) => mono(g, c, cols[i], TB.y + 26, 6.8, MUTED));
+      ln(g, TB.x, TB.y + 30, TB.x + TB.w, TB.y + 30, 1.1);
+      let y = TB.y + 30;
+      rows.forEach((r, i) => {
+        const hit = p.hit.includes(i);
+        const del = p.v === 'DELETE' && hit;
+        const hh = del ? TB.rh * (1 - gone) : TB.rh;
+        if (hh <= 0.5) return;
+        g.save();
+        g.beginPath();
+        g.rect(TB.x + 1, y, TB.w - 2, hh);
+        g.clip();
+        if (scan === i) {
+          rr(g, TB.x + 3, y + 1, TB.w - 6, TB.rh - 2, 2);
+          g.fillStyle = '#f3f2ec';
+          g.fill();
+        }
+        if (hit && hitK > 0) {
+          g.save();
+          g.globalAlpha *= hitK;
+          rr(g, TB.x + 3, y + 1, TB.w - 6, TB.rh - 2, 2);
+          g.fillStyle = del || p.bad ? RED_SOFT : HL_SOFT;
+          g.fill();
+          g.restore();
+        }
+        const val = !del && hit && chgK > 0.5 ? 'MI' : r[2];
+        mono(g, r[0], cols[0], y + 11, 7.2, INK);
+        mono(g, r[1], cols[1], y + 11, 7.2, INK);
+        if (!del && hit && chgK > 0) stabilo(g, cols[2] - 3, y + 2, 20, 11, chgK, p.bad ? RED_SOFT : HL);
+        mono(g, val, cols[2], y + 11, 7.2, INK);
+        if (del && hitK > 0.5) ln(g, TB.x + 6, y + 8, TB.x + TB.w - 6, y + 8, 1.4, RED);
+        g.restore();
+        y += hh;
+      });
+      if (p.v === 'INSERT' && newK > 0) {
+        g.save();
+        g.globalAlpha *= clamp(newK * 2, 0, 1);
+        stabilo(g, TB.x + 4, y + 2, TB.w - 8, 11, newK);
+        mono(g, '4', cols[0], y + 11, 7.2, INK);
+        mono(g, 'Dewi', cols[1], y + 11, 7.2, INK);
+        mono(g, 'MI', cols[2], y + 11, 7.2, INK);
+        g.restore();
+      }
+    }
+
+    SC['pwd-crud'] = {
+      _v: 'INSERT',
+      get dur() {
+        return plan(this._v in OK ? this._v : 'INSERT').end;
+      },
+      width: 420,
+      label: 'PHP menyusun query SQL lalu mengirimnya dengan mysqli_query. MySQL mencari baris yang cocok dengan WHERE lalu menambah, mengubah, atau menghapusnya. Hasilnya kembali ke PHP berupa jumlah baris yang berubah. UPDATE tanpa WHERE mengubah semua baris.',
+      draw(g, S) {
+        const v = vOf(g, this, 'INSERT', OK);
+        const p = plan(v);
+        let T = S.on ? S.u * this.dur : -1;
+        if (!S.on && (S.n > 0 || reducedNow())) T = this.dur;
+        const t = S.t;
+        let pose = breathe(REST(), t);
+        let typK = 0, qK = -1, scan = -1, hitK = 0, chgK = 0, gone = 0, newK = 0, resK = -1, badgeK = 0, st = '';
+        if (T < 0) pose = mix(pose, CHIN, pulse(t, 6, 2.2, 2.2));
+        else {
+          const kb = lp([PN.x + 14, PN.y + PN.h + 2], ME, 0, 1);
+          const type = E.soft(seg(T, 0.1, 0.4)) * (1 - E.soft(seg(T, 1.0, 1.3)));
+          const bob = Math.sin(T * 24) * 1.4 * seg(T, 0.35, 0.45) * (1 - seg(T, 0.95, 1.05));
+          pose = mix(pose, P({ hF: [kb[0] + bob, kb[1] - bob], hB: [-4, -54], head: [9, -115], chest: [4, -90] }), type);
+          const look = E.soft(seg(T, 1.3, 1.6)) * (1 - E.soft(seg(T, 4.0, 4.3)));
+          pose = mix(pose, P({ hF: [12, -60], hB: [-4, -52], head: [10, -117] }), look);
+          if (p.bad) pose = mix(pose, CHIN, E.soft(seg(T, 4.3, 4.6)) * (1 - E.soft(seg(T, 5.6, 5.9))));
+          else pose = mix(pose, CHEER, E.back(seg(T, 4.4, 4.8)) * (1 - E.soft(seg(T, 5.4, 5.8))));
+          typK = seg(T, 0.3, 1.1);
+          qK = T >= 1.2 && T < 2.0 ? seg(T, 1.2, 1.95) : -1;
+          if (T >= 2.0 && T < 2.75 && p.v !== 'INSERT') scan = Math.min(2, Math.floor((T - 2.0) / 0.25));
+          hitK = p.v === 'INSERT' ? 0 : E.out3(seg(T, 2.75, 3.0));
+          chgK = p.v === 'UPDATE' || p.bad ? seg(T, 3.0, 3.4) : 0;
+          gone = p.v === 'DELETE' ? E.soft(seg(T, 3.1, 3.6)) : 0;
+          newK = p.v === 'INSERT' ? seg(T, 2.2, 2.8) : 0;
+          resK = T >= 3.6 && T < 4.35 ? seg(T, 3.6, 4.3) : -1;
+          badgeK = E.out3(seg(T, 4.25, 4.55));
+          if (T < 1.2) st = 'susun';
+          else if (T < 2.0) st = 'kirim';
+          else if (T < 3.0) st = p.v === 'INSERT' ? 'ubah' : 'cari';
+          else if (T < 3.6) st = 'ubah';
+          else st = 'hasil';
+        }
+        step(g, st);
+        pose = legs(pose, 0, 0, { arms: false });
+
+        panel(g, p.sql, typK, 0);
+        table(g, p, scan, hitK, chgK, gone, newK);
+        const lab = `${p.n} baris berubah`;
+        if (badgeK > 0) {
+          g.save();
+          g.globalAlpha *= badgeK;
+          const w = monoW(g, lab, 7.2) + 14;
+          rr(g, PN.x + PN.w / 2 - w / 2, PN.y + PN.h + 12, w, 15, 7.5);
+          inkFill(g, p.bad ? RED_SOFT : '#eaf3f0', 1.2, p.bad ? RED : GREEN);
+          mono(g, lab, PN.x + PN.w / 2, PN.y + PN.h + 22, 7.2, p.bad ? RED : GREEN, 'center');
+          g.restore();
+        }
+        fig(g, pose, ME, 0, { wave: S.wave, wt: S.wt });
+        if (qK > 0 && qK < 1) {
+          const q = arcPt([PN.x + PN.w, PN.y + 30], [TB.x + 10, TB.y + 40], 40, E.soft(qK));
+          card(g, 'mysqli_query', q[0], q[1], { size: 6.8, h: 14 });
+        }
+        if (resK > 0 && resK < 1) {
+          const q = arcPt([TB.x, TB.y + 70], [PN.x + PN.w / 2, PN.y + PN.h + 19], -26, E.soft(resK));
+          card(g, String(p.n), q[0], q[1], { size: 7.2, h: 14, minW: 18, fill: p.bad ? RED_SOFT : '#eaf3f0', ink: p.bad ? RED : GREEN });
+        }
+        if (!p.bad) sparks(g, TB.x + TB.w / 2, TB.y - 16, seg(T, 3.2, 3.8), 14, 6, GREEN);
+      },
+    };
+  }
+
   // Tema Sinau untuk runtime
   if (window.STICK && window.STICK.theme) {
     window.STICK.theme({
@@ -960,22 +1773,34 @@
 })();
 
 // ---------- Blok "adegan": satu adegan + kode (opsional) + daftar langkah yang ikut menyala ----------
-// { type: "adegan", label, title, desc, scene: "<id>", code: "...", marks: [{ sorot, t }], steps: [{ sorot, html }] }
+// { type: "adegan", label, title, desc, scene: "<id>", code: "...", marks: [{ sorot, t }], steps: [{ sorot, html }],
+//   pilih: { label: "Coba g =", opsi: [{ v: "85", t: "85", code?, marks? }] } }
+// "pilih" menampilkan tombol nilai; nilai terpilih dikirim ke adegan lewat data-v dan adegan diputar ulang.
+function adgCode(code, marks) {
+  if (!code) return '';
+  let html = esc(code);
+  (marks || []).forEach((m) => {
+    const t = esc(m.t), i = html.indexOf(t);
+    if (i >= 0) html = html.slice(0, i) + `<span class="adg-p" data-sorot="${esc(m.sorot)}">${t}</span>` + html.slice(i + t.length);
+  });
+  return html;
+}
+function adgOpt(d, s) {
+  const o = (d.pilih && d.pilih.opsi) || [];
+  return o[Math.min(s.v || 0, o.length - 1)] || null;
+}
 const ADEGAN_BLOCK = {
+  init: () => ({ v: 0 }),
   render(d, s, n) {
-    let code = '';
-    if (d.code) {
-      let html = esc(d.code);
-      (d.marks || []).forEach((m) => {
-        const t = esc(m.t), i = html.indexOf(t);
-        if (i >= 0) html = html.slice(0, i) + `<span class="adg-p" data-sorot="${esc(m.sorot)}">${t}</span>` + html.slice(i + t.length);
-      });
-      code = `<pre class="adg-code">${html}</pre>`;
-    }
+    const o = adgOpt(d, s);
+    const src = (o && o.code) || d.code, marks = (o && o.marks) || d.marks;
+    const code = src ? `<pre class="adg-code">${adgCode(src, marks)}</pre>` : '';
     const steps = (d.steps || []).map((x) => `<li data-sorot="${esc(x.sorot)}"><span class="rich">${rich(x.html)}</span></li>`).join('');
     const label = esc(d.alt || d.title || 'Adegan');
-    return `<div class="adg">${code}
-      <div class="adg-stage"><stick-scene scene="${esc(d.scene)}" play="view" no-font no-floor aria-label="${label}"></stick-scene></div>
+    const pick = o ? `<div class="adg-pick" role="group" aria-label="${esc(d.pilih.label || 'Pilih nilai')}"><span>${esc(d.pilih.label || 'Coba:')}</span>${d.pilih.opsi
+      .map((x, i) => `<button type="button" class="adg-chip" aria-pressed="${i === (s.v || 0)}" ${act(n, 'pick', i)}>${esc(x.t)}</button>`).join('')}</div>` : '';
+    return `<div class="adg">${code}${pick}
+      <div class="adg-stage"><stick-scene scene="${esc(d.scene)}" play="view" no-font no-floor${o ? ` data-v="${esc(o.v)}"` : ''} aria-label="${label}"></stick-scene></div>
       <div class="adg-replay"><button type="button" class="adg-btn" ${act(n, 'replay')}>▶ Putar lagi</button><span>atau ketuk gambarnya</span></div>
       ${steps ? `<ol class="adg-steps">${steps}</ol>` : ''}</div>`;
   },
@@ -983,6 +1808,30 @@ const ADEGAN_BLOCK = {
     replay(d, s, a, n) {
       const el = document.querySelector('#blk-' + n + ' stick-scene');
       if (el && el.v) { el.v.on = false; el.v.play(); }
+      return false;
+    },
+    pick(d, s, a, n) {
+      const i = Math.max(0, Math.min(+a || 0, ((d.pilih && d.pilih.opsi) || []).length - 1));
+      s.v = i;
+      const o = adgOpt(d, s), box = document.getElementById('blk-' + n);
+      if (!o || !box) return;
+      box.querySelectorAll('.adg-chip').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+      const pre = box.querySelector('.adg-code');
+      if (pre && (o.code || d.code)) pre.innerHTML = adgCode(o.code || d.code, o.marks || d.marks);
+      const el = box.querySelector('stick-scene');
+      if (el) {
+        el.dataset.v = o.v;
+        delete el.dataset.step;
+        // adegan hanya bergerak saat terlihat: geser layar ke panggungnya bila perlu
+        const r = el.getBoundingClientRect();
+        if (r.top < 0 || r.bottom > (window.innerHeight || 0)) el.scrollIntoView({ block: 'nearest', behavior: window.STICK && window.STICK.reduced && window.STICK.reduced.matches ? 'auto' : 'smooth' });
+        if (el.v) {
+          el.v.on = false;
+          el.v.dirty = true; // gerak dikurangi: gambar ulang keadaan akhir pilihan baru
+          el.v.play();
+          if (window.STICK && window.STICK.kick) window.STICK.kick();
+        }
+      }
       return false;
     }
   }

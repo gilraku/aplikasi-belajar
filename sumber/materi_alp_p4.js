@@ -1,5 +1,6 @@
 // Materi Lengkap Algoritma & Pemrograman P4
 const { C, box, arrow, path, poly, svg, text, diagram } = require("./svg.js");
+const ADG = require("./adegan_it.js");
 const A = (title, html, label) => ({ type: "article", label, title, html });
 const tip = (heading, html, tone) => ({ type: "callout", tone: tone || "tip", heading, html });
 const rv = (label, title, items) => ({ type: "reveal", label, title, items });
@@ -64,6 +65,7 @@ int main() {
 }`, "Koreksi slide: variabel <code>ket</code> belum dideklarasikan, <code>nilai</code> tidak pernah diisi, petik melengkung “ ”, dan hasilnya tidak ditampilkan. ➕ Bagaimana dengan 0? Dengan kode ini 0 dianggap positif. Kalau ingin tepat, tambahkan else-if untuk nol.", "if-else: Positif atau Negatif"),
   A("Bentuk 3: if - else if - else", `<p>Klausa else bisa berisi if-else lain sehingga terbentuk pilihan bertingkat. Kondisi diperiksa <strong>berurutan dari atas</strong>; begitu satu true, sisanya dilewati. <code>else</code> terakhir menangkap semua yang tidak cocok.</p>`, "Bagian 4"),
   ladder,
+  ADG.alpIfElse,
   code("konversi.cpp", `int grade = 68;
 if (grade >= 80 && grade <= 100) {
     cout << "A";
@@ -101,6 +103,13 @@ if (fak == 'A') {
 }`, "Huruf memakai <code>char</code> dan petik satu. Kode 01 cukup dibaca sebagai angka 1. ➕ Untuk menerima huruf kecil juga: <code>fak == 'A' || fak == 'a'</code>.", "Kerangka Nested if"),
   ex("Latihan", "Lengkapi Kondisinya", ["Pernyataan", "Kondisi C++"], ["x % 3 == 0", "x >= 17 && x <= 25", "x < 0 || x > 100", "!(x == 0)", "x % 5 == 0"], [
     ["x habis dibagi 3", "x % 3 == 0"], ["x antara 17 dan 25", "x >= 17 && x <= 25"], ["x di luar 0–100", "x < 0 || x > 100"], ["x bukan nol", "!(x == 0)"], ["x kelipatan 5", "x % 5 == 0"]]),
+  tip("➕ Kesalahan yang Sering Terjadi di if", `<ul class="list-disc pl-5 space-y-1">
+<li><code>if (g = 80)</code>: satu tanda <code>=</code> artinya <strong>mengisi</strong>, bukan membandingkan. g berubah menjadi 80 dan kondisinya selalu true. Untuk membandingkan pakai <code>==</code>.</li>
+<li><code>if (g &gt;= 80); { … }</code>: titik koma setelah kurung mengakhiri if. Blok <code>{ … }</code> sesudahnya selalu dijalankan, apa pun nilai g.</li>
+<li><code>if (60 &lt;= g &lt;= 80)</code>: C++ tidak membaca ini sebagai rentang. <code>60 &lt;= g</code> dihitung dulu (hasilnya 0 atau 1), lalu <code>0 atau 1 &lt;= 80</code> selalu true. Tulis <code>g &gt;= 60 &amp;&amp; g &lt;= 80</code>.</li>
+<li>Urutan else-if terbalik: kalau <code>g &gt;= 60</code> diperiksa sebelum <code>g &gt;= 80</code>, nilai 90 sudah tertangkap di cabang pertama dan huruf A tidak pernah tercetak. Periksa batas yang paling ketat lebih dulu.</li>
+<li><code>else (g &lt; 60)</code>: else tidak boleh diberi kondisi, hasilnya error. Kalau butuh kondisi, tulis <code>else if (g &lt; 60)</code>.</li>
+</ul>`, "warn"),
   tip("Panduan Tugas P4 (tanpa jawaban)", "Tugas: <em>algoritma dan program C++ untuk menentukan bilangan genap atau ganjil</em>. Langkah yang disarankan: (1) tulis pseudocode atau gambar flowchart: masukan apa, keputusan apa, keluaran apa; (2) ingat operator dari P3 yang menghasilkan <strong>sisa bagi</strong>; (3) pilih bentuk if yang sesuai dengan jumlah kemungkinan hasil; (4) uji dengan 4, 7, 0, dan bilangan negatif seperti −3. Cek misimu di tab <strong>Simulasi</strong>.", "info"),
   rv("Uji Pemahaman", "Jawab Dulu, Lalu Buka", [
     { prompt: "Mengapa else-if kedua cukup menulis g >= 60, bukan g >= 60 && g < 80?", answer: "Nilai ≥ 80 sudah ditangkap cabang pertama", reason: "Cabang berikutnya hanya diperiksa jika cabang sebelumnya false." },
