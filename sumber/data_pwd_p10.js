@@ -181,7 +181,7 @@ module.exports = fix({
         { prompt: "Jam `12:00` tepat", answer: "Selamat Siang", reason: "\"12:00\" &lt; \"12:00\" false, lalu \"12:00\" &lt; \"18:00\" true." },
         { prompt: "Jam `17:59`", answer: "Selamat Siang", reason: "Masih di bawah 18:00." },
         { prompt: "Jam `21:30`", answer: "Selamat Malam", reason: "Kedua kondisi false, masuk else." },
-        { prompt: "Laptop jam 08:00 WITA, tetapi PHP memakai zona UTC ➕", answer: "Selamat Malam (PHP mengira jam 00:00)", reason: "Atur <code>date_default_timezone_set(\"Asia/Makassar\")</code>." },
+        { prompt: "Laptop jam 19:00 WITA, tetapi PHP memakai zona UTC ➕", answer: "Selamat Pagi (PHP mengira jam 11:00)", reason: "WITA = UTC+8, jadi 19:00 WITA = 11:00 UTC, dan \"11:00\" &lt; \"12:00\". Atur <code>date_default_timezone_set(\"Asia/Makassar\")</code>." },
         { prompt: "`echo \"Halo, $jurusan\";` setelah `$jurusan = \"Sistem Informasi\";`", answer: "Halo, Sistem Informasi", reason: "Ini modifikasi pertama di aktivitas modul." },
         { prompt: "`echo date(\"D\");` pada hari Kamis", answer: "Thu", reason: "Format D = singkatan hari tiga huruf dalam bahasa Inggris (Mon, Tue, Wed, Thu, Fri, Sat, Sun). Ini bahan modifikasi kedua di aktivitas." }
       ]

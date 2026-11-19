@@ -39,7 +39,9 @@ function playgroundBehavior(profile, request) {
             fill(over);
             const before = alerts, count = rows().length;
             submit();
-            return !!errText(id) || (alerts > before && rows().length === count && field(id).value === String(over[id]));
+            // Ditolak = baris tabel tidak bertambah, isian tidak di-reset, dan ada pesan (teks error atau alert).
+            const kept = rows().length === count && field(id).value === String(over[id]);
+            return kept && (!!errText(id) || alerts > before);
           };
           results.nim = ['12345', '12345abcde'].every(bad => rejected('nim', { nim: bad }));
           results.nama = rejected('nama', { nama: 'Al' });

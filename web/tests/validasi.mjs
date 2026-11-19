@@ -33,6 +33,16 @@ for (const { where, b } of blocks) {
   assert.ok(keys.some(k => !start[k]), `${where} "${b.title}": kode awal sudah lolos semua misi`);
   n++;
 }
+// Mutasi: pesan error tetap ditulis, tetapi isValid = false dihapus, sehingga data salah tetap tersimpan.
+// Misi penolakan (nim, nama, email, jurusan) harus gagal; menulis pesan saja belum berarti menolak.
+for (const { where, b } of blocks) {
+  const keys = b.tasks.map(t => t.behavior).filter(k => ['nim', 'nama', 'email', 'jurusan'].includes(k));
+  if (!keys.length) continue;
+  const bocor = b.solution.replace(/isValid = false;?/g, '');
+  assert.notEqual(bocor, b.solution, `${where} "${b.title}": pola isValid = false tidak ada`);
+  const r = await run(bocor);
+  for (const k of keys) { assert.equal(r[k], false, `${where} "${b.title}": misi ${k} lolos walau data salah tetap disimpan`); n++; }
+}
 // Kode tugas modul apa adanya (innerHTML untuk sel tabel) lolos validasi tetapi gagal misi keamanan
 const tugas = blocks.find(x => x.b.title.includes('Tabel')).b;
 const modul = tugas.solution.replace(/const row = document\.createElement\("tr"\);[\s\S]*?tableBody\.appendChild\(row\);/, 'const row = document.createElement("tr");\n                row.innerHTML = `<td>${nimInput.value}</td><td>${namaInput.value}</td><td>${jurusanInput.value}</td><td>${emailInput.value}</td>`;\n                tableBody.appendChild(row);');
