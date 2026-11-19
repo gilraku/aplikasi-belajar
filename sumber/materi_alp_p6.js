@@ -1,4 +1,5 @@
 // Materi Lengkap Algoritma & Pemrograman P6
+const ADG = require("./adegan_it.js");
 const { C, box, arrow, path, poly, svg, text, diagram } = require("./svg.js");
 const A = (title, html, label) => ({ type: "article", label, title, html });
 const tip = (heading, html, tone) => ({ type: "callout", tone: tone || "tip", heading, html });
@@ -38,6 +39,7 @@ module.exports = [
 <ol><li><strong>Kondisi awal</strong> (titik awal).</li><li><strong>Syarat perulangan</strong>: selama terpenuhi, perulangan berjalan; berhenti saat tidak terpenuhi.</li><li><strong>Step</strong>: perubahan yang suatu saat membuat syarat menjadi false.</li></ol>
 <p>C++ punya tiga cara: <code>for</code> (pertemuan ini), <code>while</code> dan <code>do-while</code> (P7).</p>`, "Bagian 1"),
   flow,
+  ADG.alpLoop,
   code("countdown.cpp", `#include <iostream>
 using namespace std;
 

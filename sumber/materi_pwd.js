@@ -1,4 +1,5 @@
 // Materi Lengkap — Pemrograman Web Dinamis P1–P8 (modul + pengayaan dari MDN Web Docs, W3C/WHATWG HTML Living Standard)
+const ADG = require("./adegan_it.js");
 const { C, box, arrow, path, svg, text, diagram } = require("./svg.js");
 const A = (title, html, label) => ({ type: "article", label, title, html });
 const tip = (heading, html, tone) => ({ type: "callout", tone: tone || "tip", heading, html });
@@ -321,7 +322,9 @@ const M = {
 <p><strong>Web</strong> berisi dokumen multimedia yang saling terhubung lewat <strong>hyperlink</strong>, dikirim memakai protokol <strong>HTTP</strong>, dan dibuka dengan <strong>browser</strong>. Sekumpulan halaman web dengan satu nama domain disebut <strong>situs web</strong>.</p>
 <p>➕ Sejarah singkat: WWW diciptakan Tim Berners-Lee di CERN pada 1989–1991 bersama tiga teknologi intinya: HTML (bahasa dokumen), URL (alamat), dan HTTP (protokol). Ketiganya persis tiga mekanisme WWW yang disebut modul.</p>`, "Bagian 1"),
     clientServer,
+    ADG.pwdRequest,
     A("HTTP: Percakapan Request–Response", `<p>Setiap kali halaman dibuka, browser mengirim <strong>request</strong> berisi method (GET/POST), path, dan header. Server membalas dengan <strong>response</strong> berisi <strong>kode status</strong>, header, dan isi (body). HTTP bersifat <em>stateless</em> ➕: server tidak otomatis “ingat” request sebelumnya, sehingga web dinamis memakai cookie/session untuk fitur seperti login.</p>`, "Bagian 2"),
+    ADG.pwdPesanHttp,
     { type: "table", label: "Tabel Interaktif", title: "Lima Kelompok Kode Status HTTP", headers: ["Kode", "Kelompok", "Contoh"],
       rows: [["1xx", "Informasi", "100 Continue"], ["2xx", "Sukses", "200 OK, 201 Created"], ["3xx", "Pengalihan", "301 Moved Permanently, 302 Found"], ["4xx", "Kesalahan client", "400 Bad Request, 403 Forbidden, 404 Not Found"], ["5xx", "Kesalahan server", "500 Internal Server Error, 503 Service Unavailable"]],
       modes: [{ label: "Yang paling sering kamu temui", target: "row", row: 3, title: "404", text: "Nama file atau path salah (huruf besar-kecil juga berpengaruh di server Linux)." },
@@ -1015,6 +1018,7 @@ while (n <= 3) {
   p7: [
     A("DOM: Halaman sebagai Pohon Objek", `<p>Saat memuat HTML, browser membangun <strong>DOM (Document Object Model)</strong>: representasi halaman berbentuk pohon, tiap tag menjadi <strong>node</strong> berupa objek yang punya properti dan method. JavaScript tidak mengubah file HTML; ia mengubah DOM di memori, dan browser langsung menggambar ulang.</p>`, "Bagian 1"),
     domTree,
+    ADG.pwdDom,
     A("1a. Memilih Elemen (Seleksi)", `<p>Sebelum bisa mengubah apa pun, JavaScript harus <strong>menemukan</strong> elemennya dulu. Langkah ini disebut <strong>seleksi</strong>. Hasilnya disimpan di variabel, lalu variabel itu yang diubah: ${c("const judul = document.getElementById(\"judul\");")}</p>
 <p>Ada dua pertanyaan untuk memilih metode yang tepat: <em>mencari berdasarkan apa?</em> (id, class, nama tag, atau selector CSS bebas) dan <em>butuh satu elemen atau semua yang cocok?</em></p>
 <ul class="list-disc pl-5 space-y-1">

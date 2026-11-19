@@ -9,7 +9,7 @@ const IMG = /^materi\/[a-z0-9/_-]+\.(webp|png|jpg)$/;
 const imgOk = src => IMG.test(String(src)) && fs.existsSync(path.resolve(process.cwd(), 'public', String(src)));
 
 // Jenis blok yang dikenali mesin (objek R di src/scripts/engine.js)
-export const BLOCK_TYPES = ['text', 'article', 'ayat', 'code', 'playground', 'callout', 'cards', 'list', 'flow', 'row', 'tabs', 'choices', 'table', 'diagram', 'steps', 'shot', 'symbols', 'cara', 'reveal', 'say', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'lab-5k', 'lab-imbuhan', 'lab-kalimat', 'lab-kalimat-en', 'lab-jam', 'lab-rute', 'lab-bedah', 'exercise'];
+export const BLOCK_TYPES = ['text', 'article', 'ayat', 'code', 'playground', 'callout', 'cards', 'list', 'flow', 'row', 'tabs', 'choices', 'table', 'diagram', 'steps', 'shot', 'symbols', 'cara', 'reveal', 'say', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'lab-5k', 'lab-imbuhan', 'lab-kalimat', 'lab-kalimat-en', 'lab-jam', 'lab-rute', 'lab-bedah', 'adegan', 'penelusur', 'exercise'];
 
 const str = z.string().trim().min(1, 'tidak boleh kosong');
 const optValue = o => (o && typeof o === 'object' ? o.value : o);
@@ -65,6 +65,14 @@ const Block = z.lazy(() => z.looseObject({
     ctx.addIssue({ code: 'custom', path: ['verbs'], message: 'lab-kalimat-en butuh verbs[] atau nouns[]' });
   if (b.type === 'lab-jam' && (typeof b.start !== 'number' || !Array.isArray(b.presets) || !b.presets.length))
     ctx.addIssue({ code: 'custom', path: ['presets'], message: 'lab-jam butuh start (angka) dan presets[]' });
+  if (b.type === 'adegan') {
+    if (typeof b.scene !== 'string' || !/^[a-z0-9-]+$/.test(b.scene)) ctx.addIssue({ code: 'custom', path: ['scene'], message: 'adegan butuh scene berupa id adegan (huruf kecil, angka, tanda -)' });
+    if (!Array.isArray(b.steps) || b.steps.some(x => !x || typeof x.sorot !== 'string' || typeof x.html !== 'string')) ctx.addIssue({ code: 'custom', path: ['steps'], message: 'setiap langkah adegan butuh { sorot, html }' });
+  }
+  if (b.type === 'penelusur') {
+    if (!Array.isArray(b.nodes) || b.nodes.length !== 2) ctx.addIssue({ code: 'custom', path: ['nodes'], message: 'penelusur butuh tepat 2 simpul di nodes[]' });
+    if (!Array.isArray(b.steps) || !b.steps.length || b.steps.some(x => !x || typeof x.say !== 'string')) ctx.addIssue({ code: 'custom', path: ['steps'], message: 'penelusur butuh minimal 1 langkah, masing-masing dengan say' });
+  }
   if (b.type === 'lab-bedah') {
     if (!Array.isArray(b.items) || !b.items.length) ctx.addIssue({ code: 'custom', path: ['items'], message: 'lab-bedah butuh minimal 1 kalimat di items[]' });
     else b.items.forEach((it, ii) => {

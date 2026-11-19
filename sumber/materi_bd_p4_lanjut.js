@@ -1,5 +1,6 @@
 // Materi Lengkap Basis Data P4 • Bagian 4: SQL lanjutan yang ditanyakan kuis LMS tetapi tidak ada di modul P1–P7
 // (ALTER TABLE, JOIN, fungsi agregat, GROUP BY, HAVING, alias AS). Disusun dari dokumentasi MySQL 8.
+const ADG = require("./adegan_it.js");
 const { C, box, svg, text, diagram } = require("./svg.js");
 const A = (title, html, label) => ({ type: "article", label, title, html });
 const tip = (heading, html, tone) => ({ type: "callout", tone: tone || "tip", heading, html });
@@ -83,6 +84,7 @@ module.exports = [
 <p><strong>Bentuk umum:</strong> <code>SELECT kolom FROM tabel_kiri [INNER | LEFT | RIGHT] JOIN tabel_kanan ON tabel_kiri.kolom = tabel_kanan.kolom;</code></p>
 <p><code>ON</code> berisi syarat pasangan. Tabel yang ditulis setelah FROM disebut tabel <strong>kiri</strong>, tabel setelah JOIN disebut tabel <strong>kanan</strong>. Istilah kiri/kanan ini penting untuk LEFT dan RIGHT JOIN.</p>
 <p><strong>Alias tabel.</strong> <code>FROM peminjaman p</code> memberi nama pendek <code>p</code>, sehingga <code>p.id_buku</code> cukup menggantikan <code>peminjaman.id_buku</code>. Alias boleh ditulis dengan atau tanpa AS: <code>peminjaman AS p</code> sama dengan <code>peminjaman p</code>.</p>`),
+  ADG.bdJoin,
   // ---------- Sebelum: dua tabel asal ----------
   A("Sebelum JOIN: Dua Tabel yang Terpisah", `<p>Semua contoh JOIN di bawah memakai dua tabel yang sama dari database <code>perpustakaan</code>: <strong>buku</strong> (5 baris) dan <strong>peminjaman</strong> (3 baris).</p>
 <p>Perhatikan tabel peminjaman. Isinya hanya <strong>kode</strong>: PJ0001 meminjam <code>BK002</code>. Judul BK002 tidak ada di tabel ini, tetapi tersimpan di tabel buku. Pertanyaan "buku apa saja yang dipinjam?" baru bisa dijawab kalau kedua tabel disatukan lewat kolom yang sama, yaitu <code>id_buku</code>. Itulah tugas JOIN.</p>`, "Langkah 1 • Sebelum"),

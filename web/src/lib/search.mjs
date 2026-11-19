@@ -5,7 +5,7 @@ import { library } from './library.mjs';
 
 const arr = x => (Array.isArray(x) ? x : []);
 // Kunci yang isinya bukan teks bacaan (gambar, warna, kode SVG, data awal lab, dsb.)
-const SKIP = new Set(['type', 'tone', 'svg', 'src', 'w', 'h', 'minw', 'id', 'target', 'row', 'col', 'style', 'icon', 'profile', 'seed', 'setup', 'url', 'img', 'alt', 'pill', 'starter', 'solution', 'solusi', 'html_starter', 'behavior', 'check', 'tests', 'mode', 'grid', 'answerKey', 'ans']);
+const SKIP = new Set(['type', 'scene', 'sorot', 'tone', 'svg', 'src', 'w', 'h', 'minw', 'id', 'target', 'row', 'col', 'style', 'icon', 'profile', 'seed', 'setup', 'url', 'img', 'alt', 'pill', 'starter', 'solution', 'solusi', 'html_starter', 'behavior', 'check', 'tests', 'mode', 'grid', 'answerKey', 'ans']);
 const ENT = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', '#39': "'", copy: '©', reg: '®', hellip: '…', ndash: '–', mdash: '—', larr: '←', rarr: '→', times: '×' };
 // Sama dengan ALLOWED_TAGS di engine.js: hanya tag ini yang dirender rich(); tag lain tampil apa adanya (mis. #include <iostream>)
 const ALLOWED = new Set(['b', 'strong', 'i', 'em', 'u', 'code', 'br', 'ul', 'ol', 'li', 'p', 'span', 'sub', 'sup', 'mark', 'small', 'pre', 'kbd', 's', 'del']);
@@ -42,7 +42,7 @@ function pieces(s) {
 // Ambil semua teks dari satu blok. Baris tabel (array berisi teks) digabung jadi satu potongan.
 // Lab/simulator interaktif: isinya (jawaban, umpan balik, langkah jejak, uji kode) baru tampil setelah dikerjakan.
 // Dari blok ini cukup judul, label, dan deskripsinya supaya hasil pencarian tidak menunjuk teks yang tersembunyi.
-const LAB = new Set(['detective', 'sql-lab', 'trace-lab', 'playground', 'lab-5k', 'lab-imbuhan', 'lab-kalimat', 'lab-kalimat-en', 'lab-jam', 'lab-rute', 'lab-bedah']);
+const LAB = new Set(['detective', 'sql-lab', 'trace-lab', 'playground', 'lab-5k', 'lab-imbuhan', 'lab-kalimat', 'lab-kalimat-en', 'lab-jam', 'lab-rute', 'lab-bedah', 'penelusur']);
 const LAB_SHOWN = new Set(['label', 'title', 'desc', 'tip', 'intro']);
 function blockTexts(def) {
   const out = [];
