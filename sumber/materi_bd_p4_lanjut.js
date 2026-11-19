@@ -1,6 +1,7 @@
 // Materi Lengkap Basis Data P4 • Bagian 4: SQL lanjutan yang ditanyakan kuis LMS tetapi tidak ada di modul P1–P7
 // (ALTER TABLE, JOIN, fungsi agregat, GROUP BY, HAVING, alias AS). Disusun dari dokumentasi MySQL 8.
 const ADG = require("./adegan_it.js");
+const BT = require("./bertahap_it.js");
 const { C, box, svg, text, diagram } = require("./svg.js");
 const A = (title, html, label) => ({ type: "article", label, title, html });
 const tip = (heading, html, tone) => ({ type: "callout", tone: tone || "tip", heading, html });
@@ -129,6 +130,7 @@ ${hasil(["id_pinjam", "nama"], [["PJ0001", "Ahmad Fauzi"], ["PJ0002", "Nur Aisya
       { label: "FULL OUTER JOIN?", target: "none", title: "Tidak ada di MySQL", text: "FULL OUTER JOIN (semua baris dari kedua tabel) ada di PostgreSQL dan SQL Server, tetapi tidak di MySQL. Di MySQL caranya menggabungkan hasil LEFT JOIN dan RIGHT JOIN dengan <code>UNION</code>." },
       { label: "Cari yang tidak punya pasangan", target: "row", row: 1, title: "LEFT JOIN + IS NULL", text: "<code>SELECT b.judul FROM buku b LEFT JOIN peminjaman p ON p.id_buku = b.id_buku WHERE p.id_pinjam IS NULL;</code> → buku yang belum pernah dipinjam." }
     ] },
+  BT.bdJoinJelas,
   { type: "code", label: "Contoh Kode", title: "JOIN Tiga Tabel dan Mencari yang Belum Punya Pasangan", file: "join.sql", code: `-- siapa meminjam buku apa (tiga tabel sekaligus)
 ${qTiga}
 

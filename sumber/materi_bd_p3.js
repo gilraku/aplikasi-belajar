@@ -1,5 +1,6 @@
 // Materi Lengkap Basis Data P3: Perancangan dengan ERD
 const { C, box, arrow, path, svg, text, diagram } = require("./svg.js");
+const BT = require("./bertahap_it.js");
 const A = (title, html, label) => ({ type: "article", label, title, html });
 const tip = (heading, html, tone) => ({ type: "callout", tone: tone || "tip", heading, html });
 const rv = (label, title, items) => ({ type: "reveal", label, title, items });
@@ -11,30 +12,6 @@ const diamond = (cx, cy, w, h, t, tone, part, o = {}) => { const [f, s, c] = C[t
 const ent = (x, y, w, h, t, tone, part, o = {}) => box(x, y, w, h, t, tone, part, Object.assign({ r: 0, size: 14 }, o)) + (o.double ? `<rect x="${x + 5}" y="${y + 5}" width="${w - 10}" height="${h - 10}" fill="none" stroke="${C[tone][1]}" stroke-width="2"/>` : "");
 const ln = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#64748b" stroke-width="2"/>`;
 const lab = (x, y, t, col) => text(x, y, t, { size: 15, color: col || "#be123c" });
-
-const erdPerpus = diagram({
-  label: "Diagram Interaktif", title: "ERD Basis Data Perpustakaan (Gambar 3 Modul)", desc: "Dua entitas, satu relasi. Klik setiap bagian.", minw: 640,
-  svg: svg(800, 330,
-    ln(150, 165, 330, 165) + ln(470, 165, 650, 165) +
-    [[60, 60, "id_buku", 1], [150, 40, "judul", 0], [240, 60, "pengarang", 0], [100, 270, "tahun", 0]].map(([x, y, t, k]) => ln(110, 165, x, y)).join("") +
-    [[560, 60, "id_anggota", 1], [660, 40, "nama", 0], [745, 80, "prodi", 0]].map(([x, y]) => ln(690, 165, x, y)).join("") +
-    ln(400, 165, 330, 270) + ln(400, 165, 470, 270) +
-    ent(40, 140, 140, 50, "Buku", "sky", "buku") + ent(620, 140, 140, 50, "Anggota", "sky", "agt") +
-    diamond(400, 165, 150, 80, "dipinjam", "amber", "rel") +
-    oval(60, 60, 52, 22, "id_buku", "rose", "key", { under: true }) + oval(150, 40, 42, 20, "judul", "emerald", "atr") + oval(240, 60, 52, 22, "pengarang", "emerald", "atr") + oval(100, 270, 42, 20, "tahun", "emerald", "atr") +
-    oval(560, 60, 58, 22, "id_anggota", "rose", "key", { under: true }) + oval(660, 40, 40, 20, "nama", "emerald", "atr") + oval(745, 80, 40, 20, "prodi", "emerald", "atr") +
-    oval(330, 270, 58, 22, "tgl_pinjam", "violet", "relatr", { dash: true }) + oval(470, 270, 62, 22, "tgl_kembali", "violet", "relatr", { dash: true }) +
-    lab(255, 150, "N") + lab(545, 150, "M")
-  ),
-  parts: [
-    { id: "buku", label: "Buku", title: "Entitas Buku", text: "Kata benda tunggal. Nanti menjadi tabel <code>buku</code>." },
-    { id: "agt", label: "Anggota", title: "Entitas Anggota", text: "Nanti menjadi tabel <code>anggota</code>." },
-    { id: "key", label: "Atribut kunci", title: "id_buku & id_anggota", text: "Bergaris bawah: berbeda tiap baris, tidak berubah, pendek. Judul dan nama tidak dipilih karena bisa sama." },
-    { id: "atr", label: "Atribut", title: "Atribut biasa", text: "Keterangan yang melekat pada entitas: judul, pengarang, tahun; nama, prodi." },
-    { id: "rel", label: "Relasi", title: "Relasi dipinjam (N : M)", text: "Satu buku dipinjam banyak anggota (di waktu berbeda) → N; satu anggota meminjam banyak buku → M. ➕ Di Bab 4 relasi ini menjadi tabel <code>peminjaman</code> yang berisi id_buku, id_anggota, tgl_pinjam, tgl_kembali." },
-    { id: "relatr", label: "Atribut relasi", title: "tgl_pinjam & tgl_kembali", text: "Milik peristiwa peminjaman, bukan milik buku atau anggota. Modul menggambarnya dengan elips putus-putus. ⚠️ Di slide gabungan/buku standar, elips putus-putus berarti atribut <em>turunan</em>; atribut relasi cukup elips biasa yang menempel pada belah ketupat." }
-  ]
-});
 
 const mapping = diagram({
   label: "Diagram Interaktif", title: "Pemetaan Kardinalitas (Himpunan A ke B)", desc: "Setiap titik adalah satu baris. Klik setiap jenis.", minw: 640,
@@ -191,7 +168,7 @@ module.exports = [
   { type: "table", label: "Tabel Interaktif • Slide Gabungan", title: "Tipe-tipe Atribut", headers: ["Pasangan", "Penjelasan", "Contoh"],
     rows: [["Simple vs komposit", "Tidak bisa dibagi vs bisa dibagi", "jenis_kelamin vs nama (depan + belakang)"], ["Single vs multi-valued", "Paling banyak satu nilai vs bisa lebih dari satu nilai sejenis", "tgl_lahir vs no_telepon"], ["Derived (turunan)", "Dihitung dari atribut lain", "umur dari tgl_lahir; IP dari nilai mata kuliah"], ["Mandatory vs non mandatory", "Wajib diisi (NOT NULL) vs boleh kosong (NULL)", "nama vs email cadangan"], ["Identifier vs descriptor", "Penanda unik (key) vs penjelas non-unik", "nim vs alamat"]],
     modes: [{ label: "Kaitan dengan P2", target: "row", row: 3, title: "Ingat NULL di P2", text: "Atribut mandatory nanti diberi constraint NOT NULL saat tabel dibuat." }] },
-  erdPerpus,
+  BT.bdErdChen,
   A("Kardinalitas", `<p><strong>Kardinalitas</strong> adalah keterangan tentang banyaknya baris yang boleh terhubung pada sebuah relasi, ditulis sebagai angka/huruf di atas garis penghubung. Modul menyebut tiga macam: <strong>satu ke satu, satu ke banyak, banyak ke banyak</strong>; slide gabungan menambahkan <strong>banyak ke satu</strong> (N : 1), yang sebenarnya 1 : N dibaca dari arah sebaliknya.</p>
 <p>Cara menentukan: ajukan <strong>dua pertanyaan</strong>, dari kiri dan dari kanan. “Satu anggota bisa melakukan berapa peminjaman? Banyak. Satu peminjaman dilakukan oleh berapa anggota? Satu.” → 1 : N.</p>
 <p>Slide gabungan juga menyebut dua cara menulis kardinalitas: <strong>Korth</strong> memakai garis berarah untuk “satu” dan tak berarah untuk “banyak”; <strong>Date</strong> menuliskan kardinalitas pada garis (cara yang dipakai modul).</p>`, "Bagian 3"),
