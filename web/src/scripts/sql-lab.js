@@ -7,9 +7,14 @@ const sqlShow = v => v == null ? 'NULL' : String(v);
 const sqlTable = (columns, rows) => rows.length ? [columns, ...rows].map(row => row.map(sqlShow).join(' | ')).join('\n') + '\n' + rows.length + ' baris' : 'Empty set (0 baris)';
 const SQL_TYPE = String.raw`(?:char\(\d+\)|varchar\(\d+\)|decimal\(\d+,\s*\d+\)|int(?:eger)?(?:\(\d+\))?|year|datetime|date|text|float|double)`;
 const SQL_FK_ACTION = String.raw`(?:CASCADE|SET\s+NULL|RESTRICT|NO\s+ACTION)`;
+// Dialek: 'mysql' (bawaan, MySQL 8) atau 'mariadb' (MariaDB di MAMP, dipakai modul Basis Data P9–P14).
+// Bedanya hanya pada nomor/pesan galat tertentu dan kolom non-agregat (MariaDB mengizinkan).
+let SQL_DIALECT = 'mysql';
+const sqlMaria = () => SQL_DIALECT === 'mariadb';
 const sqlOk = n => `Query OK, ${n} row${n === 1 ? '' : 's'} affected`;
 
 function runSqlLab(db, input) {
+  SQL_DIALECT = db.dialect === 'mariadb' ? 'mariadb' : 'mysql';
   const output = [];
   const commands = input.match(/(?:'(?:''|[^'])*'|[^;'])+|'/g)?.map(s => s.trim()).filter(Boolean) || [];
   const ok = (text = 'Query OK, 0 rows affected') => output.push(text);
@@ -76,6 +81,27 @@ function runSqlLab(db, input) {
     if (/^SHOW\s+TABLES$/i.test(command)) {
       ok(sqlTable([`Tables_in_${schema.name}`], [...schema.tables, ...views].map(t => [t.name]))); continue;
     }
+    // CREATE TABLE salinan AS SELECT …: membuat tabel baru dari hasil kueri (kunci primer tidak ikut tersalin)
+    if ((m = /^CREATE\s+TABLE\s+(IF\s+NOT\s+EXISTS\s+)?([a-z_]\w*)\s+(?:AS\s+)?(SELECT\s[\s\S]+)$/i.exec(command))) {
+      const name = m[2].toLowerCase();
+      if (findTable(name) || isView(name)) {
+        if (!m[1]) return fail(1050, `Tabel '${name}' sudah ada.`);
+        ok('Query OK. Tabel sudah ada.'); continue;
+      }
+      const q = sqlQuery(schema, m[3]);
+      if (q.error) return fail(q.code || 1064, q.error);
+      const lower = q.labels.map(l => l.toLowerCase());
+      if (lower.some((l, i) => lower.indexOf(l) !== i)) return fail(1060, 'Duplicate column name. Beri alias berbeda dengan AS.');
+      const columns = lower.map((l, i) => {
+        const c = q.meta && q.meta[i];
+        if (c) return { name: l, type: c.type, required: !!c.required, ...(c.def !== undefined ? { def: c.def } : {}) };
+        const vals = q.rows.map(r => r[i]).filter(v => v != null).map(String);
+        return { name: l, type: vals.every(v => /^-?\d+$/.test(v)) && vals.length ? 'bigint' : vals.every(v => /^-?\d+(\.\d+)?$/.test(v)) ? 'decimal(20,4)' : 'varchar(255)' };
+      });
+      db.transaction = null;
+      schema.tables.push({ name, columns, key: '', rows: q.rows.map(r => r.map(v => v == null ? null : String(v))) });
+      ok(`Query OK, ${q.rows.length} row${q.rows.length === 1 ? '' : 's'} affected\nRecords: ${q.rows.length}  Duplicates: 0  Warnings: 0`); continue;
+    }
     if ((m = /^CREATE\s+TABLE\s+(IF\s+NOT\s+EXISTS\s+)?([a-z_]\w*)\s*\(([\s\S]+)\)$/i.exec(command))) {
       const name = m[2].toLowerCase();
       if (findTable(name) || isView(name)) {
@@ -129,6 +155,7 @@ function runSqlLab(db, input) {
         ok('Query OK. Tabel memang tidak ada.'); continue;
       }
       const child = sqlChildren(schema, schema.tables[index]).find(([c]) => c !== schema.tables[index]);
+      if (child && sqlMaria()) return fail(1451, sqlFkMessage(schema, child[0], child[1], 'Cannot delete or update a parent row') + ` Tabel ${schema.tables[index].name} masih ditunjuk tabel ${child[0].name}; hapus dulu tabel anaknya.`);
       if (child) return fail(3730, `Cannot drop table '${schema.tables[index].name}' referenced by a foreign key constraint '${child[1].name}' on table '${child[0].name}'. Hapus dulu tabel ${child[0].name} (anak), baru tabel induknya.`);
       db.transaction = null;
       schema.tables.splice(index, 1); ok(); continue;
@@ -171,7 +198,7 @@ function runSqlLab(db, input) {
     }
     if ((m = /^SHOW\s+(?:INDEX|INDEXES|KEYS)\s+FROM\s+([a-z_]\w*)$/i.exec(command))) {
       const t = findTable(m[1]);
-      if (!t) return fail(1146, `Tabel '${schema.name}.${m[1]}' belum ada.`);
+      if (!t) return fail(1146, `Table '${schema.name}.${m[1]}' doesn't exist. Tabel itu belum dibuat atau namanya salah ketik.`);
       const rows = [];
       if (t.key) rows.push([t.name, '0', 'PRIMARY', t.key]);
       t.columns.filter(c => c.unique).forEach(c => rows.push([t.name, '0', c.name, c.name]));
@@ -198,7 +225,7 @@ function runSqlLab(db, input) {
       ok(sqlTable(['Field', 'Type', 'Null', 'Key'], q.labels.map(l => [l, '(view)', 'YES', '']))); continue;
     }
     const table = findTable(name);
-    if (!table) return fail(1146, `Tabel '${schema.name}.${name}' belum ada.`);
+    if (!table) return fail(1146, `Table '${schema.name}.${name}' doesn't exist. Tabel itu belum dibuat atau namanya salah ketik.`);
     const indexOf = field => {
       const [a, b] = field.toLowerCase().split('.');
       if (b && a !== table.name) return -1;
@@ -210,7 +237,8 @@ function runSqlLab(db, input) {
       ok(sqlTable(['Field', 'Type', 'Null', 'Key'], table.columns.map(c => [c.name, c.type, c.required || c.name === table.key ? 'NO' : 'YES', c.name === table.key ? 'PRI' : c.unique ? 'UNI' : fkCols.has(c.name) ? 'MUL' : ''])));
     } else if (insert) {
       const fields = insert[2] ? insert[2].split(',').map(f => f.trim()).filter(Boolean) : table.columns.map(c => c.name);
-      if (fields.some(f => indexOf(f) < 0)) return fail(1054, 'Nama kolom tidak ditemukan.');
+      const badField = fields.find(f => indexOf(f) < 0);
+      if (badField) return fail(1054, `Unknown column '${badField}' in '${sqlMaria() ? 'INSERT INTO' : 'field list'}'. Periksa ejaan nama kolom dengan DESCRIBE ${table.name};`);
       // Seluruh bagian VALUES harus berupa (...), (...), ... tanpa sisa teks atau koma yang terlewat
       const groups = sqlSplitTop(insert[3].trim()).map(sqlInner);
       if (!groups.length || groups.some(g => g === null)) return fail(1064, 'Tulis nilai di dalam kurung dan pisahkan tiap baris dengan koma: VALUES (...), (...).');
@@ -218,19 +246,24 @@ function runSqlLab(db, input) {
       let auto = table.auto || 0;
       for (const group of groups) {
         const parts = sqlSplitTop(group);
-        if (parts.length !== fields.length) return fail(1136, 'Jumlah nilai harus sama dengan jumlah kolom.');
+        if (parts.length !== fields.length) return fail(1136, "Column count doesn't match value count at row 1. Jumlah nilai harus sama dengan jumlah kolom.");
         const row = table.columns.map(c => c.def ?? null);
         for (const [i, raw] of parts.entries()) {
           let value = sqlValue(raw);
           if (value === undefined) {
             // Ekspresi tanpa kolom, misalnya NOW(), CURDATE(), 2 * 3
-            const f = sqlCompile(raw, { ref: () => null, unknown: () => 'Gunakan tanda kutip tunggal untuk teks.' });
-            if (f.error) return fail(f.code === 1054 ? 1064 : f.code || 1064, f.error);
+            const f = sqlCompile(raw, { ref: () => null, unknown: n => `Unknown column '${n}' in '${sqlMaria() ? 'VALUES' : 'field list'}'. Teks tanpa kutip dianggap nama kolom; apit dengan kutip tunggal: '${n}'.` });
+            if (f.error) return fail(f.code || 1064, f.error);
             value = f.fn(null);
             value = value == null ? null : String(value);
           }
           row[indexOf(fields[i])] = sqlFit(table.columns[indexOf(fields[i])], value);
         }
+        // Kolom wajib yang tidak disebut dan tidak punya nilai bawaan
+        const missing = table.columns.find((c, i) => row[i] === null && (c.required || c.name === table.key) && !c.auto && !fields.some(f => indexOf(f) === i));
+        if (missing) return fail(1364, `Field '${missing.name}' doesn't have a default value. Isi kolomnya, atau beri nilai bawaan (DEFAULT) dengan ALTER.`);
+        const long = sqlTooLong(table, row);
+        if (long) return fail(1406, long);
         table.columns.forEach((c, i) => {
           if (!c.auto) return;
           if (row[i] === null || row[i] === '0') row[i] = String(++auto);
@@ -253,12 +286,12 @@ function runSqlLab(db, input) {
         const m2 = /^([a-z_]\w*(?:\.[a-z_]\w*)?)\s*=\s*([\s\S]+?)$/i.exec(part);
         if (!m2) return fail(1064, 'Bentuk SET: kolom = nilai.');
         const i = indexOf(m2[1]), value = sqlValue(m2[2]);
-        if (i < 0) return fail(1054, 'Nama kolom tidak ditemukan.');
+        if (i < 0) return fail(1054, `Unknown column '${m2[1]}' in '${sqlMaria() ? 'SET' : 'field list'}'. Periksa ejaan nama kolom dengan DESCRIBE ${table.name};`);
         const column = table.columns[i];
         if (value === undefined) {
           // SET stok = stok - 1, SET nama = UPPER(nama), dst.
-          const f = sqlCompile(m2[2], sqlRowEnv(indexOf, j => table.columns[j], schema, () => 'Gunakan tanda kutip tunggal untuk teks.'));
-          if (f.error) return fail(f.code === 1054 ? 1064 : f.code || 1064, f.error);
+          const f = sqlCompile(m2[2], sqlRowEnv(indexOf, j => table.columns[j], schema, n => `Unknown column '${n}' in '${sqlMaria() ? 'SET' : 'field list'}'. Kalau maksudnya teks, apit dengan kutip tunggal: '${n}'.`));
+          if (f.error) return fail(f.code || 1064, f.error);
           sets.push([i, r => { const v = f.fn(r); return v == null ? { value: null } : sqlConvert(column, String(v)); }]);
           continue;
         }
@@ -284,6 +317,8 @@ function runSqlLab(db, input) {
       const after = table.rows.map(r => next.get(r) || r);
       if (k >= 0 && sets.some(([i]) => i === k) && new Set(after.map(r => String(r[k]).toLowerCase())).size < after.length) return fail(1062, 'Nilai kunci primer akan kembar. Perubahan dibatalkan.');
       for (const r of next.values()) {
+        const long = sqlTooLong(table, r);
+        if (long) return fail(1406, long);
         const dup = sqlUniqueClash(table, after.filter(x => x !== r), r);
         if (dup) return fail(1062, dup);
         const bad = sqlFkMissing(schema, table, r, after);
@@ -330,6 +365,11 @@ function runSqlLab(db, input) {
 function sqlFit(column, value) {
   const m = /^decimal\(\d+,\s*(\d+)\)$/.exec(column.type);
   return m && value !== null && /^-?\d+(\.\d+)?$/.test(value) ? Number(value).toFixed(+m[1]) : value;
+}
+// Teks lebih panjang dari CHAR(n)/VARCHAR(n) ditolak (mode ketat MySQL/MariaDB)
+function sqlTooLong(table, row) {
+  const i = table.columns.findIndex((c, j) => { const m = /^(?:var)?char\((\d+)\)$/.exec(c.type); return m && row[j] != null && String(row[j]).length > +m[1]; });
+  return i < 0 ? '' : `Data too long for column '${table.columns[i].name}' at row 1. Kolom ${table.columns[i].type.toUpperCase()} tidak muat untuk '${row[i]}'.`;
 }
 function sqlValue(raw) {
   const t = String(raw).trim();
@@ -402,6 +442,7 @@ function sqlInner(text) {
 
 // ===== Ekspresi: kolom, angka, teks, + - * /, fungsi, perbandingan, AND/OR/NOT, kurung, subquery =====
 const SQL_AGG_NAMES = new Set(['COUNT', 'SUM', 'AVG', 'MIN', 'MAX']);
+const SQL_BARE_OK = new Set(['NULL', 'TRUE', 'FALSE', 'ESCAPE', 'EXISTS', 'ANY', 'ALL', 'SOME', 'XOR', 'REGEXP', 'RLIKE', 'INTERVAL', 'DAY', 'MONTH', 'YEAR', 'ASC', 'DESC']);
 const SQL_RESERVED = new Set(['AND', 'OR', 'NOT', 'IS', 'IN', 'LIKE', 'BETWEEN', 'FROM', 'WHERE', 'SELECT', 'GROUP', 'ORDER', 'HAVING', 'LIMIT', 'ON', 'JOIN', 'AS', 'DIV', 'MOD', 'UNION']);
 function sqlTokens(text) {
   const re = /\s*(?:('(?:''|[^'])*')|(\d+(?:\.\d+)?)|([a-z_]\w*(?:\.[a-z_]\w*)?)|"([^"]*)"|`([^`]*)`|(<=|>=|<>|!=|=|<|>|\+|-|\*|\/|%|\(|\)|,))/iy;
@@ -487,6 +528,16 @@ function sqlArith(op, a, b) {
 function sqlCompile(text, env) {
   let toks;
   try { toks = sqlTokens(text); } catch (e) { return e; }
+  // Syarat WHERE: dua kata polos berurutan (WHERE judul = Sistem Basis Data) = teks lupa dikutip
+  // Subquery (SELECT …) dilewati: alias tabel/kolom di dalamnya sah dan diperiksa saat subquery itu dikompilasi
+  if (env.bare) for (let k = 1, d = 0, sub = 0; k < toks.length; k++) {
+    const a = toks[k - 1], b = toks[k], up = t => t.v.toUpperCase();
+    if (a.t === 'op' && a.v === '(') { d++; if (!sub && b.t === 'id' && up(b) === 'SELECT') sub = d; }
+    if (a.t === 'op' && a.v === ')') { if (sub === d) sub = 0; d--; }
+    if (sub) continue;
+    if (a.t === 'id' && b.t === 'id' && !SQL_RESERVED.has(up(a)) && !SQL_RESERVED.has(up(b)) && !SQL_BARE_OK.has(up(a)) && !SQL_BARE_OK.has(up(b)) && toks[k + 1]?.v !== '(')
+      return { error: `You have an error in your SQL syntax near '${text.slice(b.s, b.s + 30)}'. Nilai teks harus diapit kutip tunggal.`, code: 1064 };
+  }
   let p = 0;
   const kw = (w, k = 0) => toks[p + k]?.t === 'id' && toks[p + k].v.toUpperCase() === w;
   const sym = (s, k = 0) => toks[p + k]?.t === 'op' && toks[p + k].v === s;
@@ -662,7 +713,7 @@ function sqlRowEnv(indexOf, columnAt, schema, unknown) {
 }
 // WHERE / ON: mengembalikan fungsi baris → benar/salah, atau { error, code }
 function sqlWhere(text, indexOf, columnAt = () => null, schema = null) {
-  const f = sqlCompile(text, sqlRowEnv(indexOf, columnAt, schema));
+  const f = sqlCompile(text, { ...sqlRowEnv(indexOf, columnAt, schema, name => `Unknown column '${name}' in '${sqlMaria() ? 'WHERE' : 'where clause'}'. Kalau maksudnya teks, apit dengan kutip tunggal: '${name}'.`), bare: true });
   if (f.error) return f;
   return row => sqlTruth(f.fn(row)) === true;
 }
@@ -689,6 +740,12 @@ function sqlFkDef(text) {
   return { name: m[1]?.toLowerCase(), col: m[2].toLowerCase(), ref: m[3].toLowerCase(), refCol: m[4].toLowerCase(), onDelete: act('DELETE'), onUpdate: act('UPDATE') };
 }
 function sqlFkCheck(schema, table, fk) {
+  const r = sqlFkCheckRaw(schema, table, fk);
+  // MariaDB melaporkan semua kunci tamu yang tak dapat dibentuk sebagai galat 1005 errno 150
+  if (sqlMaria() && [1822, 1824, 3780].includes(r.code)) return { error: `Can't create table \`${schema.name}\`.\`${table.name}\` (errno: 150 "Foreign key constraint is incorrectly formed"). ${r.error.replace(/^[^.]*\.\s*/, '')}`, code: 1005 };
+  return r;
+}
+function sqlFkCheckRaw(schema, table, fk) {
   const c = table.columns.find(x => x.name === fk.col);
   if (!c) return { error: `Key column '${fk.col}' doesn't exist in table.`, code: 1072 };
   const parent = fk.ref === table.name ? table : schema.tables.find(t => t.name === fk.ref);
@@ -756,7 +813,7 @@ function sqlConvert(column, value) {
 }
 function sqlAlter(schema, name, actionsText) {
   const table = schema.tables.find(t => t.name === name.toLowerCase());
-  if (!table) return { error: `Tabel '${schema.name}.${name}' belum ada.`, code: 1146 };
+  if (!table) return { error: `Table '${schema.name}.${name}' doesn't exist. Tabel itu belum dibuat atau namanya salah ketik.`, code: 1146 };
   const t = JSON.parse(JSON.stringify(table)); // dikerjakan pada salinan: kalau satu aksi gagal, tabel tidak berubah
   const renames = []; // [kolom lama, kolom baru] untuk memperbarui rujukan tabel lain
   const idx = f => t.columns.findIndex(c => c.name === f.toLowerCase());
@@ -975,6 +1032,8 @@ function sqlResolver(cols) {
     return hits.length ? hits[0] : -1;
   };
 }
+// 1052 menyebut klausanya: MariaDB (modul) "in SELECT", MySQL "in field list"
+const sqlAmb = (e, maria, mysql) => e && e.code === 1052 ? { ...e, error: e.error.replace(/^(Column '[^']+') is ambiguous/, `$1 in ${sqlMaria() ? maria : mysql} is ambiguous`) } : e;
 function sqlFrom(schema, text) {
   let rest = text.trim();
   const take = () => {
@@ -990,7 +1049,7 @@ function sqlFrom(schema, text) {
     const t = schema.tables.find(x => x.name === ref.name);
     if (t) return t;
     const v = (schema.views || []).find(x => x.name === ref.name);
-    if (!v) return { error: `Tabel '${schema.name}.${ref.name}' belum ada.`, code: 1146 };
+    if (!v) return { error: `Table '${schema.name}.${ref.name}' doesn't exist. Tabel itu belum dibuat atau namanya salah ketik.`, code: 1146 };
     const q = sqlQuery(schema, v.sql);
     if (q.error) return { error: `View '${v.name}' tidak bisa dijalankan: ${q.error}`, code: 1356 };
     return { name: v.name, columns: q.labels.map(l => ({ name: l.toLowerCase(), type: 'view' })), rows: q.rows };
@@ -1030,7 +1089,7 @@ function sqlFrom(schema, text) {
     } else if (kind === 'LEFT' || kind === 'RIGHT') return { error: `${kind} JOIN wajib diikuti ON, misalnya ON p.id_buku = b.id_buku.`, code: 1064 };
     const right = t2.columns.map(c => ({ ...c, from: ref.alias })), all = cols.concat(right);
     const test = on ? sqlWhere(on, sqlResolver(all), i => all[i], schema) : () => true;
-    if (test.error) return test;
+    if (test.error) return sqlAmb(test, 'ON', 'on clause');
     const emptyLeft = cols.map(() => null), emptyRight = right.map(() => null), out = [];
     // LEFT: semua baris kiri tetap muncul; RIGHT: semua baris kanan tetap muncul; pasangan yang tidak ada diisi NULL
     if (kind === 'RIGHT') t2.rows.forEach(r => { const hit = rows.filter(l => test(l.concat(r))); if (hit.length) hit.forEach(l => out.push(l.concat(r))); else out.push(emptyLeft.concat(r)); });
@@ -1107,6 +1166,8 @@ function sqlQuery(schema, command) {
     }
     return { labels, rows };
   }
+  const neg = /\sLIMIT\s+(-\d+)/i.exec(safe);
+  if (neg) return { error: `You have an error in your SQL syntax near '${neg[1]}'. LIMIT hanya menerima bilangan nol atau lebih.`, code: 1064 };
   const m = /^SELECT\s+(DISTINCT\s+)?([\s\S]+?)(?:\s+FROM\s+([\s\S]+?))?(?:\s+WHERE\s+([\s\S]+?))?(?:\s+GROUP\s+BY\s+([\s\S]+?))?(?:\s+HAVING\s+([\s\S]+?))?(?:\s+ORDER\s+BY\s+([\s\S]+?))?(?:\s+LIMIT\s+(\d+)(?:\s*,\s*(\d+)|\s+OFFSET\s+(\d+))?)?$/i.exec(safe);
   if (!m) return { error: 'Periksa sintaks. Urutan klausa: SELECT … FROM … JOIN … ON … WHERE … GROUP BY … HAVING … ORDER BY … LIMIT …', code: 1064 };
   if (!m[3] && (m[4] || m[5] || m[6])) return { error: 'Tulis FROM nama_tabel sebelum WHERE / GROUP BY / HAVING.', code: 1064 };
@@ -1114,7 +1175,9 @@ function sqlQuery(schema, command) {
   if (src.error) return src;
   const { cols, rows } = src, resolve = sqlResolver(cols);
   const sub = sql => sqlQuery(schema, sql);
-  const unknown = name => `Unknown column '${name}'. Kolom ini tidak ada di tabel yang disebut pada FROM/JOIN. Kalau maksudnya teks, apit dengan kutip tunggal.`;
+  // Pesan 1054 menyebut klausanya: MariaDB (modul) 'SELECT'/'WHERE'/…, MySQL 'field list'/'where clause'/…
+  const unk = (maria, mysql) => name => `Unknown column '${name}' in '${sqlMaria() ? maria : mysql}'. Kolom ini tidak ada di tabel yang disebut pada FROM/JOIN; periksa ejaannya dengan DESCRIBE. Kalau maksudnya teks, apit dengan kutip tunggal.`;
+  const unknown = unk('SELECT', 'field list');
   // Lingkungan baris mentah (hasil FROM/JOIN); get(r) dengan r = array sel
   const rowEnv = {
     ref: name => { const i = resolve(name); return typeof i === 'object' ? i : i < 0 ? null : { get: r => sqlCell(r[i], cols[i]) }; },
@@ -1136,8 +1199,8 @@ function sqlQuery(schema, command) {
     const { expr, alias } = sqlAlias(raw);
     items.push({ expr, label: alias || (/^[a-z_]\w*\.[a-z_]\w*$/i.test(expr) ? expr.split('.').pop() : expr), alias: alias.toLowerCase() });
   }
-  const where = m[4] ? sqlCompile(back(m[4]), rowEnv) : { fn: () => sqlInt(1) };
-  if (where.error) return where;
+  const where = m[4] ? sqlCompile(back(m[4]), { ...rowEnv, bare: true, unknown: unk('WHERE', 'where clause') }) : { fn: () => sqlInt(1) };
+  if (where.error) return sqlAmb(where, 'WHERE', 'where clause');
   const base = rows.filter(r => sqlTruth(where.fn(r)) === true);
   // Apakah ini query berkelompok? (ada GROUP BY, HAVING, atau fungsi agregat di daftar kolom)
   let usesAgg = false;
@@ -1164,6 +1227,7 @@ function sqlQuery(schema, command) {
         const i = resolve(name);
         if (typeof i === 'object' || i < 0) return i < 0 ? null : i;
         const k = keys.findIndex(x => x.col === i || x.norm === sqlNorm(name) || x.norm === sqlNorm(cols[i].name));
+        if (k < 0 && sqlMaria()) return extra({ first: i });
         if (k < 0) return { error: message(name), code: m[5] ? 1055 : 1140 };
         return extra({ key: k });
       },
@@ -1177,7 +1241,7 @@ function sqlQuery(schema, command) {
       const k = keys.findIndex(x => x.norm === sqlNorm(it.expr));
       if (k >= 0 && !it.star) { it.get = extra({ key: k }).get; continue; }
       const f = sqlCompile(it.expr, itemEnv);
-      if (f.error) return f;
+      if (f.error) return sqlAmb(f, 'SELECT', 'field list');
       it.get = f.fn;
     }
     // HAVING dan ORDER BY boleh memakai alias kolom hasil
@@ -1202,14 +1266,14 @@ function sqlQuery(schema, command) {
     }
     const groups = keys.length ? [...map.values()] : [{ rows: base, keyVals: [] }];
     let ctxs = groups.map(g => {
-      const c = { ext: extras.map(e => e.agg ? sqlAggRun(e.agg, g.rows) : g.keyVals[e.key]) };
+      const c = { ext: extras.map(e => e.agg ? sqlAggRun(e.agg, g.rows) : e.first !== undefined ? (g.rows.length ? sqlCell(g.rows[0][e.first], cols[e.first]) : null) : g.keyVals[e.key]) };
       c.out = items.map(it => it.get(c));
       return c;
     }).filter(c => sqlTruth(having.fn(c)) === true);
     if (keysOrder.length) ctxs = ctxs.map(c => ({ c, k: keysOrder.map(o => o.get(c)) })).sort((a, b) => { for (const [i, o] of keysOrder.entries()) { const d = sqlSortCmp(a.k[i], b.k[i]); if (d) return d * o.dir; } return 0; }).map(x => x.c);
     out = ctxs.map(c => c.out);
   } else {
-    for (const it of items) { const f = sqlCompile(it.expr, rowEnv); if (f.error) return f; it.get = f.fn; }
+    for (const it of items) { const f = sqlCompile(it.expr, rowEnv); if (f.error) return sqlAmb(f, 'SELECT', 'field list'); it.get = f.fn; }
     const entries = base.map(r => ({ r, out: items.map(it => it.get(r)) }));
     // ORDER BY: alias / nomor kolom hasil, atau ekspresi apa pun pada baris sumber
     const keysOrder = [];
@@ -1218,7 +1282,7 @@ function sqlQuery(schema, command) {
       const j = items.findIndex(it => it.alias && it.alias === o.text.toLowerCase());
       if (j >= 0) { keysOrder.push({ get: e => e.out[j], dir: o.dir }); continue; }
       if (!/^[\s\S]*[a-z_0-9')]$/i.test(o.text) || /\s(?:WHERE|FROM|GROUP|HAVING|LIMIT)\s/i.test(' ' + o.text + ' ')) return { error: `Periksa sintaks di sekitar '${o.text}'. Urutan klausa: … WHERE … GROUP BY … HAVING … ORDER BY … LIMIT …`, code: 1064 };
-      const f = sqlCompile(o.text, { ...rowEnv, unknown: name => `Unknown column '${name}' in 'order clause'.` });
+      const f = sqlCompile(o.text, { ...rowEnv, unknown: unk('ORDER BY', 'order clause') });
       if (f.error) return f.code === 1064 ? { error: `Periksa sintaks di sekitar '${o.text}'. Urutan klausa: … WHERE … GROUP BY … HAVING … ORDER BY … LIMIT …`, code: 1064 } : f;
       keysOrder.push({ get: e => f.fn(e.r), dir: o.dir });
     }
@@ -1227,5 +1291,7 @@ function sqlQuery(schema, command) {
   }
   if (m[1]) out = out.filter((r, i) => out.findIndex(x => x.map(sqlShow).join('\u0001').toLowerCase() === r.map(sqlShow).join('\u0001').toLowerCase()) === i);
   if (m[8]) { const offset = m[9] !== undefined ? +m[8] : +(m[10] || 0), count = m[9] !== undefined ? +m[9] : +m[8]; out = out.slice(offset, offset + count); }
-  return { labels: items.map(it => it.label), rows: out };
+  // meta: kolom asal untuk item yang berupa kolom polos (dipakai CREATE TABLE … AS SELECT), selain itu null
+  const meta = items.map(it => { const i = /^[a-z_]\w*(?:\.[a-z_]\w*)?$/i.test(it.expr) ? resolve(it.expr) : -1; return typeof i === 'number' && i >= 0 ? cols[i] : null; });
+  return { labels: items.map(it => it.label), rows: out, meta };
 }
