@@ -1292,12 +1292,12 @@
   // ------------------------------------------------------------------ 9. PWD P9: validasi form sebelum data masuk tabel
   {
     const ME = -194;
-    const F = { x: -170, y: -184, w: 108, h: 132 };
+    const F = { x: -170, y: -166, w: 108, h: 132 };
     const NIMBOX = { x: F.x + 8, y: F.y + 30, w: F.w - 16, h: 16 };
     const NAMABOX = { x: F.x + 8, y: F.y + 74, w: F.w - 16, h: 16 };
     const BTN = { x: F.x + 8, y: F.y + 104, w: 46, h: 18 };
-    const CK = { x: -40, y: -180, w: 86, h: 44 };
-    const TB = { x: 66, y: -180, w: 136, rh: 16 };
+    const CK = { x: -40, y: -172, w: 86, h: 44 };
+    const TB = { x: 66, y: -172, w: 136, rh: 16 };
     const OK = { salah: 1, benar: 1 };
     const NIM = { salah: '12345', benar: '2401010001' };
     const plan = (v) => ({ ok: v === 'benar', nim: NIM[v], end: v === 'benar' ? 6.4 : 5.6 });
@@ -1422,9 +1422,9 @@
           g.save();
           g.globalAlpha *= stopK;
           const w = monoW(g, 'e.preventDefault()', 6.8) + 10;
-          rr(g, F.x + F.w / 2 - w / 2, F.y - 18, w, 13, 6.5);
+          rr(g, F.x + F.w / 2 - w / 2, F.y - 16, w, 13, 6.5);
           inkFill(g, '#eaf3f0', 1.1, GREEN);
-          mono(g, 'e.preventDefault()', F.x + F.w / 2, F.y - 9, 6.8, GREEN, 'center');
+          mono(g, 'e.preventDefault()', F.x + F.w / 2, F.y - 7, 6.8, GREEN, 'center');
           g.restore();
         }
         fig(g, pose, ME, 0, { wave: S.wave, wt: S.wt });
@@ -1448,8 +1448,8 @@
   // ------------------------------------------------------------------ 10. PWD P11: form dikirim dengan GET atau POST
   {
     const ME = -182;
-    const B = { x: -168, y: -184, w: 128, h: 112 };
-    const SV = { x: 78, y: -184, w: 122, h: 112 };
+    const B = { x: -168, y: -174, w: 128, h: 112 };
+    const SV = { x: 78, y: -174, w: 122, h: 112 };
     const BTN = { x: B.x + 8, y: B.y + 82, w: 42, h: 16 };
     const RQ = -132, RS = -100;
     const OK = { GET: 1, POST: 1 };
@@ -1615,12 +1615,12 @@
   // ------------------------------------------------------------------ 11. PWD P13: query CRUD mengubah tabel MySQL
   {
     const ME = -184;
-    const PN = { x: -168, y: -164, w: 150, h: 64 };
-    const TB = { x: 34, y: -184, w: 166, rh: 15 };
+    const PN = { x: -168, y: -166, w: 150, h: 70 };
+    const TB = { x: 34, y: -174, w: 166, rh: 15 };
     const ROWS = [['1', 'Ahmad', 'SI'], ['2', 'Budi', 'TI'], ['3', 'Citra', 'SI']];
     const OK = { INSERT: 1, UPDATE: 1, DELETE: 1, NOWHERE: 1 };
     const SQLS = {
-      INSERT: ['INSERT INTO mahasiswa', '  (nama, jurusan)', "VALUES ('Dewi', 'MI')"],
+      INSERT: ['INSERT INTO mahasiswa', '(nim, nama, jurusan, email)', "VALUES ('2401010004', 'Dewi',", "  'MI', 'dewi@kampus.ac.id')"],
       UPDATE: ['UPDATE mahasiswa', "SET jurusan = 'MI'", 'WHERE id = 3'],
       DELETE: ['DELETE FROM mahasiswa', 'WHERE id = 2'],
       NOWHERE: ['UPDATE mahasiswa', "SET jurusan = 'MI'", '-- WHERE lupa ditulis'],
@@ -1636,7 +1636,7 @@
       lines.forEach((l, i) => {
         const k = seg(typK, i / lines.length, (i + 1) / lines.length);
         const red = l.startsWith('--');
-        mono(g, typed(l, k), PN.x + 8, PN.y + 26 + i * 12, 7, red ? '#f2a39a' : '#e9edf1');
+        mono(g, typed(l, k), PN.x + 8, PN.y + 25 + i * 12, 6.6, red ? '#f2a39a' : '#e9edf1');
       });
     }
     function table(g, p, scan, hitK, chgK, gone, newK) {
@@ -1647,6 +1647,7 @@
       inkFill(g, C.paper, 1.6);
       text(g, 'MySQL', TB.x + TB.w / 2, TB.y - 6, 9, GREEN);
       mono(g, 'mahasiswa', TB.x + 8, TB.y + 12, 7.4, INK);
+      text(g, 'nim & email tidak digambar', TB.x + TB.w - 6, TB.y + 12, 6.5, MUTED, 'right');
       const cols = [TB.x + 10, TB.x + 36, TB.x + 108];
       ['id', 'nama', 'jurusan'].forEach((c, i) => mono(g, c, cols[i], TB.y + 26, 6.8, MUTED));
       ln(g, TB.x, TB.y + 30, TB.x + TB.w, TB.y + 30, 1.1);

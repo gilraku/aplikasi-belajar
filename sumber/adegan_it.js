@@ -157,7 +157,7 @@ const pwdValidasi = {
   scene: "pwd-validasi",
   alt: "Tombol Daftar ditekan. Event submit ditangkap JavaScript dan e.preventDefault() menahan pengiriman form. NIM diperiksa dengan regex 10 digit. Kalau salah, pesan error muncul di bawah kolom dan tabel tidak berubah. Kalau benar, baris baru ditambahkan ke tabel lalu form dikosongkan.",
   pilih: { label: "Coba NIM =", opsi: [{ v: "salah", t: "12345" }, { v: "benar", t: "2401010001" }] },
-  code: "form.addEventListener(\"submit\", function (e) {\n    e.preventDefault();\n    const nim = nimInput.value;\n    let isValid = true;\n    if (!/^\\d{10}$/.test(nim)) {\n        nimError.textContent = \"NIM harus 10 digit\";\n        isValid = false;\n    }\n    if (isValid) {\n        tambahBaris(nim, namaInput.value);\n        form.reset();\n    }\n});",
+  code: "form.addEventListener(\"submit\", function (e) {\n    e.preventDefault();\n    nimError.textContent = \"\";   // hapus pesan lama\n    const nim = nimInput.value;\n    let isValid = true;\n    if (!/^\\d{10}$/.test(nim)) {\n        nimError.textContent = \"NIM harus 10 digit\";\n        isValid = false;\n    }\n    if (isValid) {\n        tambahBaris(nim, namaInput.value);\n        form.reset();\n    }\n});",
   marks: [{ sorot: "submit", t: "form.addEventListener(\"submit\"" }, { sorot: "cegah", t: "e.preventDefault();" }, { sorot: "cek", t: "!/^\\d{10}$/.test(nim)" }, { sorot: "error", t: "nimError.textContent = \"NIM harus 10 digit\";" }, { sorot: "simpan", t: "tambahBaris(nim, namaInput.value);" }],
   steps: [
     { sorot: "submit", html: "Tombol <strong>Daftar</strong> ditekan. Form memicu event <code>submit</code>, dan fungsi yang dipasang dengan <code>addEventListener</code> dijalankan." },
@@ -168,7 +168,7 @@ const pwdValidasi = {
   ]
 };
 
-const GP = (m) => `<form action="proses.php" method="${m}">\n    <input name="nama"> <button>Kirim</button>\n</form>\n\n<?php // proses.php\n$nama = htmlspecialchars($_${m}["nama"]);\necho "Halo, $nama";`;
+const GP = (m) => `<form action="proses.php" method="${m}">\n    <input name="nama"> <button>Kirim</button>\n</form>\n\n<?php // proses.php\n$nama = htmlspecialchars($_${m}["nama"] ?? "");\necho "Halo, $nama";`;
 const GPM = (m) => [{ sorot: "kirim", t: `method="${m}"` }, { sorot: "baca", t: `$_${m}["nama"]` }, { sorot: "balas", t: "echo \"Halo, $nama\";" }];
 const pwdGetPost = {
   type: "adegan", label: "Adegan", title: "Form Dikirim dengan GET atau POST",
@@ -186,7 +186,7 @@ const pwdGetPost = {
 };
 
 const CRUD = {
-  INSERT: "$sql = \"INSERT INTO mahasiswa (nama, jurusan)\n        VALUES ('Dewi', 'MI')\";",
+  INSERT: "$sql = \"INSERT INTO mahasiswa (nim, nama, jurusan, email)\n        VALUES ('2401010004', 'Dewi', 'MI', 'dewi@kampus.ac.id')\";",
   UPDATE: "$sql = \"UPDATE mahasiswa SET jurusan = 'MI'\n        WHERE id = 3\";",
   DELETE: "$sql = \"DELETE FROM mahasiswa\n        WHERE id = 2\";",
   NOWHERE: "$sql = \"UPDATE mahasiswa SET jurusan = 'MI'\";\n// WHERE lupa ditulis"
@@ -199,7 +199,7 @@ const pwdCrud = {
   scene: "pwd-crud",
   alt: "PHP menyusun query SQL lalu mengirimnya dengan mysqli_query. INSERT menambah baris baru di akhir. UPDATE dan DELETE mencari baris yang cocok dengan WHERE lalu mengubah atau menghapusnya. Jumlah baris yang berubah kembali ke PHP. UPDATE tanpa WHERE mengubah semua baris.",
   pilih: { label: "Query:", opsi: [
-    { v: "INSERT", t: "INSERT", code: crudCode("INSERT"), marks: crudMarks("INSERT", { sorot: "ubah", t: "VALUES ('Dewi', 'MI')" }) },
+    { v: "INSERT", t: "INSERT", code: crudCode("INSERT"), marks: crudMarks("INSERT", { sorot: "ubah", t: "VALUES ('2401010004', 'Dewi', 'MI', 'dewi@kampus.ac.id')" }) },
     { v: "UPDATE", t: "UPDATE", code: crudCode("UPDATE"), marks: crudMarks("UPDATE", { sorot: "cari", t: "WHERE id = 3" }) },
     { v: "DELETE", t: "DELETE", code: crudCode("DELETE"), marks: crudMarks("DELETE", { sorot: "cari", t: "WHERE id = 2" }) },
     { v: "NOWHERE", t: "UPDATE tanpa WHERE", code: crudCode("NOWHERE"), marks: crudMarks("NOWHERE", { sorot: "cari", t: "// WHERE lupa ditulis" }) }
