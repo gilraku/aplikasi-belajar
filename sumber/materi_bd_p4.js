@@ -1,6 +1,7 @@
 // Materi Lengkap Basis Data P4: Dari ERD ke Tabel + SQL DML
 const { C, box, arrow, path, svg, text, diagram } = require("./svg.js");
 const ADG = require("./adegan_it.js");
+const BT = require("./bertahap_it.js");
 const A = (title, html, label) => ({ type: "article", label, title, html });
 const tip = (heading, html, tone) => ({ type: "callout", tone: tone || "tip", heading, html });
 const rv = (label, title, items) => ({ type: "reveal", label, title, items });
@@ -16,25 +17,6 @@ const tbl = (x, y, w, name, cols, tone, part) => {
     if (k) g += `<line x1="${x + 14}" y1="${cy + 9}" x2="${x + 14 + tw}" y2="${cy + 9}" stroke="${k === "pk" ? "#be123c" : "#7c3aed"}" stroke-width="1.5"${k === "fk" ? ' stroke-dasharray="3 3"' : ""}/>`; });
   return g + "</g>";
 };
-
-const tigaTabel = diagram({
-  label: "Diagram Interaktif", title: "ERD Perpustakaan → 3 Tabel", desc: "Hasil aturan 1 dan 4. Klik tabel, kunci, atau panah rujukan.", minw: 680,
-  svg: svg(820, 260,
-    tbl(20, 40, 210, "buku", [["id_buku", "pk"], ["judul"], ["pengarang"], ["tahun"], ["stok"]], "sky", "buku") +
-    tbl(305, 40, 210, "peminjaman", [["id_pinjam", "pk"], ["id_buku", "fk"], ["id_anggota", "fk"], ["tgl_pinjam"], ["tgl_kembali"]], "amber", "pinjam") +
-    tbl(590, 40, 210, "anggota", [["id_anggota", "pk"], ["nama"], ["prodi"], ["tgl_daftar"]], "sky", "agt") +
-    `<g data-part="fk1">${path("M305,106 L262,106 L262,82 L234,82", { color: "#7c3aed" })}</g>` +
-    `<g data-part="fk2">${path("M515,130 L548,130 L548,82 L586,82", { color: "#7c3aed" })}</g>` +
-    text(410, 230, "PK = garis bawah penuh (merah) • FK = garis bawah titik-titik (ungu) • panah = merujuk", { size: 12, color: "#475569" })
-  ),
-  parts: [
-    { id: "buku", label: "buku", title: "Aturan 1: entitas Buku → tabel buku", text: "Atribut menjadi kolom, id_buku menjadi kunci primer. Kolom <code>stok</code> ditambahkan saat ditinjau (jumlah eksemplar)." },
-    { id: "agt", label: "anggota", title: "Aturan 1: entitas Anggota → tabel anggota", text: "Kolom <code>tgl_daftar</code> ditambahkan saat ditinjau." },
-    { id: "pinjam", label: "peminjaman", title: "Aturan 4: relasi M:N → tabel penghubung", text: "Berisi PK sendiri (id_pinjam), kedua kunci tamu, dan atribut milik relasi (tgl_pinjam, tgl_kembali). <code>tgl_kembali</code> boleh NULL selama buku belum kembali." },
-    { id: "fk1", label: "id_buku → buku", title: "Kunci tamu id_buku", text: "Setiap nilai id_buku di peminjaman harus ada di buku.id_buku (integritas rujukan). BK999 → ERROR 1452." },
-    { id: "fk2", label: "id_anggota → anggota", title: "Kunci tamu id_anggota", text: "Slip cukup menulis AG001, tidak menyalin nama. Ganti nama cukup di satu tempat." }
-  ]
-});
 
 const aturan = diagram({
   label: "Diagram Interaktif", title: "Empat Aturan Transformasi", desc: "Bentuk ERD di kiri, hasil tabel di kanan. Klik setiap aturan.", minw: 640,
@@ -118,7 +100,7 @@ module.exports = [
     ["Dosen 1:N Kelas (satu kelas satu dosen)", "id_dosen di tabel kelas", "✓", ["id_dosen di tabel kelas", "id_kelas di tabel dosen", "Tabel penghubung"]],
     ["Mahasiswa 1:1 Akun LMS", "Salah satu (lazimnya nim di akun)", "✓ Aturan 2: bebas, lazimnya ke tabel yang bergantung.", ["Salah satu (lazimnya nim di akun)", "Wajib tabel penghubung", "Tidak perlu kunci tamu"]]
   ]),
-  tigaTabel,
+  BT.bdTigaTabel,
   { type: "table", label: "Tabel Interaktif", title: "Isi Tabel peminjaman (Modul)", mono: true, headers: ["id_pinjam", "id_buku", "id_anggota", "tgl_pinjam", "tgl_kembali"],
     rows: [["PJ0001", "BK002", "AG001", "2026-10-01", "2026-10-08"], ["PJ0002", "BK001", "AG002", "2026-10-02", "NULL"], ["PJ0003", "BK002", "AG003", "2026-10-05", "NULL"]],
     modes: [{ label: "BK002 dua kali", target: "col", col: 1, title: "Kunci tamu boleh berulang", text: "BK002 dipinjam AG001 dan AG003. Karena itu DESCRIBE menandainya MUL, bukan PRI." },

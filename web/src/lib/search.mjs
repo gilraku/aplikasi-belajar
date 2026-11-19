@@ -56,6 +56,9 @@ function blockTexts(def) {
     }
     // Umpan balik baris latihan (ok/no) baru muncul setelah dijawab
     if (ctx === 'exercise' && (key === 'ok' || key === 'no' || key === 'hints')) return;
+    // Kode berpenjelas: yang tampil sejak awal hanya kode dan ringkasan inti; catatan per baris baru muncul setelah diklik
+    if (ctx === 'kode-jelas' && (key === 'catatan' || key === 'urut' || key === 'urutan' || key === 'lang')) return;
+    if (ctx === 'kode-jelas' && key === 'kode') { arr(v).forEach(x => walk(String(x), 'code', ctx)); return; }
     // Tanda sorot adegan hanya potongan dari kodenya (sudah diindeks lewat code); kodenya bukan HTML
     if (ctx === 'adegan' && key === 'marks') return;
     // Pilihan nilai adegan: yang tampil hanya label tombol dan kode pilihan pertama (kode pilihan lain baru muncul setelah diklik)
