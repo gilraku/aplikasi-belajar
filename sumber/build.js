@@ -2,6 +2,8 @@ const fs=require('fs');
 // Sebar posisi jawaban benar (A-D) supaya tidak menumpuk di satu huruf
 const spread=(m,seed)=>{const pat=[2,0,3,1,1,3,0,2,3,0];m.quiz.forEach((q,i)=>{const t=q.opts.length===5?[2,4,0,3,1,4,1,0,3,2][(i+seed)%10]:pat[(i+seed)%pat.length]%q.opts.length;const a=q.ans;if(t===a)return;[q.opts[a],q.opts[t]]=[q.opts[t],q.opts[a]];if(q.optExp)[q.optExp[a],q.optExp[t]]=[q.optExp[t],q.optExp[a]];q.ans=t;});return m;};
 const BD=require('./data_bd_p2.js');BD.meetings.unshift(spread(require('./data_bd_p1.js'),2));{const E=require('./data_bd_p2_erd.js'),m2=BD.meetings.find(m=>m.id==='p2');m2.flashcards.push(...E.flashcards);m2.quiz.push(...E.quiz);spread(m2,6);}BD.meetings.push(spread(require('./data_bd_p3.js'),4));BD.meetings.push(spread(require('./data_bd_p4.js'),7));[['p5',1],['p6',5],['p7',8],['p8',3]].forEach(([p,s])=>BD.meetings.push(spread(require('./data_bd_'+p+'.js'),s)));
+// Basis Data P9–P14 (menuju UAS)
+[[9,6],[10,9],[11,2],[12,5],[13,8],[14,1]].forEach(([n,sd])=>BD.meetings.push(spread(require('./data_bd_p'+n+'.js'),sd)));
 require('./data_bindo_tutor.js');
 const lib=[BD, {
   id: 'bahasa-indonesia', nama: 'Bahasa Indonesia', prodi: 'PJJ Sistem Informasi', kampus: 'Universitas Siber Muhammadiyah', dosen: 'Tri Wahyono, M.Pd.',
@@ -28,6 +30,8 @@ const MAT={'dasar-sistem-informasi':require('./materi_dsi.js'),'bahasa-indonesia
 MAT.aik=Object.assign({},MAT.aik,require('./materi_aik_uas.js'));
 // PWD P9–P13 (menuju UAS) juga di berkas materi terpisah
 MAT['pemrograman-web-dinamis']=Object.assign({},MAT['pemrograman-web-dinamis'],require('./materi_pwd_uas.js'));
+// BD P9–P14 (menuju UAS) juga di berkas materi terpisah
+MAT['sif002-basis-data']=Object.assign({},MAT['sif002-basis-data'],require('./materi_bd_uas.js'));
 Object.entries(MAT).forEach(([cid,mm])=>{const c=lib.find(x=>x.id===cid);Object.entries(mm).forEach(([mid,blocks])=>{const m=c.meetings.find(x=>x.id===mid);if(!m)throw new Error('materi '+cid+'/'+mid);m.materi=blocks;});});
 // ➕ Materi tambahan di luar modul
 const T=require('./tambahan.js');

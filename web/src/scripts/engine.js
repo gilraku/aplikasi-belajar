@@ -878,6 +878,8 @@ ${cpp ? `<p class="text-xs text-slate-500">💡 C++ tidak bisa dijalankan di apl
       // P4 punya basis data latihan sendiri (kampus.mahasiswa) agar tidak bercampur dengan perpustakaan P6–P8
       const key = d.profile === 'p8' ? '' : 'belajar:sql:v1:' + S.course.id + (d.seed ? ':' + d.profile : '');
       const db = key ? loadLabSession(key) : sqlSession();
+      // dialek 'mariadb' = nomor galat mengikuti MariaDB di MAMP (modul Basis Data P9–P14)
+      if (d.dialek) db.dialect = d.dialek;
       if (d.seed && !db.databases.length) runSqlLab(db, d.seed);
       if (d.profile === 'p7' && !db.databases.some(item => item.name === 'perpustakaan')) runSqlLab(db, 'CREATE DATABASE perpustakaan; USE perpustakaan;');
       return { key, db, running: d.profile !== 'p6', open: d.profile !== 'p6', port: 8888, panel: d.seed ? 'sql' : 'schema', values: { address: 'http://localhost:8888', name: '', sql: '' }, result: null, pending: '' };
@@ -933,7 +935,7 @@ ${cpp ? `<p class="text-xs text-slate-500">💡 C++ tidak bisa dijalankan di apl
       cancel(d, s) { s.pending = ''; },
       reseed(d, s) {
         if (!d.seed) return;
-        s.db = sqlSession(); runSqlLab(s.db, d.seed); s.pending = '';
+        s.db = sqlSession(); if (d.dialek) s.db.dialect = d.dialek; runSqlLab(s.db, d.seed); s.pending = '';
         if (s.key) saveLabSession(s.key, s.db);
         s.result = { ok: true, text: 'Data latihan dikembalikan ke keadaan awal.' };
       }

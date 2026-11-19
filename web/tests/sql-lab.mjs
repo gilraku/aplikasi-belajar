@@ -149,4 +149,28 @@ INSERT INTO peminjaman VALUES ('PJ0001','BK001','AG001'), ('PJ0002','BK002','AG0
   err("GRANT SELECT ON perpustakaan.* TO 'tamu'@'localhost';", 1410, db);
   err("REVOKE DELETE ON perpustakaan.* FROM 'petugas'@'localhost';", 1141, db);
 }
+// Dialek MariaDB (modul BD P9–P14 memakai MAMP): nomor/pesan galat mengikuti MariaDB
+{ const maria = () => { const db = fresh(); db.dialect = 'mariadb'; return db; };
+  const msg = (sql, db) => run(sql, db).text.split('\n\n').pop();
+  let db = maria();
+  ok('CREATE TABLE salinan AS SELECT * FROM buku; SELECT COUNT(*) FROM salinan;', 'COUNT(*)\n3\n1 baris', db);
+  err("INSERT INTO buku (id_buku, stok) VALUES ('BK009', 1);", 1364, maria());
+  err("INSERT INTO buku VALUES ('BK0099','x',1);", 1406, maria());
+  err("UPDATE buku SET stokk = 1 WHERE id_buku = 'BK001';", 1054, maria());
+  assert.match(msg("UPDATE buku SET stokk = 1 WHERE id_buku = 'BK001';", maria()), /in 'SET'/);
+  assert.match(msg("UPDATE buku SET stokk = 1 WHERE id_buku = 'BK001';"), /in 'field list'/);
+  err("SELECT * FROM buku WHERE judul = Sistem Basis Data;", 1064, maria());
+  err('SELECT * FROM buku LIMIT -3;', 1064, maria());
+  ok('SELECT judul, COUNT(*) FROM buku;', null, maria());
+  err('SELECT judul, COUNT(*) FROM buku;', 1140);
+  assert.match(msg('SELECT id_buku FROM peminjaman INNER JOIN buku ON peminjaman.id_buku = buku.id_buku;', maria()), /Column 'id_buku' in SELECT is ambiguous/);
+  assert.match(msg('SELECT id_buku FROM peminjaman INNER JOIN buku ON peminjaman.id_buku = buku.id_buku;'), /Column 'id_buku' in field list is ambiguous/);
+  db = maria();
+  ok('ALTER TABLE peminjaman ADD FOREIGN KEY (id_buku) REFERENCES buku(id_buku);', null, db);
+  err('DROP TABLE buku;', 1451, db);
+  err('CREATE TABLE x (id INT, ref INT, FOREIGN KEY (ref) REFERENCES buku(id_buku));', 1005, db);
+  err('CREATE TABLE x (id INT, ref CHAR(5), FOREIGN KEY (ref) REFERENCES tidak_ada(id));', 1005, db);
+  err('DROP TABLE buku;', 3730, (() => { const d = fresh(); run('ALTER TABLE peminjaman ADD FOREIGN KEY (id_buku) REFERENCES buku(id_buku);', d); return d; })());
+  n += 3;
+}
 console.log(`sql-lab: ${n} cek lulus`);
