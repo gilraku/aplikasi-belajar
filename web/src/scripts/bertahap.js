@@ -22,7 +22,8 @@ function btPlay(n) {
   if (btReduced()) { b.state.k = 1; btApply(n, 1); return; } // gerak dikurangi: sorot langkah 1, lanjut dengan klik
   let k = 1;
   const tick = () => {
-    if (!BLOCKS[n] || !document.getElementById('blk-' + n)) return btStop(n);
+    // blok tidak tampil lagi (pindah tab/halaman): hentikan dan kembalikan diagram utuh, jangan tertinggal memudar
+    if (!BLOCKS[n] || !document.getElementById('blk-' + n)) { b.state.k = 0; return btStop(n); }
     if (k > total) { b.state.k = 0; btApply(n, 0); return btStop(n); }
     b.state.k = k; btApply(n, k++);
     BT_TIMERS[n] = setTimeout(tick, 1700);

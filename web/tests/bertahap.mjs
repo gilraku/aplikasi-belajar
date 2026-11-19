@@ -32,8 +32,15 @@ const found = [];
 for (const c of lib) for (const m of c.meetings) (m.materi || []).forEach(b => { if (b && (b.type === 'bertahap' || b.type === 'kode-jelas')) found.push({ c: c.id, m: m.id, b }); });
 if (!found.some(x => x.b.type === 'bertahap') || !found.some(x => x.b.type === 'kode-jelas')) { console.error('Blok bertahap/kode-jelas tidak ditemukan di materi.'); process.exit(1); }
 
+const steps0 = box => box.locator('.bt-step');
 const fails = [];
 const fail = m => { fails.push(m); console.log('  ✗ ' + m); };
+// Daftar skrip bundel situs (engine.mjs) dan bundel HTML mandiri (sumber/build.js) harus sama
+{
+  const list = f => (fs.readFileSync(f, 'utf8').match(/\[\s*'stick\.js'[^\]]*\]/) || [''])[0].replace(/\s+/g, '');
+  const a = list(path.resolve('src/lib/engine.mjs')), b = list(path.resolve('../sumber/build.js'));
+  if (!a || a !== b) fail(`daftar skrip berbeda: engine.mjs ${a} vs sumber/build.js ${b}`);
+}
 const browser = await chromium.launch(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {});
 try {
   for (const [vw, reduced] of [[390, false], [1280, true]]) {
@@ -59,6 +66,16 @@ try {
           if (!lit) fail(`${cur}: mode digulir tidak menyala`);
           const back = await page.waitForFunction(el => !el.dataset.on, await box.elementHandle(), { timeout: 1700 * b.steps.length + 3000 }).then(() => true, () => false);
           if (!back) fail(`${cur}: mode digulir tidak kembali utuh`);
+          // pindah tab saat sedang menyala, lalu kembali: diagram harus utuh, tidak tertinggal memudar
+          await steps0(box).nth(0).click(); await box.getByRole('button', { name: 'Putar ulang' }).click();
+          await page.waitForFunction(el => el.dataset.on === '1', await box.elementHandle());
+          await page.getByRole('button', { name: /^\W*(Visual )?Cheat Sheet$/ }).first().click();
+          await page.waitForTimeout(2200);
+          await page.getByRole('button', { name: /^\W*Materi( Lengkap)?$/ }).first().click();
+          const blk2 = page.locator('#appMain [id^="blk-"]').filter({ has: page.locator('h3', { hasText: b.title }) }).filter({ has: page.locator('.bt') });
+          await blk2.waitFor();
+          if (await blk2.locator('.bt').getAttribute('data-on')) fail(`${cur}: setelah pindah tab diagram tertinggal memudar`);
+          await blk2.scrollIntoViewIfNeeded();
         } else {
           await page.waitForTimeout(b.auto ? 1200 : 100);
           if (await box.getAttribute('data-on')) fail(`${cur}: menyala sendiri padahal ${reduced ? 'gerak dikurangi' : 'mode klik'}`);
