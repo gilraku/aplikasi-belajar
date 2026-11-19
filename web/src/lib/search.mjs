@@ -56,6 +56,12 @@ function blockTexts(def) {
     }
     // Umpan balik baris latihan (ok/no) baru muncul setelah dijawab
     if (ctx === 'exercise' && (key === 'ok' || key === 'no' || key === 'hints')) return;
+    // Pilihan nilai adegan: yang tampil hanya label tombol dan kode pilihan pertama (kode pilihan lain baru muncul setelah diklik)
+    if (ctx === 'adegan' && key === 'pilih' && v && typeof v === 'object') {
+      walk(v.label, 'label', ctx);
+      arr(v.opsi).forEach((o, i) => { if (!o) return; walk(o.t, 't', ctx); if (i === 0) { walk(o.code, 'code', ctx); walk(o.marks, 'marks', ctx); } });
+      return;
+    }
     // id biasanya pengenal internal (tanpa spasi), tapi blok say memakai id untuk terjemahan yang tampil: indeks bila berupa kalimat
     if (key === 'id' && typeof v === 'string' && /\s/.test(v.trim())) { pieces(v).forEach(p => out.push(p)); return; }
     if (SKIP.has(key)) return;

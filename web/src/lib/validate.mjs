@@ -68,6 +68,8 @@ const Block = z.lazy(() => z.looseObject({
   if (b.type === 'adegan') {
     if (typeof b.scene !== 'string' || !/^[a-z0-9-]+$/.test(b.scene)) ctx.addIssue({ code: 'custom', path: ['scene'], message: 'adegan butuh scene berupa id adegan (huruf kecil, angka, tanda -)' });
     if (!Array.isArray(b.steps) || b.steps.some(x => !x || typeof x.sorot !== 'string' || typeof x.html !== 'string')) ctx.addIssue({ code: 'custom', path: ['steps'], message: 'setiap langkah adegan butuh { sorot, html }' });
+    if (b.pilih !== undefined && (!b.pilih || !Array.isArray(b.pilih.opsi) || b.pilih.opsi.length < 2 || b.pilih.opsi.some(o => !o || typeof o.v !== 'string' || typeof o.t !== 'string')))
+      ctx.addIssue({ code: 'custom', path: ['pilih'], message: 'pilih butuh opsi[] (minimal 2), masing-masing { v, t } berupa teks' });
   }
   if (b.type === 'penelusur') {
     if (!Array.isArray(b.nodes) || b.nodes.length !== 2) ctx.addIssue({ code: 'custom', path: ['nodes'], message: 'penelusur butuh tepat 2 simpul di nodes[]' });

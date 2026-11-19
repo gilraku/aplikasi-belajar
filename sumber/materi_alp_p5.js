@@ -1,5 +1,6 @@
 // Materi Lengkap Algoritma & Pemrograman P5
 const { C, box, arrow, path, poly, svg, text, diagram } = require("./svg.js");
+const ADG = require("./adegan_it.js");
 const A = (title, html, label) => ({ type: "article", label, title, html });
 const tip = (heading, html, tone) => ({ type: "callout", tone: tone || "tip", heading, html });
 const rv = (label, title, items) => ({ type: "reveal", label, title, items });
@@ -33,6 +34,7 @@ module.exports = [
   A("Apa Itu switch?", `<p><strong>switch</strong> adalah pernyataan percabangan kedua di C++. Fungsinya sama dengan if, yaitu memanipulasi aliran program berdasarkan kondisi, tetapi berbeda <strong>struktur penulisan dan jenis kondisinya</strong>.</p>
 <ul><li><strong>if</strong> mengevaluasi kebenaran sebuah ekspresi (operasi logika, relasi, perbandingan) yang menghasilkan 1 atau 0.</li><li><strong>switch</strong> memeriksa <strong>nilai</strong> sebuah ekspresi bertipe integer, char, atau enum, lalu mencari label case yang nilainya sama.</li></ul>`, "Bagian 1"),
   flow,
+  ADG.alpSwitch,
   A("break dan default", `<p><strong>break</strong> bersifat opsional. Jika ada, setelah blok case selesai eksekusi keluar dari switch. Jika tidak ada, CPU <strong>terus menjalankan semua pernyataan berikutnya</strong>, termasuk milik case lain, sampai bertemu break atau kurung kurawal penutup. Perilaku ini disebut <strong>fall-through</strong>.</p>
 <p><strong>default</strong> dijalankan jika tidak ada case yang cocok. Jika switch tidak memiliki default, seluruh switch diabaikan.</p>`, "Bagian 2"),
   code("nilai_slide.cpp", `#include <iostream>
@@ -94,6 +96,13 @@ switch (nilai / 10) {          // 87 / 10 = 8
     case 6:  cout << "B"; break;   // 60–79
     default: cout << "C";          // di bawah 60
 }`, "Masih ada celah: 105 / 10 = 10 ikut menjadi A, dan −5 menjadi C. Untuk memvalidasi rentang 0–100, tetap butuh if di depan.", "Konversi Nilai dengan switch"),
+  tip("➕ Kesalahan yang Sering Terjadi di switch", `<ul class="list-disc pl-5 space-y-1">
+<li>Lupa <code>break</code>: eksekusi tembus ke case berikutnya (coba pilihan <em>2, tanpa break</em> di adegan di atas).</li>
+<li><code>case x &gt; 80:</code>: case hanya menerima <strong>nilai tetap</strong> (konstanta), bukan kondisi. Untuk rentang nilai pakai if-else.</li>
+<li><code>switch</code> pada <code>string</code> atau <code>double</code>: error <em>switch quantity not an integer</em>. Ekspresinya harus bilangan bulat, <code>char</code>, atau enum.</li>
+<li><code>case 1;</code>: setelah nilai case ditulis titik dua <code>:</code>, bukan titik koma.</li>
+<li>Dua case dengan nilai yang sama: error <em>duplicate case value</em>.</li>
+</ul>`, "warn"),
   ex("Latihan", "Tebak Keluarannya", ["Kode (x = 2)", "Keluaran"], ["B", "BC", "BCD", "D"], [
     ["switch(x){case 1:cout<<\"A\";break; case 2:cout<<\"B\";break; case 3:cout<<\"C\";}", "B"], ["switch(x){case 1:cout<<\"A\"; case 2:cout<<\"B\"; case 3:cout<<\"C\";break; default:cout<<\"D\";}", "BC"], ["switch(x){case 2:cout<<\"B\"; case 3:cout<<\"C\"; default:cout<<\"D\";}", "BCD"], ["switch(x){case 1:cout<<\"A\";break; default:cout<<\"D\";}", "D"]]),
   rv("Uji Pemahaman", "Jawab Dulu, Lalu Buka", [
