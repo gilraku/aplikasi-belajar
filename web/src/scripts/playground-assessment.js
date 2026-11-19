@@ -21,6 +21,46 @@ function playgroundBehavior(profile, request) {
           results.darkLabel = button.textContent.trim() === 'Tema Gelap';
           results.nav = links.every((_, i) => start[i] !== dark[i] && dark[i] !== light[i]);
         }
+      } else if (profile === 'validasi') {
+        // Form validasi P9: isi semua kolom dengan benar, lalu rusak satu kolom per percobaan.
+        const form = find('form');
+        const field = id => find('#' + id);
+        const nim = field('nim'), nama = field('nama'), jurusan = field('jurusan'), email = field('email');
+        const errText = id => (find('#' + id + '-error')?.textContent || '').trim();
+        const rows = () => [...document.querySelectorAll('table tbody tr')];
+        if (form && nim && nama && email) {
+          const fill = (over = {}) => {
+            const v = { nim: '2401010001', nama: 'Ahmad', email: 'ahmad@kampus.ac.id', jurusan: jurusan ? ([...jurusan.options].find(o => o.value)?.value || '') : '', ...over };
+            nim.value = v.nim; nama.value = v.nama; email.value = v.email;
+            if (jurusan) jurusan.value = v.jurusan;
+          };
+          const submit = () => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+          const rejected = (id, over) => {
+            fill(over);
+            const before = alerts, count = rows().length;
+            submit();
+            // Ditolak = baris tabel tidak bertambah, isian tidak di-reset, dan ada pesan (teks error atau alert).
+            const kept = rows().length === count && field(id).value === String(over[id]);
+            return kept && (!!errText(id) || alerts > before);
+          };
+          results.nim = ['12345', '12345abcde'].every(bad => rejected('nim', { nim: bad }));
+          results.nama = rejected('nama', { nama: 'Al' });
+          results.email = ['ahmad@kampus', 'ahmad kampus@x.id'].every(bad => rejected('email', { email: bad }));
+          if (jurusan) results.jurusan = rejected('jurusan', { jurusan: '' });
+          fill();
+          const count = rows().length;
+          submit();
+          const clean = ['nim', 'nama', 'email', 'jurusan'].every(id => !errText(id));
+          results.valid = clean && nim.value === '';
+          const added = rows().find(row => row.cells[0]?.textContent.trim() === '2401010001');
+          results.tabel = clean && rows().length === count + 1 && !!added && added.cells[1]?.textContent.trim() === 'Ahmad' && nim.value === '';
+          fill({ nim: '2401010002', nama: '<b>Ani</b>' });
+          submit();
+          const tagged = rows().find(row => row.cells[0]?.textContent.trim() === '2401010002');
+          results.aman = !!tagged && tagged.cells[1]?.textContent.trim() === '<b>Ani</b>' && !tagged.cells[1].querySelector('b');
+          const clear = find('#clear-btn');
+          if (clear && rows().length) { clear.click(); results.hapus = rows().length === 0; }
+        }
       } else {
         const withEmail = profile === 'dom-table';
         const add = find(withEmail ? '#add-btn' : '#tambah-btn');
@@ -78,7 +118,7 @@ function playgroundBehavior(profile, request) {
 }
 
 function assessPlayground(profile, code) {
-  if (!['theme', 'dom-table', 'student-app'].includes(profile)) return Promise.resolve({});
+  if (!['theme', 'dom-table', 'student-app', 'validasi'].includes(profile)) return Promise.resolve({});
   return new Promise(resolve => {
     const frame = document.createElement('iframe');
     frame.hidden = true;
