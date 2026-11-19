@@ -621,4 +621,13 @@ M.p14 = [
   ])
 ];
 
+// Diagram bertahap / kode berpenjelas menggantikan blok kode statis yang isinya sama (halaman tidak memanjang)
+{
+  const BTU = require("./bertahap_bd_uas.js");
+  const ganti = (p, title, blok) => { const i = M[p].findIndex(b => b.title === title); if (i < 0) throw new Error("materi_bd_uas: blok tidak ada: " + p + " " + title); M[p][i] = blok; };
+  ganti("p9", "Mengubah dan Menghapus Data", BTU.bdP9Dml);
+  ganti("p13", "Skema Lengkap Perpustakaan", BTU.bdP13Skema);
+  ganti("p13", "Membuat dan Memeriksa Tabel Peminjaman", BTU.bdP13Create);
+  ganti("p14", "Menyaring dengan IS NULL", BTU.bdP14Join);
+}
 module.exports = M;

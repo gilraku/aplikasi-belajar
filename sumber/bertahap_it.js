@@ -287,4 +287,4 @@ const pwdInsertJelas = {
   ]
 };
 
-module.exports = { bdErdChen, bdTigaTabel, bdJoinJelas, pwdFormJelas, pwdAlurTambah, pwdInsertJelas };
+module.exports = { bdErdChen, bdTigaTabel, bdJoinJelas, pwdFormJelas, pwdAlurTambah, pwdInsertJelas, tabelRelasi };
