@@ -82,6 +82,8 @@ try {
     const step = () => page.$eval('.al .tabular-nums', e => e.textContent);
     await page.click('.al [data-act="next"]');
     if (!/Langkah 2 dari/.test(await step())) bad(m.id, 'Lanjut', await step());
+    // Fokus dikembalikan ke blok lewat setTimeout setelah klik; tunggu dulu supaya tes panah tidak balapan.
+    await page.waitForFunction(() => document.activeElement && document.activeElement.closest('[id^="blk-"]'));
     await page.keyboard.press('ArrowRight');
     if (!/Langkah 3 dari/.test(await step())) bad(m.id, 'panah kanan', await step());
     await page.keyboard.press('ArrowLeft');
@@ -93,6 +95,16 @@ try {
     for (let i = 0; i < 60; i++) {
       if (await page.$('.al .al-guess [data-act="ans"]:not([disabled])')) {
         if (!(await page.$eval('.al [data-act="next"]', e => e.disabled))) bad(m.id, 'Lanjut tidak terkunci saat menebak');
+        // Rel juga terkunci: tombol kelompok setelah langkah ini tidak bisa dipakai melompat
+        const cur = +(await step()).match(/Langkah (\d+)/)[1] - 1;
+        const rails = await page.$$eval('.al .al-rail', l => l.map(e => ({ i: +e.dataset.arg, off: e.disabled })));
+        if (rails.some(r => r.i > cur && !r.off)) bad(m.id, 'rel bisa melompati tebakan', JSON.stringify(rails));
+        if (rails.some(r => r.i <= cur && r.off)) bad(m.id, 'rel ke belakang ikut terkunci');
+        const later = rails.filter(r => r.i > cur).pop();
+        if (later) {
+          await page.$eval(`.al .al-rail[data-arg="${later.i}"]`, e => { e.disabled = false; e.click(); });
+          if (+(await step()).match(/Langkah (\d+)/)[1] - 1 !== cur) bad(m.id, 'lompat paksa lewat rel tidak ditahan');
+        }
         await page.click('.al .al-guess [data-act="ans"]'); break;
       }
       if (await page.$eval('.al [data-act="next"]', e => e.disabled)) break;

@@ -372,6 +372,12 @@ function alNow(A, s, f) {
   if (!on.length) return '';
   return `<pre class="al-now trc-code bg-slate-900 text-slate-100 rounded-xl py-1.5 text-[12px] leading-6 font-mono overflow-x-auto" aria-hidden="true">${on.map(i => `<div class="trc-line trc-cur"><span class="trc-no">${i}</span><span>${(lang === 'cpp' ? hlCpp(A.code[lang][i - 1].trim()) : esc(A.code[lang][i - 1].trim())) || ' '}</span></div>`).join('')}</pre>`;
 }
+// Langkah terjauh yang boleh dibuka. Di mode Tebak dulu, tebakan pertama yang belum dijawab mulai dari langkah sekarang menahan lompatan ke depan (mundur selalu boleh).
+function alReach(F, s) {
+  if (!s.tebak) return F.length - 1;
+  for (let i = s.k; i < F.length; i++) if (F[i].q && s.ans[i] == null) return i;
+  return F.length - 1;
+}
 const ALGO_LAB = {
   init: d => ({ data: (d.data || []).slice(), target: d.target, k: 0, lang: 'cpp', tebak: false, ans: {}, F: null, pos: null, anim: false, err: '', values: { data: (d.data || []).join(', '), target: d.target != null ? String(d.target) : '' } }),
   render(d, s, n) {
@@ -383,7 +389,8 @@ const ALGO_LAB = {
     // Rel: satu tombol per kelompok langkah
     const groups = []; F.forEach((x, i) => { if (!groups.length || groups[groups.length - 1].g !== x.grp) groups.push({ g: x.grp, i }); });
     const curG = groups.reduce((acc, g, gi) => g.i <= s.k ? gi : acc, 0);
-    const rail = groups.map((g, gi) => `<button type="button" ${act(n, 'go', g.i)} class="al-rail ${gi === curG ? 'is-on' : gi < curG ? 'is-past' : ''}" ${gi === curG ? 'aria-current="step"' : ''}>${esc(g.g)}</button>`).join('');
+    const reach = alReach(F, s);
+    const rail = groups.map((g, gi) => `<button type="button" ${act(n, 'go', g.i)} class="al-rail ${gi === curG ? 'is-on' : gi < curG ? 'is-past' : ''}" ${gi === curG ? 'aria-current="step"' : ''}${g.i > reach ? ' disabled title="Jawab tebakan dulu"' : ''}>${esc(g.g)}</button>`).join('');
     const vars = A.vars.map(k => { const has = f.vars && f.vars[k] !== undefined, ch = has && (!prev || !prev.vars || prev.vars[k] !== f.vars[k]) && s.k > 0;
       return `<div class="al-var${ch ? ' is-ch' : ''}"><div class="al-var-k">${esc(k)}</div><div class="al-var-v">${has ? esc(f.vars[k]) : '–'}</div></div>`; }).join('');
     const cnt = A.counters.map(k => `<span>${esc(k)}: <b>${f.cnt[k] || 0}</b></span>`).join('') + (s.tebak ? `<span>Tebakan benar: <b>${Object.keys(s.ans).filter(i => s.ans[i] === F[i].q.a).length}/${Object.keys(s.ans).length}</b></span>` : '');
@@ -441,7 +448,7 @@ const ALGO_LAB = {
   on: {
     next(d, s) { const F = alFrames(d, s), f = F[s.k]; if (s.k >= F.length - 1 || (s.tebak && f.q && s.ans[s.k] == null)) return false; s.k++; s.anim = true; alSettle(); },
     prev(d, s) { if (s.k <= 0) return false; s.k--; s.anim = true; alSettle(); },
-    go(d, s, a) { const F = alFrames(d, s); s.k = Math.max(0, Math.min(F.length - 1, +a || 0)); s.anim = true; alSettle(); },
+    go(d, s, a) { const F = alFrames(d, s), k = Math.max(0, Math.min(F.length - 1, +a || 0)); if (k > alReach(F, s)) return false; s.k = k; s.anim = true; alSettle(); },
     lang(d, s, a) { s.lang = a === 'ps' ? 'ps' : 'cpp'; },
     mode(d, s, a) { s.tebak = a === 'tebak'; },
     ans(d, s, a) { const F = alFrames(d, s); if (!F[s.k].q || s.ans[s.k] != null) return false; s.ans[s.k] = +a; },
