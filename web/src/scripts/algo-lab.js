@@ -2,6 +2,9 @@
 // Setiap algoritma di AL_ALGO menghasilkan daftar langkah (frame) dari data mana pun, sehingga pengguna bisa
 // mengisi angkanya sendiri. Satu frame = keadaan batang, baris kode yang menyala, isi variabel, dan penjelasan.
 // Blok: { type: "algo-lab", algo: "bubble", data: [5, 1, 4, 2, 8], target?: 4, label, title, desc }
+// Algoritma dengan gambar selain batang (stack, linked list, pohon, graf, …) memberi sendiri:
+//   view(A, s, f) → <svg>, input { hint, parse(teks, teksTarget) → {data, target} | {err}, fmt(data), acak() },
+//   program(s) → { code, out } untuk "Program lengkap". Lihat algo-lab-linear.js dan seterusnya.
 
 // ---------- Pencatat langkah ----------
 // a = nilai per posisi, ids = identitas batang per posisi (supaya batang yang ditukar bisa bergerak)
@@ -18,6 +21,19 @@ function alRec(data) {
   return r;
 }
 const alList = a => '[' + a.join(', ') + ']';
+// Pencatat langkah untuk gambar selain batang: tiap frame membawa keadaan gambarnya sendiri di S.
+function alRec2() {
+  const r = { F: [], cnt: {} };
+  r.push = o => r.F.push(Object.assign({ ptrs: [], vars: {} }, o, { cnt: Object.assign({}, r.cnt) }));
+  return r;
+}
+// Benda yang bisa bergerak di gambar: digambar di posisi langkah sebelumnya lalu digeser (lihat alSettle).
+function alMover(s) {
+  const prev = s.anim ? s.pos : null, pos = {}; s.anim = false; s.pos = pos;
+  return (id, x, y) => { pos[id] = [x, y]; const f = prev && prev[id] ? prev[id] : [x, y];
+    return `style="transform:translate(${f[0]}px,${f[1]}px)" data-tx="${x}" data-ty="${y}"`; };
+}
+const alNum = v => typeof v === 'number';
 
 const AL_ALGO = {
   // ---------------- Pencarian linear ----------------
@@ -385,6 +401,7 @@ function alNow(A, s, f) {
 // Fungsi di panel kode sengaja tanpa #include dan main() supaya baris yang menyala tetap fokus.
 // Di sini fungsi itu dibungkus jadi program utuh dengan data yang sedang dipakai di lab, beserta output yang seharusnya.
 function alProgram(A, s) {
+  if (A.program) return A.program(s);
   const data = s.data, n = data.length, isSearch = !!A.target;
   const L = ['#include <iostream>'];
   if (A.code.cpp.some(l => /\bswap\(/.test(l))) L.push('#include <utility>   // untuk swap()');
@@ -423,7 +440,7 @@ function alReach(F, s) {
   return F.length - 1;
 }
 const ALGO_LAB = {
-  init: d => ({ data: (d.data || []).slice(), target: d.target, k: 0, lang: 'cpp', tebak: false, full: false, ans: {}, F: null, pos: null, anim: false, err: '', values: { data: (d.data || []).join(', '), target: d.target != null ? String(d.target) : '' } }),
+  init: d => ({ data: (d.data || []).slice(), target: d.target, k: 0, lang: 'cpp', tebak: false, full: false, ans: {}, F: null, pos: null, anim: false, err: '', values: { data: alFmt(AL_ALGO[d.algo] || {}, d.data), target: d.target != null ? String(d.target) : '' } }),
   render(d, s, n) {
     const A = AL_ALGO[d.algo];
     if (!A) return `<p class="text-sm text-rose-700">Algoritma "${esc(d.algo)}" belum dikenal.</p>`;
@@ -445,12 +462,12 @@ const ALGO_LAB = {
         <div class="flex flex-wrap gap-2">${f.q.o.map((o, i) => `<button type="button" ${act(n, 'ans', i)} ${got != null ? 'disabled' : ''} class="al-btn ${got === i ? (i === f.q.a ? 'is-ok' : 'is-no') : got != null && i === f.q.a ? 'is-ok' : ''}">${esc(o)}</button>`).join('')}</div>
         ${got != null ? `<p class="text-sm font-bold ${got === f.q.a ? 'text-emerald-800' : 'text-rose-700'}">${got === f.q.a ? '✓ Tepat.' : '✗ Belum tepat. Lihat penjelasan di atas.'}</p>` : ''}</div>`;
     }
-    const last = s.k >= F.length - 1;
+    const last = s.k >= F.length - 1, IN = A.input || {};
     return `<div class="al" data-al="${n}">
       <div class="al-top">${seg('lang', [['cpp', 'C++'], ['ps', 'Pseudocode']], s.lang, 'Bahasa kode')}${seg('mode', [['lihat', 'Lihat'], ['tebak', 'Tebak dulu']], s.tebak ? 'tebak' : 'lihat', 'Mode belajar')}</div>
       <div class="al-grid">
         <div class="al-col">
-          <div class="al-stage">${alSvg(A, s, f)}</div>
+          <div class="al-stage">${(A.view || alSvg)(A, s, f)}</div>
           <div class="al-text" aria-live="polite">
             <div class="flex items-center justify-between gap-2"><span class="al-kind ${AL_KIND[f.kind] || ''}">${esc(f.kind)}</span><span class="text-xs text-slate-500 tabular-nums">Langkah ${s.k + 1} dari ${F.length}</span></div>
             <h4 class="font-display font-extrabold text-ink text-lg leading-snug">${locked ? 'Tebak dulu sebelum lanjut' : rich(f.title)}</h4>
@@ -475,15 +492,15 @@ const ALGO_LAB = {
           <form class="al-own" data-al-form="${n}">
             <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Coba datamu sendiri</div>
             <div class="flex flex-wrap gap-2">
-              <input data-field="${n}" data-key="data" value="${esc(s.values.data)}" aria-label="Angka, dipisah koma" inputmode="numeric" autocomplete="off" class="al-in flex-[1_1_10rem] min-w-0">
-              ${A.target ? `<label class="flex items-center gap-1.5 text-sm font-bold text-ink">x =<input data-field="${n}" data-key="target" value="${esc(s.values.target)}" aria-label="Angka yang dicari" inputmode="numeric" autocomplete="off" class="al-in w-16"></label>` : ''}
+              <input data-field="${n}" data-key="data" value="${esc(s.values.data)}" aria-label="${esc(IN.aria || 'Angka, dipisah koma')}" inputmode="${IN.mode || 'numeric'}" autocomplete="off" autocapitalize="off" spellcheck="false" class="al-in flex-[1_1_10rem] min-w-0">
+              ${A.target ? `<label class="flex items-center gap-1.5 text-sm font-bold text-ink">${esc(IN.targetLabel || 'x =')}<input data-field="${n}" data-key="target" value="${esc(s.values.target)}" aria-label="${esc(IN.targetAria || 'Angka yang dicari')}" inputmode="numeric" autocomplete="off" class="al-in w-16"></label>` : ''}
             </div>
             <div class="flex flex-wrap gap-2">
               <button type="submit" class="al-btn is-main">Jalankan</button>
               <button type="button" ${act(n, 'acak')} class="al-btn">Acak</button>
               <button type="button" ${act(n, 'awal')} class="al-btn">Contoh awal</button>
             </div>
-            <p class="text-xs text-slate-500">3 sampai 8 bilangan bulat 0–99, dipisah koma.${A.sorted ? ' Data otomatis diurutkan dulu, karena pencarian biner butuh data urut.' : ''}</p>
+            <p class="text-xs text-slate-500">${IN.hint ? IN.hint : `3 sampai 8 bilangan bulat 0–99, dipisah koma.${A.sorted ? ' Data otomatis diurutkan dulu, karena pencarian biner butuh data urut.' : ''}`}</p>
             ${s.err ? `<p class="text-sm font-bold text-rose-700" role="alert">${esc(s.err)}</p>` : ''}
           </form>
         </div>
@@ -501,7 +518,9 @@ const ALGO_LAB = {
     ans(d, s, a) { const F = alFrames(d, s); if (!F[s.k].q || s.ans[s.k] != null) return false; s.ans[s.k] = +a; },
     awal(d, s) { const lang = s.lang, tebak = s.tebak, full = s.full; Object.assign(s, ALGO_LAB.init(d), { lang, tebak, full }); },
     acak(d, s) {
-      const A = AL_ALGO[d.algo], len = 6 + Math.floor(Math.random() * 3), pool = [];
+      const A = AL_ALGO[d.algo];
+      if (A.input && A.input.acak) { const r = A.input.acak(); return void alUse(d, s, r.data, r.target); }
+      const len = 6 + Math.floor(Math.random() * 3), pool = [];
       while (pool.length < len) { const v = 1 + Math.floor(Math.random() * 60); if (!pool.includes(v)) pool.push(v); }
       const data = A.sorted ? pool.slice().sort((p, q) => p - q) : pool;
       const target = A.target ? (Math.random() < 0.75 ? data[Math.floor(Math.random() * len)] : 61 + Math.floor(Math.random() * 30)) : undefined;
@@ -509,6 +528,11 @@ const ALGO_LAB = {
     },
     run(d, s) {
       const A = AL_ALGO[d.algo];
+      if (A.input && A.input.parse) {
+        const r = A.input.parse(String(s.values.data || ''), String(s.values.target || ''));
+        if (r.err) { s.err = r.err; return; }
+        return void alUse(d, s, r.data, r.target);
+      }
       const raw = String(s.values.data || '').split(/[\s,;]+/).filter(Boolean);
       const nums = raw.map(Number);
       if (nums.length < 3 || nums.length > 8 || nums.some(v => !Number.isInteger(v) || v < 0 || v > 99)) { s.err = 'Isi 3 sampai 8 bilangan bulat dari 0 sampai 99, dipisah koma. Contoh: 7, 3, 9, 1'; return; }
@@ -518,14 +542,15 @@ const ALGO_LAB = {
     }
   }
 };
+const alFmt = (A, data) => A.input && A.input.fmt ? A.input.fmt(data) : (data || []).join(', ');
 function alUse(d, s, data, target) {
   s.data = data; s.target = target; s.F = null; s.k = 0; s.ans = {}; s.err = ''; s.pos = null; s.anim = false;
-  s.values = { data: data.join(', '), target: target != null ? String(target) : '' };
+  s.values = { data: alFmt(AL_ALGO[d.algo] || {}, data), target: target != null ? String(target) : '' };
 }
 // Batang digambar di posisi lama lalu digeser ke posisi baru (CSS transition), sehingga pertukaran terlihat bergerak.
 function alSettle() {
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    document.querySelectorAll('.al-svg .al-bar[data-tx]').forEach(g => { g.style.transform = `translate(${g.dataset.tx}px,${g.dataset.ty}px)`; });
+    document.querySelectorAll('.al-svg [data-tx]').forEach(g => { g.style.transform = `translate(${g.dataset.tx}px,${g.dataset.ty}px)`; });
     // Rel yang bisa digeser (HP): tampilkan tombol bagian yang sedang aktif
     document.querySelectorAll('.al-rails').forEach(r => { const on = r.querySelector('.is-on'); if (!on || r.scrollWidth <= r.clientWidth) return;
       const a = r.getBoundingClientRect(), b = on.getBoundingClientRect(); r.scrollLeft += (b.left + b.width / 2) - (a.left + a.width / 2); });
