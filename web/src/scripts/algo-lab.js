@@ -22,6 +22,8 @@ const alList = a => '[' + a.join(', ') + ']';
 const AL_ALGO = {
   // ---------------- Pencarian linear ----------------
   linear: {
+    call: 'linearSearch(a, n, x)',
+    result: (a, x) => a.indexOf(x),
     target: true,
     counters: ['Perbandingan'],
     vars: ['n', 'x', 'i', 'a[i]'],
@@ -54,6 +56,8 @@ const AL_ALGO = {
 
   // ---------------- Pencarian biner ----------------
   biner: {
+    call: 'binarySearch(a, n, x)',
+    result: (a, x) => { let lo = 0, hi = a.length - 1; while (lo <= hi) { const m = Math.floor((lo + hi) / 2); if (a[m] === x) return m; if (a[m] < x) lo = m + 1; else hi = m - 1; } return -1; },
     target: true, sorted: true,
     counters: ['Pemeriksaan'],
     vars: ['x', 'low', 'high', 'mid', 'a[mid]'],
@@ -94,6 +98,7 @@ const AL_ALGO = {
 
   // ---------------- Bubble sort ----------------
   bubble: {
+    call: 'bubbleSort(a, n)',
     counters: ['Perbandingan', 'Pertukaran'],
     vars: ['n', 'i', 'j', 'a[j]', 'a[j+1]', 'tmp'],
     code: {
@@ -133,6 +138,7 @@ const AL_ALGO = {
 
   // ---------------- Selection sort ----------------
   selection: {
+    call: 'selectionSort(a, n)',
     counters: ['Perbandingan', 'Pertukaran'],
     vars: ['i', 'j', 'min', 'a[j]', 'a[min]'],
     code: {
@@ -182,6 +188,7 @@ const AL_ALGO = {
 
   // ---------------- Insertion sort ----------------
   insertion: {
+    call: 'insertionSort(a, n)',
     counters: ['Perbandingan', 'Pergeseran'],
     vars: ['i', 'j', 'key', 'a[j]'],
     code: {
@@ -224,6 +231,7 @@ const AL_ALGO = {
 
   // ---------------- Merge sort ----------------
   merge: {
+    call: 'mergeSort(a, 0, n - 1)',
     rows: 2,
     counters: ['Perbandingan'],
     vars: ['l', 'm', 'r', 'i', 'j', 'k'],
@@ -280,6 +288,7 @@ const AL_ALGO = {
 
   // ---------------- Quick sort ----------------
   quick: {
+    call: 'quickSort(a, 0, n - 1)',
     counters: ['Perbandingan', 'Pertukaran'],
     vars: ['low', 'high', 'pivot', 'i', 'j'],
     code: {
@@ -372,6 +381,41 @@ function alNow(A, s, f) {
   if (!on.length) return '';
   return `<pre class="al-now trc-code bg-slate-900 text-slate-100 rounded-xl py-1.5 text-[12px] leading-6 font-mono overflow-x-auto" aria-hidden="true">${on.map(i => `<div class="trc-line trc-cur"><span class="trc-no">${i}</span><span>${(lang === 'cpp' ? hlCpp(A.code[lang][i - 1].trim()) : esc(A.code[lang][i - 1].trim())) || ' '}</span></div>`).join('')}</pre>`;
 }
+// ---------- Program lengkap ----------
+// Fungsi di panel kode sengaja tanpa #include dan main() supaya baris yang menyala tetap fokus.
+// Di sini fungsi itu dibungkus jadi program utuh dengan data yang sedang dipakai di lab, beserta output yang seharusnya.
+function alProgram(A, s) {
+  const data = s.data, n = data.length, isSearch = !!A.target;
+  const L = ['#include <iostream>'];
+  if (A.code.cpp.some(l => /\bswap\(/.test(l))) L.push('#include <utility>   // untuk swap()');
+  L.push('using namespace std;', '', ...A.code.cpp, '');
+  if (!isSearch) L.push('void cetak(int a[], int n) {', '    for (int i = 0; i < n; i++) cout << a[i] << " ";', '    cout << endl;', '}', '');
+  L.push('int main() {', `    int a[] = {${data.join(', ')}};`, '    int n = sizeof(a) / sizeof(a[0]);   // jumlah elemen: ' + n);
+  let out;
+  if (isSearch) {
+    const x = s.target, hasil = A.result(data, x);
+    L.push(`    int x = ${x};`, '', `    int hasil = ${A.call};`, '    if (hasil != -1) cout << "Ditemukan di indeks " << hasil << endl;', '    else cout << "Tidak ditemukan" << endl;');
+    out = [hasil !== -1 ? 'Ditemukan di indeks ' + hasil : 'Tidak ditemukan'];
+  } else {
+    L.push('', '    cout << "Sebelum: ";', '    cetak(a, n);', `    ${A.call};`, '    cout << "Sesudah: ";', '    cetak(a, n);');
+    out = ['Sebelum: ' + data.join(' '), 'Sesudah: ' + data.slice().sort((p, q) => p - q).join(' ')];
+  }
+  L.push('    return 0;', '}');
+  return { code: L.join('\n'), out: out.join('\n') };
+}
+function alFull(n, A, s) {
+  const P = s.full ? alProgram(A, s) : null;
+  return `<div class="al-full">
+    <div class="flex flex-wrap items-center gap-2">
+      <button type="button" ${act(n, 'full')} aria-expanded="${!!s.full}" class="al-btn">${s.full ? '▾' : '▸'} Program lengkap</button>
+      ${s.full ? `<button type="button" ${act(n, 'salin')} class="al-btn">Salin kode</button>` : '<span class="text-xs text-slate-500">#include, main(), dan output</span>'}
+    </div>
+    ${P ? `<pre class="trc-code bg-slate-900 text-slate-100 rounded-xl py-2 text-[12px] sm:text-[13px] leading-6 font-mono overflow-x-auto" aria-label="Program C++ lengkap">${P.code.split('\n').map((l, i) => `<div class="trc-line"><span class="trc-no">${i + 1}</span><span>${hlCpp(l) || ' '}</span></div>`).join('')}</pre>
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Output saat dijalankan</div>
+    <pre class="al-out">${esc(P.out)}</pre>
+    <p class="text-xs text-slate-500">Isi array mengikuti data yang sedang dipakai di lab. Salin, lalu jalankan di Dev-C++, Code::Blocks, atau OnlineGDB.</p>` : ''}
+  </div>`;
+}
 // Langkah terjauh yang boleh dibuka. Di mode Tebak dulu, tebakan pertama yang belum dijawab mulai dari langkah sekarang menahan lompatan ke depan (mundur selalu boleh).
 function alReach(F, s) {
   if (!s.tebak) return F.length - 1;
@@ -379,7 +423,7 @@ function alReach(F, s) {
   return F.length - 1;
 }
 const ALGO_LAB = {
-  init: d => ({ data: (d.data || []).slice(), target: d.target, k: 0, lang: 'cpp', tebak: false, ans: {}, F: null, pos: null, anim: false, err: '', values: { data: (d.data || []).join(', '), target: d.target != null ? String(d.target) : '' } }),
+  init: d => ({ data: (d.data || []).slice(), target: d.target, k: 0, lang: 'cpp', tebak: false, full: false, ans: {}, F: null, pos: null, anim: false, err: '', values: { data: (d.data || []).join(', '), target: d.target != null ? String(d.target) : '' } }),
   render(d, s, n) {
     const A = AL_ALGO[d.algo];
     if (!A) return `<p class="text-sm text-rose-700">Algoritma "${esc(d.algo)}" belum dikenal.</p>`;
@@ -425,6 +469,7 @@ const ALGO_LAB = {
         </div>
         <div class="al-col">
           ${alCode(A, s, f)}
+          ${alFull(n, A, s)}
           <div><div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Isi variabel</div><div class="al-vars">${vars}</div>
             <div class="al-cnt">${cnt}</div></div>
           <form class="al-own" data-al-form="${n}">
@@ -451,8 +496,10 @@ const ALGO_LAB = {
     go(d, s, a) { const F = alFrames(d, s), k = Math.max(0, Math.min(F.length - 1, +a || 0)); if (k > alReach(F, s)) return false; s.k = k; s.anim = true; alSettle(); },
     lang(d, s, a) { s.lang = a === 'ps' ? 'ps' : 'cpp'; },
     mode(d, s, a) { s.tebak = a === 'tebak'; },
+    full(d, s) { s.full = !s.full; },
+    salin(d, s) { copyText(alProgram(AL_ALGO[d.algo], s).code).then(ok => showToast(ok ? 'Program disalin. Tempel di Dev-C++ atau OnlineGDB.' : 'Gagal menyalin. Pilih kodenya lalu salin manual.', ok ? 'success' : 'error')); return false; },
     ans(d, s, a) { const F = alFrames(d, s); if (!F[s.k].q || s.ans[s.k] != null) return false; s.ans[s.k] = +a; },
-    awal(d, s) { const lang = s.lang, tebak = s.tebak; Object.assign(s, ALGO_LAB.init(d), { lang, tebak }); },
+    awal(d, s) { const lang = s.lang, tebak = s.tebak, full = s.full; Object.assign(s, ALGO_LAB.init(d), { lang, tebak, full }); },
     acak(d, s) {
       const A = AL_ALGO[d.algo], len = 6 + Math.floor(Math.random() * 3), pool = [];
       while (pool.length < len) { const v = 1 + Math.floor(Math.random() * 60); if (!pool.includes(v)) pool.push(v); }

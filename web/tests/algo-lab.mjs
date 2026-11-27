@@ -17,7 +17,7 @@ const bad = (...m) => { fail++; if (fail < 20) console.error('✗', ...m); };
 // ---------- 1. Jejak ----------
 const ctx = { esc: s => String(s), hlCpp: s => s, document: { addEventListener() {} }, Math, JSON };
 vm.createContext(ctx);
-vm.runInContext(fs.readFileSync(path.resolve('src/scripts/algo-lab.js'), 'utf8') + ';this.AL = AL_ALGO;', ctx);
+vm.runInContext(fs.readFileSync(path.resolve('src/scripts/algo-lab.js'), 'utf8') + ';this.AL = AL_ALGO; this.alProgram = alProgram;', ctx);
 const AL = ctx.AL;
 const SORTS = ['bubble', 'selection', 'insertion', 'merge', 'quick'];
 let seed = 7; const rnd = k => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed % k; };
@@ -46,10 +46,44 @@ for (const d of cases) {
       if (!!m !== data.includes(x)) bad(k, 'hasil pencarian', data.join(','), x);
       if (m && data[+m[1]] !== x) bad(k, 'indeks salah', data.join(','), x);
       if (k === 'linear' && m && +m[1] !== data.indexOf(x)) bad(k, 'bukan kemunculan pertama', data.join(','), x);
+      // Output "Program lengkap" harus sama dengan akhir jejak
+      if (AL[k].result(data, x) !== (m ? +m[1] : -1)) bad(k, 'hasil program lengkap beda dengan jejak', data.join(','), x);
     }
   }
 }
 console.log(`jejak: ${cases.length} data × ${SORTS.length + 2} algoritma diperiksa`);
+
+// ---------- 1b. Program lengkap: dikompilasi g++ dan output-nya dicocokkan ----------
+{
+  const { execFileSync } = await import('node:child_process');
+  const os = await import('node:os');
+  let gpp = true; try { execFileSync('g++', ['--version'], { stdio: 'ignore' }); } catch (e) { gpp = false; }
+  if (!gpp) console.log('program lengkap: g++ tidak ada, kompilasi dilewati');
+  else {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'al-cpp-'));
+    let runs = 0;
+    for (const k of Object.keys(AL)) {
+      const sample = [[5, 1, 4, 2, 8], [7, 7, 3], [0, 99, 0, 99, 50, 1, 2, 3], [3, 1, 2]];
+      for (const d0 of sample) {
+        const data = AL[k].sorted ? d0.slice().sort((p, q) => p - q) : d0;
+        for (const target of AL[k].target ? [data[1], 42] : [undefined]) {
+          const P = ctx.alProgram(AL[k], { data, target });
+          if (!/^#include <iostream>/.test(P.code) || !/int main\(\)/.test(P.code)) bad(k, 'program lengkap tanpa include/main');
+          const src = path.join(dir, `${k}.cpp`), bin = path.join(dir, k);
+          fs.writeFileSync(src, P.code);
+          try {
+            execFileSync('g++', ['-std=c++11', '-Wall', '-Werror', '-o', bin, src], { stdio: 'pipe' });
+            const out = execFileSync(bin, { encoding: 'utf8' }).split('\n').map(l => l.trimEnd()).join('\n').trim();
+            if (out !== P.out) bad(k, 'output program beda', JSON.stringify(out), '≠', JSON.stringify(P.out));
+          } catch (e) { bad(k, 'gagal kompilasi', String(e.stderr || e.message).slice(0, 400)); }
+          runs++;
+        }
+      }
+    }
+    fs.rmSync(dir, { recursive: true, force: true });
+    console.log(`program lengkap: ${runs} program dikompilasi g++ dan output-nya cocok`);
+  }
+}
 
 // ---------- 2. Browser ----------
 const DIST = path.resolve(process.cwd(), process.env.ASTRO_OUT || 'dist');
@@ -110,12 +144,19 @@ try {
       if (await page.$eval('.al [data-act="next"]', e => e.disabled)) break;
       await page.click('.al [data-act="next"]');
     }
+    // Program lengkap: dibuka, berisi include + main + output, tetap terbuka saat pindah langkah
+    await page.click('.al [data-act="full"]');
+    const full = await page.$eval('.al .al-full', e => e.textContent);
+    if (!/#include <iostream>/.test(full) || !/int main\(\)/.test(full) || !(await page.$('.al .al-out'))) bad(m.id, 'program lengkap tidak tampil');
+    await page.click('.al [data-act="prev"]');
+    if (!(await page.$('.al .al-out'))) bad(m.id, 'program lengkap tertutup saat pindah langkah');
     // Data sendiri
     await page.fill('.al input[data-key="data"]', '9, 4, 7, 1');
     if (await page.$('.al input[data-key="target"]')) await page.fill('.al input[data-key="target"]', '7');
     await page.press('.al input[data-key="data"]', 'Enter');
     if (!/Langkah 1 dari/.test(await step())) bad(m.id, 'data sendiri tidak dimulai ulang');
     if (!(await page.$eval('.al svg', e => e.getAttribute('aria-label'))).includes(m.id === 'pencarian-biner' ? '1, 4, 7, 9' : '9, 4, 7, 1')) bad(m.id, 'data sendiri tidak dipakai');
+    if (!(await page.$eval('.al .al-full', e => e.textContent)).includes(m.id === 'pencarian-biner' ? '{1, 4, 7, 9}' : '{9, 4, 7, 1}')) bad(m.id, 'program lengkap tidak ikut data sendiri');
     await page.fill('.al input[data-key="data"]', '1, 2');
     await page.click('.al button[type="submit"]');
     if (!(await page.$('.al [role="alert"]'))) bad(m.id, 'data salah tidak ditolak');
