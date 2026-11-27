@@ -49,7 +49,7 @@ const enc=o=>JSON.stringify(o).replace(/</g,'\\u003c');
 // Template HTML mandiri dengan data penuh dan mesin browser yang sama dengan Astro.
 const render = ({ library = lib, css, code } = {}) => {
   const web = path.join(__dirname, '../web/src/scripts');
-  const script = code ?? ['stick.js', 'adegan.js', 'bertahap.js', 'sql-lab.js', 'trace-lab.js', 'algo-lab.js', 'labs.js', 'playground-assessment.js', 'engine.js'].map(name => fs.readFileSync(path.join(web, name), 'utf8')).join('\n');
+  const script = code ?? ['stick.js', 'adegan.js', 'bertahap.js', 'sql-lab.js', 'trace-lab.js', 'algo-lab.js', 'algo-lab-linear.js', 'algo-lab-dasar.js', 'algo-lab-cabang.js', 'labs.js', 'playground-assessment.js', 'engine.js'].map(name => fs.readFileSync(path.join(web, name), 'utf8')).join('\n');
   return fs.readFileSync(P('engine.html'), 'utf8')
     .replace(/(\n<script data-app>\n)[\s\S]*(\n<\/script>\n<\/body>)/, (_, before, after) => before + "'use strict';\n" + script.replace(/<\/script/gi, '<\\/script') + after)
     .replace('__TWCSS__', () => css ?? fs.readFileSync(P('tw.css'), 'utf8'))

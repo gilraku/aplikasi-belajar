@@ -71,6 +71,8 @@ function blockTexts(def) {
     }
     // id biasanya pengenal internal (tanpa spasi), tapi blok say memakai id untuk terjemahan yang tampil: indeks bila berupa kalimat
     if (key === 'id' && typeof v === 'string' && /\s/.test(v.trim())) { pieces(v).forEach(p => out.push(p)); return; }
+    // Data lab algoritma (angka, perintah pop/deq, sisi graf) hanya isi awal formulir, bukan teks materi
+    if (ctx === 'algo-lab' && key === 'data') return;
     if (SKIP.has(key)) return;
     if (typeof v === 'string') { (RAW.has(key) ? rawPieces(v) : pieces(v)).forEach(p => out.push(p)); return; }
     if (typeof v === 'number' || typeof v === 'boolean') return;
