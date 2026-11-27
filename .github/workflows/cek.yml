@@ -1,4 +1,6 @@
 # Bangun versi Astro (web/) dari materi di sumber/ lalu tes semua halaman, di setiap PR dan push ke main.
+# Build memakai base / seperti di Vercel. Tes dibagi ke beberapa job paralel supaya cepat;
+# job terakhir bernama "build" hanya merangkum hasilnya.
 # Situs diterbitkan oleh Vercel (vercel.json); GitHub Pages tidak dipakai lagi.
 name: Cek build dan tes
 on:
@@ -12,11 +14,29 @@ concurrency:
   group: cek-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  build:
+  tes:
+    name: tes (${{ matrix.nama }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - nama: halaman
+            run: npm run test:halaman
+          - nama: lab dan cari
+            run: npm run test:lain
+          - nama: adegan 1/3
+            run: SHARD=1/3 npm run test:adegan
+          - nama: adegan 2/3
+            run: SHARD=2/3 npm run test:adegan
+          - nama: adegan 3/3
+            run: SHARD=3/3 npm run test:adegan
     defaults:
       run:
         working-directory: web
+    env:
+      ASTRO_BASE: /
+      ASTRO_SITE: https://sinau.vercel.app
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -26,16 +46,18 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm ci
       - name: Cek kerentanan paket (gagal kalau ada yang tingkat tinggi)
+        if: matrix.nama == 'lab dan cari'
         run: npm audit --audit-level=high
       - name: Build (sekaligus validasi data materi)
         run: npm run build
       - name: Siapkan browser untuk tes
         run: npx playwright install --with-deps chromium
-      - name: Tes semua halaman
-        run: npm test
-      - name: Build + tes versi Vercel (base /)
-        env:
-          ASTRO_BASE: /
-          ASTRO_SITE: https://sinau.vercel.app
-          ASTRO_OUT: dist-root
-        run: npm run build && npm test
+      - name: Tes
+        run: ${{ matrix.run }}
+  build:
+    needs: tes
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Semua job tes harus lulus
+        run: test "${{ needs.tes.result }}" = success
