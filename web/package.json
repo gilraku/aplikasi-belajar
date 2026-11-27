@@ -9,13 +9,13 @@
     "test": "node tests/sql-lab.mjs && node tests/bd-uas.mjs && node tests/adegan.mjs && node tests/bertahap.mjs && node tests/validasi.mjs && node tests/smoke.mjs && node tests/cari.mjs && node tests/modal.mjs"
   },
   "dependencies": {
-    "astro": "^7.4.10"
+    "astro": "^7.4.12"
   },
   "devDependencies": {
     "autoprefixer": "^10.6.2",
     "esbuild": "^0.28.2",
-    "playwright": "^1.65.0",
-    "postcss": "^8.5.32",
+    "playwright": "^1.65.1",
+    "postcss": "^8.5.33",
     "tailwindcss": "^3.4.19",
     "zod": "^4.6.7"
   }
