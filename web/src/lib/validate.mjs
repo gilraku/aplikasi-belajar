@@ -9,7 +9,7 @@ const IMG = /^materi\/[a-z0-9/_-]+\.(webp|png|jpg)$/;
 const imgOk = src => IMG.test(String(src)) && fs.existsSync(path.resolve(process.cwd(), 'public', String(src)));
 
 // Jenis blok yang dikenali mesin (objek R di src/scripts/engine.js)
-export const BLOCK_TYPES = ['text', 'article', 'ayat', 'code', 'playground', 'callout', 'cards', 'list', 'flow', 'row', 'tabs', 'choices', 'table', 'diagram', 'steps', 'shot', 'symbols', 'cara', 'reveal', 'say', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'lab-5k', 'lab-imbuhan', 'lab-kalimat', 'lab-kalimat-en', 'lab-jam', 'lab-rute', 'lab-bedah', 'adegan', 'penelusur', 'bertahap', 'kode-jelas', 'exercise'];
+export const BLOCK_TYPES = ['text', 'article', 'ayat', 'code', 'playground', 'callout', 'cards', 'list', 'flow', 'row', 'tabs', 'choices', 'table', 'diagram', 'steps', 'shot', 'symbols', 'cara', 'reveal', 'say', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'algo-lab', 'lab-5k', 'lab-imbuhan', 'lab-kalimat', 'lab-kalimat-en', 'lab-jam', 'lab-rute', 'lab-bedah', 'adegan', 'penelusur', 'bertahap', 'kode-jelas', 'exercise'];
 
 const str = z.string().trim().min(1, 'tidak boleh kosong');
 const optValue = o => (o && typeof o === 'object' ? o.value : o);
@@ -44,6 +44,14 @@ const Block = z.lazy(() => z.looseObject({
         if (!Array.isArray(a.opts) || a.ans < 0 || a.ans >= a.opts.length) ctx.addIssue({ code: 'custom', path: ['cases', ci, 'asks', k], message: 'jawaban di luar pilihan' });
       });
     });
+  }
+  if (b.type === 'algo-lab') {
+    const ALGO = { linear: 'cari', biner: 'cari-urut', bubble: '', selection: '', insertion: '', merge: '', quick: '' };
+    const d = b.data, int = v => Number.isInteger(v) && v >= 0 && v <= 99;
+    if (!(b.algo in ALGO)) ctx.addIssue({ code: 'custom', path: ['algo'], message: `algo "${b.algo}" tidak dikenal (yang ada: ${Object.keys(ALGO).join(', ')})` });
+    if (!Array.isArray(d) || d.length < 3 || d.length > 8 || !d.every(int)) ctx.addIssue({ code: 'custom', path: ['data'], message: 'algo-lab butuh data 3–8 bilangan bulat 0–99' });
+    else if (ALGO[b.algo] === 'cari-urut' && d.some((v, i) => i && d[i - 1] > v)) ctx.addIssue({ code: 'custom', path: ['data'], message: 'data pencarian biner harus sudah urut naik' });
+    if (ALGO[b.algo] && !int(b.target)) ctx.addIssue({ code: 'custom', path: ['target'], message: 'algoritma pencarian butuh target (bilangan bulat 0–99)' });
   }
   if (b.type === 'diagram' && typeof b.svg !== 'string') ctx.addIssue({ code: 'custom', path: ['svg'], message: 'diagram butuh svg (string)' });
   if (b.type === 'lab-5k' && !(Array.isArray(b.cols) && b.cols.length && Array.isArray(b.rows) && b.rows.length && Array.isArray(b.contexts) && b.contexts.length))

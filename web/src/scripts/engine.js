@@ -424,7 +424,7 @@ const defaultTab = m => { const t = availableTabs(m); return t.length ? t[0].id 
 // =====================================================================
 //  BLOK MATERI — setiap jenis blok punya fungsi render & aksi
 // =====================================================================
-const INTERACTIVE = new Set(['say', 'diagram', 'steps', 'shot', 'symbols', 'cara', 'table', 'choices', 'reveal', 'tabs', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'lab-5k', 'lab-imbuhan', 'lab-kalimat', 'lab-kalimat-en', 'lab-jam', 'lab-rute', 'lab-bedah', 'penelusur', 'exercise', 'playground']);
+const INTERACTIVE = new Set(['say', 'diagram', 'steps', 'shot', 'symbols', 'cara', 'table', 'choices', 'reveal', 'tabs', 'detective', 'terminal', 'sql-lab', 'trace-lab', 'algo-lab', 'lab-5k', 'lab-imbuhan', 'lab-kalimat', 'lab-kalimat-en', 'lab-jam', 'lab-rute', 'lab-bedah', 'penelusur', 'exercise', 'playground']);
 function countInteractive(m) {
   let n = 0;
   const walk = list => (list || []).forEach(b => {
@@ -943,6 +943,7 @@ ${cpp ? `<p class="text-xs text-slate-500">💡 C++ tidak bisa dijalankan di apl
   },
 
   'trace-lab': TRACE_LAB,
+  'algo-lab': ALGO_LAB,
   adegan: ADEGAN_BLOCK,
   penelusur: PENELUSUR_BLOCK,
   bertahap: BERTAHAP_BLOCK,
@@ -1076,13 +1077,13 @@ function programLine() {
 function courseItems() {
   return LIB.map(x => { const pct = Math.round(x.meetings.reduce((a, m) => a + storedReadiness(x, m), 0) / Math.max(1, x.meetings.length));
     return { value: x.id, label: x.nama, swatch: courseHL(x),
-      html: `<span class="dd-sw" style="background:${courseHL(x)}"></span><span class="min-w-0 flex-1"><span class="block font-bold text-ink truncate">${esc(x.nama)}</span><span class="block text-[11px] text-slate-500">${x.meetings.length} pertemuan${x.dosen ? ' • ' + esc(x.dosen.split(',')[0]) : ''}</span></span><span class="dd-pct ${pct ? '' : 'text-slate-400'}">${pct ? pct + '%' : 'belum'}</span>` }; });
+      html: `<span class="dd-sw" style="background:${courseHL(x)}"></span><span class="min-w-0 flex-1"><span class="block font-bold text-ink truncate">${esc(x.nama)}</span><span class="block text-[11px] text-slate-500">${x.meetings.length} ${unitW(x).toLowerCase()}${x.dosen ? ' • ' + esc(x.dosen.split(',')[0]) : ''}</span></span><span class="dd-pct ${pct ? '' : 'text-slate-400'}">${pct ? pct + '%' : 'belum'}</span>` }; });
 }
 function meetingItems(c) {
-  const multi = new Set(c.meetings.map(m => babakOf(m.nomor))).size > 1;
-  return c.meetings.map(x => { const pct = storedReadiness(c, x), mk = examMark(x);
-    return { value: x.id, label: `P${x.nomor} · ${x.judul}`, group: multi ? (BABAK.find(b => b.id === babakOf(x.nomor)) || {}).label : '',
-      html: `<span class="dd-p"><span class="stabilo" style="--hl:${courseHL(c)}">P${esc(x.nomor)}</span></span><span class="min-w-0 flex-1 font-semibold text-ink leading-snug">${esc(x.judul)}</span>${mk ? `<span class="dd-mark">${esc(mk)}</span>` : ''}<span class="dd-pct ${pct ? '' : 'text-slate-400'}">${pct ? pct + '%' : ''}</span>` }; });
+  const multi = isJalur(c) || new Set(c.meetings.map(m => babakOf(m.nomor))).size > 1;
+  return c.meetings.map(x => { const pct = storedReadiness(c, x), mk = isJalur(c) ? '' : examMark(x);
+    return { value: x.id, label: `${noLbl(c, x)} · ${x.judul}`, group: !multi ? '' : isJalur(c) ? (x.bab || '') : (BABAK.find(b => b.id === babakOf(x.nomor)) || {}).label,
+      html: `<span class="dd-p"><span class="stabilo" style="--hl:${courseHL(c)}">${esc(noLbl(c, x))}</span></span><span class="min-w-0 flex-1 font-semibold text-ink leading-snug">${esc(x.judul)}</span>${mk ? `<span class="dd-mark">${esc(mk)}</span>` : ''}<span class="dd-pct ${pct ? '' : 'text-slate-400'}">${pct ? pct + '%' : ''}</span>` }; });
 }
 const DD = {};
 function ddHtml(id, placeholder, items, selected, cls) {
@@ -1136,7 +1137,7 @@ function renderHeader() {
     <div class="flex items-center gap-2.5 min-w-0">
       ${m ? `<button onclick="go('#/')" title="Beranda Sinau" aria-label="Beranda" class="w-10 h-10 shrink-0 rounded-xl bg-[#ffe14d] text-ink font-display font-extrabold text-xl leading-none flex items-center justify-center hover:bg-[#ffd60a]">s</button>` : ''}
       <div class="min-w-0 flex-1">
-        ${m ? `<div class="text-[11px] font-bold text-indigo-700 truncate">${esc((c.kode ? c.kode + ' • ' : '') + c.nama)} • Pertemuan ${esc(m.nomor)}</div>
+        ${m ? `<div class="text-[11px] font-bold text-indigo-700 truncate">${esc((c.kode ? c.kode + ' • ' : '') + c.nama)} • ${unitW(c)} ${esc(m.nomor)}</div>
           <h1 class="text-[15px] sm:text-lg font-extrabold text-slate-900 leading-snug line-clamp-2" title="${esc(m.judul)}">${esc(m.judul)}</h1>`
         : `<h1 class="leading-none"><button onclick="go('#/')" class="wordmark text-[28px] sm:text-[32px]" aria-label="Beranda Sinau">sinau</button></h1><p class="mt-1.5 text-xs text-slate-500 truncate">${esc(['rangkuman', APP.semester, programLine()].filter(Boolean).join(' • '))}</p>`}
       </div>
@@ -1165,11 +1166,11 @@ function renderNext() {
   if (!m) { box.replaceChildren(); return; }
   const tabs = availableTabs(m), ti = tabs.findIndex(t => t.id === S.tab), nextTab = tabs[ti + 1];
   const mi = c.meetings.indexOf(m), prevM = c.meetings[mi - 1], nextM = c.meetings[mi + 1];
-  const short = x => `P${esc(x.nomor)}: ${esc(x.judul)}`;
+  const short = x => `${esc(noLbl(c, x))}: ${esc(x.judul)}`;
   const primary = nextTab
     ? `<button onclick="go('${routeFor(c, m, nextTab.id)}')" class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm">Lanjut ke ${esc(nextTab.label(m))} →</button>`
-    : nextM ? `<button onclick="go('${routeFor(c, nextM)}')" class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm">Pertemuan berikutnya →</button>`
-    : `<span class="text-sm font-bold text-emerald-700">🎉 Ini pertemuan terakhir ${esc(c.nama)}.</span>`;
+    : nextM ? `<button onclick="go('${routeFor(c, nextM)}')" class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm">${unitW(c)} berikutnya →</button>`
+    : `<span class="text-sm font-bold text-emerald-700">🎉 Ini ${unitW(c).toLowerCase()} terakhir ${esc(c.nama)}.</span>`;
   box.innerHTML = `<nav aria-label="Navigasi pertemuan" class="mb-6 p-4 rounded-2xl border border-slate-200 bg-white shadow-sm flex flex-col sm:flex-row sm:items-center gap-3">
     <div class="flex-1 min-w-0 grid grid-cols-2 gap-2 text-xs">
       ${prevM ? `<button onclick="go('${routeFor(c, prevM)}')" class="text-left p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 min-w-0"><span class="block text-[11px] font-bold text-slate-500">← Sebelumnya</span><span class="block font-bold text-slate-800 truncate">${short(prevM)}</span></button>` : '<span></span>'}
@@ -1182,7 +1183,7 @@ function scrollToBlk(n) { const el = $('blk-' + n); if (el) el.scrollIntoView({ 
 function renderFooter() {
   const c = S.course, m = S.meeting;
   $('appFooter').innerHTML = `<div class="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-slate-500">
-    <div>${m ? `<strong class="text-slate-700">${esc(c.nama)}${c.kode ? ' (' + esc(c.kode) + ')' : ''}, Pertemuan ${esc(m.nomor)}: ${esc(m.judul)}</strong><br>${esc([c.prodi, c.kampus].filter(Boolean).join(' • '))}${c.dosen ? ' • Dosen: ' + esc(c.dosen) : ''}`
+    <div>${m ? `<strong class="text-slate-700">${esc(c.nama)}${c.kode ? ' (' + esc(c.kode) + ')' : ''}, ${unitW(c)} ${esc(m.nomor)}: ${esc(m.judul)}</strong><br>${esc([c.prodi, c.kampus].filter(Boolean).join(' • '))}${c.dosen ? ' • Dosen: ' + esc(c.dosen) : ''}`
       : `<span class="wordmark text-base">sinau</span>`}</div>
     <div class="self-start sm:self-auto flex flex-wrap items-center gap-x-4 gap-y-2"><span>Dibuat oleh <strong class="font-display text-ink">Gilang</strong></span>${waBtn()}</div>
   </div>`;
@@ -1231,7 +1232,7 @@ function loadMeetingThen(c, m, forced) {
   if (!$('appHeader').innerHTML) renderHeader();
   $('appNext').replaceChildren();
   $('appMain').innerHTML = `<div class="py-16 flex flex-col items-center gap-3 text-slate-500"><div class="w-9 h-9 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin"></div>
-    <p class="text-sm font-semibold">Memuat ${esc(c.nama)} • Pertemuan ${esc(m.nomor)}…</p></div>`;
+    <p class="text-sm font-semibold">Memuat ${esc(c.nama)} • ${unitW(c)} ${esc(m.nomor)}…</p></div>`;
   fetchMeeting(c, m).then(() => { if (seq === routeSeq) route(forced); }).catch(() => {
     if (seq !== routeSeq) return;
     $('appMain').innerHTML = `<div class="py-16 flex flex-col items-center gap-3 text-center"><p class="text-sm font-bold text-rose-700">Materi gagal dimuat. Periksa koneksi internet, lalu coba lagi.</p>
@@ -1254,7 +1255,7 @@ function route(forced) {
     if (changedMeeting) { S.prog = loadProgress(c, m); S.fcFilter = 'all'; S.quizFilter = 'all'; S.exam = loadExam(); S.examPersisted = !!S.exam; S.examReview = false; S.lastExamResult = null; S.interactiveTotal = countInteractive(m); }
     if (!S.prog.visited.has(tab)) { S.prog.visited.add(tab); saveProgress(); }
     PROGRESS.setLast(routeFor(c, m, tab));
-    document.title = `${c.nama} P${m.nomor} · Sinau`;
+    document.title = `${c.nama} ${noLbl(c, m)} · Sinau`;
   } else { S.prog = null; document.title = c ? `${c.nama} · Sinau` : 'Sinau' + (APP.semester ? ' · ' + APP.semester : ''); }
   renderHeader(); renderFooter(); renderNext();
   if (m) renderMeeting(changedMeeting); else renderHome(c);
@@ -1282,6 +1283,11 @@ const waBtn = (cls = '') => `<a href="${WA_URL}" target="_blank" rel="noopener" 
 const HL = ['#ffe14d', '#8fe3a2', '#ff9ec7', '#ffb766', '#9cc7ff', '#c6b0ff', '#7fdcd2', '#f5a3a3'];
 const courseHL = c => HL[Math.max(0, LIB.indexOf(c)) % HL.length];
 const shortName = c => (c.kode || c.nama).replace(/\s*\(.*?\)\s*/g, '').trim();
+// Section belajar mandiri (mis. Struktur Data & Algoritma): bukan matkul semester, jadi tidak ikut peta P1–P16
+// dan isinya disebut "pelajaran" (bernomor 1, 2, 3), bukan "pertemuan" (P1, P2, P3).
+const isJalur = c => !!(c && c.jalur);
+const noLbl = (c, m) => (isJalur(c) ? '' : 'P') + m.nomor;
+const unitW = c => isJalur(c) ? 'Pelajaran' : 'Pertemuan';
 // Satu semester = 16 pertemuan: P1–P8 menuju UTS, P9–P16 menuju UAS
 const SEMESTER_LEN = 16;
 const BABAK = [{ id: 'uts', label: 'Menuju UTS' }, { id: 'uas', label: 'Menuju UAS' }];
@@ -1298,9 +1304,9 @@ function renderHome(only) {
   const meetingRow = (c, m) => { const pct = storedReadiness(c, m);
     return `<li class="relative group">
       <button type="button" onclick="go('${routeFor(c, m)}')" class="w-full text-left px-3 sm:px-4 py-3 grid grid-cols-[2.75rem_minmax(0,1fr)_auto] items-center gap-3 hover:bg-[#f6f5ef] focus-visible:bg-[#f6f5ef] transition" aria-label="Buka pertemuan ${esc(m.nomor)}: ${esc(m.judul)}">
-        <span class="font-display font-extrabold text-lg text-ink"><span class="stabilo" style="--hl:${courseHL(c)}">P${esc(m.nomor)}</span></span>
+        <span class="font-display font-extrabold text-lg text-ink"><span class="stabilo" style="--hl:${courseHL(c)}">${esc(noLbl(c, m))}</span></span>
         <span class="min-w-0"><span class="block font-bold text-slate-900 leading-snug">${esc(m.judul)}</span>
-          <span class="block text-xs text-slate-500 mt-0.5">${fcCount(m)} kartu • ${quizAns(m).length} soal • ${esc(m.ujian)}${m._imported ? ' • materi tambahan' : ''}</span></span>
+          <span class="block text-xs text-slate-500 mt-0.5">${isJalur(c) ? `${esc(m.ket || m.bab || '')}${quizAns(m).length ? ' • ' + quizAns(m).length + ' soal' : ''}` : `${fcCount(m)} kartu • ${quizAns(m).length} soal • ${esc(m.ujian)}`}${m._imported ? ' • materi tambahan' : ''}</span></span>
         <span class="w-14 sm:w-24 text-right"><span class="block text-xs font-bold tabular-nums ${pct ? 'text-ink' : 'text-slate-400'}">${pct ? pct + '%' : 'belum'}</span>
           <span class="block mt-1 h-1.5 rounded-full bg-[#ecebe4] overflow-hidden"><span class="block h-full" style="width:${pct}%;background:${courseHL(c)}"></span></span></span>
       </button>
@@ -1315,17 +1321,18 @@ function renderHome(only) {
     if (lm) {
       const pct = storedReadiness(lc, lm), tab = availableTabs(lm).find(t => t.id === (pp[4] || defaultTab(lm)));
       cont = `<button onclick="go('${esc(last.hash)}')" class="w-full text-left p-4 rounded-2xl border border-slate-200 bg-white hover:border-ink transition flex flex-col sm:flex-row sm:items-center gap-3">
-        <div class="min-w-0 flex-1 space-y-1"><div class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Lanjutkan belajar • ${esc(lc.nama)} • P${esc(lm.nomor)}${tab ? ' • ' + esc(tab.short(lm)) : ''}</div>
+        <div class="min-w-0 flex-1 space-y-1"><div class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Lanjutkan belajar • ${esc(lc.nama)} • ${esc(noLbl(lc, lm))}${tab ? ' • ' + esc(tab.short(lm)) : ''}</div>
           <div class="font-display font-extrabold text-lg leading-snug text-ink"><span class="stabilo" style="--hl:${courseHL(lc)}">${esc(lm.judul)}</span></div>
           <div class="text-xs text-slate-500">${pct}% progres</div></div>
         <span class="shrink-0 self-start sm:self-auto px-4 py-2.5 rounded-xl bg-ink text-white text-sm font-bold">Lanjutkan →</span></button>`;
     }
   }
   // Peta: semua matkul × nomor pertemuan (P1–P16, dibagi babak UTS | UAS), warna makin pekat = makin banyak aktivitas
-  const showPeta = !only && LIB.length > 1;
+  const SEM = LIB.filter(c => !isJalur(c));
+  const showPeta = !only && SEM.length > 1;
   let peta = '';
   if (showPeta) {
-    const have = LIB.flatMap(c => c.meetings.map(m => String(m.nomor)));
+    const have = SEM.flatMap(c => c.meetings.map(m => String(m.nomor)));
     const nums = [...new Set([...have, ...Array.from({ length: SEMESTER_LEN }, (_, i) => String(i + 1))])].sort((a, b) => (parseFloat(a) - parseFloat(b)) || a.localeCompare(b));
     const utsN = nums.filter(n => babakOf(n) === 'uts'), uasN = nums.filter(n => babakOf(n) === 'uas');
     const cell = (c, n) => { const m = c.meetings.find(x => String(x.nomor) === n);
@@ -1339,7 +1346,7 @@ function renderHome(only) {
     const nowBabak = babakOf(Math.max(...have.map(parseFloat).filter(x => !isNaN(x)), 1));
     const strip = (nn, b) => `<div class="peta-m space-y-2.5" data-babak="${b}" ${b === nowBabak ? '' : 'hidden'}>
         <div class="peta-m-row">${nn.map(n => `<span class="text-center text-[10px] font-bold text-slate-500 font-display">P${esc(n)}</span>`).join('')}</div>
-        ${LIB.map(c => `<div class="space-y-1"><button onclick="go('#/c/${encodeURIComponent(c.id)}')" class="flex items-center gap-1.5 text-[13px] font-display font-bold text-ink leading-tight"><span class="dd-sw" style="background:${courseHL(c)}"></span>${esc(shortName(c))}</button>
+        ${SEM.map(c => `<div class="space-y-1"><button onclick="go('#/c/${encodeURIComponent(c.id)}')" class="flex items-center gap-1.5 text-[13px] font-display font-bold text-ink leading-tight"><span class="dd-sw" style="background:${courseHL(c)}"></span>${esc(shortName(c))}</button>
           <div class="peta-m-row">${nn.map(n => cell(c, n).replace(/^<td>|<\/td>$/g, '')).join('')}</div></div>`).join('')}
       </div>`;
     const petaMobile = `<div class="sm:hidden space-y-3" id="petaM">
@@ -1353,17 +1360,19 @@ function renderHome(only) {
         <colgroup><col class="w-[7rem] sm:w-[9.5rem]">${utsN.map(() => '<col>').join('')}${uasN.length ? '<col style="width:8px">' + uasN.map(() => '<col>').join('') : ''}</colgroup>
         <thead>${uasN.length ? `<tr><th></th><th colspan="${utsN.length}" class="peta-babak">Menuju UTS</th><th></th><th colspan="${uasN.length}" class="peta-babak">Menuju UAS</th></tr>` : ''}
           <tr><th class="w-[7rem] sm:w-[9.5rem]"></th>${cols(null, (c, n) => `<th class="text-[11px] font-bold text-slate-500 font-display">P${esc(n)}</th>`).replace('<td class="peta-sep" aria-hidden="true"></td>', '<th></th>')}</tr></thead>
-        <tbody>${LIB.map(c => `<tr><th scope="row" class="sticky left-0 z-10 bg-paper pr-2 text-left"><button onclick="go('#/c/${encodeURIComponent(c.id)}')" class="text-left text-xs sm:text-[13px] font-display font-bold text-ink leading-tight hover:underline">${esc(shortName(c))}</button></th>${cols(c, cell)}</tr>`).join('')}</tbody>
+        <tbody>${SEM.map(c => `<tr><th scope="row" class="sticky left-0 z-10 bg-paper pr-2 text-left"><button onclick="go('#/c/${encodeURIComponent(c.id)}')" class="text-left text-xs sm:text-[13px] font-display font-bold text-ink leading-tight hover:underline">${esc(shortName(c))}</button></th>${cols(c, cell)}</tr>`).join('')}</tbody>
       </table></div></section>`;
   }
   const avgOf = (c, ms) => Math.round(ms.reduce((a, m) => a + storedReadiness(c, m), 0) / Math.max(1, ms.length));
   const courseSummary = c => {
     const started = c.meetings.filter(m => storedReadiness(c, m) > 0).length, avg = avgOf(c, c.meetings);
-    return `<div class="w-full sm:w-56"><div class="flex justify-between text-[11px] font-semibold text-slate-500 mb-1"><span>${started}/${c.meetings.length} pertemuan dimulai</span><span class="font-bold text-ink">${avg}%</span></div>
+    return `<div class="w-full sm:w-56"><div class="flex justify-between text-[11px] font-semibold text-slate-500 mb-1"><span>${started}/${c.meetings.length} ${unitW(c).toLowerCase()} dimulai</span><span class="font-bold text-ink">${avg}%</span></div>
       <div class="h-1.5 rounded-full bg-[#ecebe4] overflow-hidden"><div class="h-full" style="width:${avg}%;background:${courseHL(c)}"></div></div></div>`;
   };
   // Daftar pertemuan per babak: babak yang sedang berjalan terbuka, babak yang sudah lewat dilipat
   const babakList = c => {
+    if (isJalur(c)) return `<div class="grid gap-3 md:grid-cols-2">${[...new Set(c.meetings.map(m => m.bab || ''))].map(bab => { const ms = c.meetings.filter(m => (m.bab || '') === bab);
+      return `<div class="space-y-2 min-w-0">${bab ? `<h3 class="text-sm font-extrabold text-ink">${esc(bab)} <span class="font-sans font-normal text-slate-500">• ${ms.length} pelajaran</span></h3>` : ''}<ol class="rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100 overflow-hidden">${ms.map(m => meetingRow(c, m)).join('')}</ol></div>`; }).join('')}</div>`;
     const groups = BABAK.map(b => ({ ...b, ms: c.meetings.filter(m => babakOf(m.nomor) === b.id) })).filter(g => g.ms.length);
     const cur = groups[groups.length - 1];
     return groups.map(g => {
@@ -1377,10 +1386,10 @@ function renderHome(only) {
         <div class="border-t border-slate-200">${ol.replace('rounded-2xl border border-slate-200 ', '')}</div></details>`;
     }).join('');
   };
-  const lists = showPeta ? '' : list.map(c => `<section class="space-y-3" id="mk-${esc(c.id)}">
+  const lists = (showPeta ? list.filter(isJalur) : list).map(c => `<section class="space-y-3" id="mk-${esc(c.id)}">
       <div class="flex flex-wrap items-end justify-between gap-2"><div>
         <h2 class="text-2xl font-extrabold text-ink"><span class="stabilo" style="--hl:${courseHL(c)}">${esc(c.nama)}</span></h2>
-        ${c.dosen ? `<p class="text-xs text-slate-500 mt-1">Dosen: ${esc(c.dosen)}</p>` : ''}</div>
+        ${c.dosen ? `<p class="text-xs text-slate-500 mt-1">Dosen: ${esc(c.dosen)}</p>` : ''}${c.ket ? `<p class="text-sm text-slate-600 mt-1 max-w-2xl">${esc(c.ket)}</p>` : ''}</div>
         <div class="w-full sm:w-auto flex flex-col sm:items-end gap-2">${courseSummary(c)}${only && LIB.length > 1 ? `<button onclick="go('#/')" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200">← Semua mata kuliah</button>` : ''}</div></div>
       ${babakList(c)}</section>`).join('');
   $('appMain').innerHTML = `<div class="space-y-8">${cont}${peta}${lists}
@@ -1545,14 +1554,14 @@ function renderQuiz() {
   $('appMain').innerHTML = `<section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-5">
     <div class="space-y-3"><div>
       <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Evaluasi Mandiri Terpadu</span>
-      <h2 class="text-xl font-extrabold text-slate-900">Simulasi Kuis ${esc(m.ujian)} Pertemuan ${esc(m.nomor)} (${total} Soal)</h2>
+      <h2 class="text-xl font-extrabold text-slate-900">Simulasi Kuis ${esc(m.ujian)} ${unitW(S.course)} ${esc(m.nomor)} (${total} Soal)</h2>
       <p class="text-sm text-slate-600">${ex ? 'Seperti ujian sungguhan: jawaban bisa diganti, pembahasan dan nilai baru muncul setelah kamu menekan <strong>Selesai</strong>.' : review ? 'Tinjau jawaban dan pembahasan dari sesi yang sudah selesai.' : 'Pilih jawaban yang paling tepat. Pembahasan langsung muncul setiap kali kamu menjawab!'}</p></div>
       ${controls}</div>
     <div class="space-y-4">${idx.map(card).join('')}${empty}</div>
     ${ex ? `<button onclick="finishExam()" class="w-full px-4 py-3 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white">Selesai & lihat nilai (${exDone}/${sessionTotal} terjawab)</button>` : ''}
     ${!ex && !review && f === 'all' && st.answered === total && total ? `<div class="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-900 text-white text-center space-y-3">
       <h3 class="text-lg sm:text-xl font-extrabold">${score / total >= 0.8 ? '🎉 Luar Biasa!' : '💪 Terus Semangat!'} Skor ${esc(m.ujian)} Kamu: ${Math.round(score / total * 100)} / 100 (${score}/${total} Benar)</h3>
-      <p class="text-sm text-indigo-100">${score / total >= 0.8 ? `Kamu sudah sangat siap menghadapi soal-soal ${esc(m.ujian)} Pertemuan ${esc(m.nomor)}.` : 'Baca kembali pembahasan pada soal yang masih keliru, atau tekan "Ulangi yang salah" untuk mengerjakannya lagi.'}</p>
+      <p class="text-sm text-indigo-100">${score / total >= 0.8 ? `Kamu sudah sangat siap menghadapi soal-soal ${esc(m.ujian)} ${unitW(S.course)} ${esc(m.nomor)}.` : 'Baca kembali pembahasan pada soal yang masih keliru, atau tekan "Ulangi yang salah" untuk mengerjakannya lagi.'}</p>
       <div class="flex flex-wrap justify-center gap-2">${st.wrong.length ? `<button onclick="retryWrong()" class="px-4 py-2 rounded-xl bg-white text-indigo-700 text-sm font-bold hover:bg-indigo-50">🔁 Ulangi yang salah (${st.wrong.length})</button>` : ''}<button onclick="resetQuiz()" class="px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-sm font-bold">Coba Kerjakan Ulang</button>
       <button onclick="openShareModal()" class="px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-sm font-bold">Bagikan / Unduh</button></div>
     </div>` : ''}
@@ -2149,7 +2158,7 @@ loadLibrary();
   if (last) {
     const parts = last.hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
     const c = parts[0] === 'c' && findCourse(parts[1]), m = c && parts[2] === 'm' && findMeeting(c, parts[3]);
-    if (m) { go(last.hash, 'nav'); showToast(`Melanjutkan: ${c.nama} • Pertemuan ${m.nomor}`); return; }
+    if (m) { go(last.hash, 'nav'); showToast(`Melanjutkan: ${c.nama} • ${unitW(c)} ${m.nomor}`); return; }
   }
   route();
 })();

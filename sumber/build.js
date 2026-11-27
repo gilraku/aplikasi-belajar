@@ -24,6 +24,8 @@ const lib=[BD, {
   id: 'bahasa-inggris', nama: 'Bahasa Inggris', prodi: 'PJJ Sistem Informasi', kampus: 'Universitas Siber Muhammadiyah', dosen: 'Septia Ayu Pratiwi, M.Pd',
   meetings: [[1,3],[2,6],[3,9],[4,2],[5,5],[6,8],[7,1],[8,4]].map(([n,sd])=>spread(require('./data_bing_p'+n+'.js'),sd))
 }];
+// Section mandiri di luar jadwal kuliah (tidak ikut peta P1–P16)
+{const SDA=require('./sda.js');SDA.meetings.forEach((m,i)=>spread(m,(i*3)%10));lib.push(SDA);}
 // 📖 Materi lengkap per pertemuan
 const MAT={'dasar-sistem-informasi':require('./materi_dsi.js'),'bahasa-indonesia':require('./materi_bindo.js'),'aik':require('./materi_aik.js'),'pemrograman-web-dinamis':require('./materi_pwd.js'),'sif002-basis-data':require('./materi_bd.js'),'algoritma-pemrograman':require('./materi_alp.js'),'bahasa-inggris':require('./materi_bing.js')};
 // AIK P9–P14 (menuju UAS) ada di berkas materi terpisah
@@ -43,7 +45,7 @@ const enc=o=>JSON.stringify(o).replace(/</g,'\\u003c');
 // Template HTML mandiri dengan data penuh dan mesin browser yang sama dengan Astro.
 const render = ({ library = lib, css, code } = {}) => {
   const web = path.join(__dirname, '../web/src/scripts');
-  const script = code ?? ['stick.js', 'adegan.js', 'bertahap.js', 'sql-lab.js', 'trace-lab.js', 'labs.js', 'playground-assessment.js', 'engine.js'].map(name => fs.readFileSync(path.join(web, name), 'utf8')).join('\n');
+  const script = code ?? ['stick.js', 'adegan.js', 'bertahap.js', 'sql-lab.js', 'trace-lab.js', 'algo-lab.js', 'labs.js', 'playground-assessment.js', 'engine.js'].map(name => fs.readFileSync(path.join(web, name), 'utf8')).join('\n');
   return fs.readFileSync(P('engine.html'), 'utf8')
     .replace(/(\n<script data-app>\n)[\s\S]*(\n<\/script>\n<\/body>)/, (_, before, after) => before + "'use strict';\n" + script.replace(/<\/script/gi, '<\\/script') + after)
     .replace('__TWCSS__', () => css ?? fs.readFileSync(P('tw.css'), 'utf8'))
