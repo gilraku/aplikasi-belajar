@@ -68,13 +68,14 @@ if (window.customElements && !customElements.get('sinau-bt-auto')) {
 }
 
 // ---------- Blok "kode-jelas" ----------
-// { type: "kode-jelas", label, title, desc, file, lang: "sql"|"php"|"html"|"css", kode: [baris; "\n" = lanjutan baris yang sama],
+// { type: "kode-jelas", label, title, desc, file, lang: "sql"|"php"|"cpp"|"html"|"css", kode: [baris; "\n" = lanjutan baris yang sama],
 //   urut?: [angka urutan kerja per baris], inti: { judul, html, efek? },
 //   catatan: [{ at: [indeks baris, mulai 0], judul, arti, efek, keliru? }] }
 // efek: { tabel: { kolom, baris, baru?: [nama kolom], hapus?: [indeks baris] }, note? } | { vars: [[nama, nilai, "baru"|"belum"?]], note? } | { html }
 const KJ_KW = {
   sql: /\b(SELECT|FROM|JOIN|LEFT|RIGHT|INNER|ON|WHERE|AND|OR|IS|NOT|NULL|ORDER BY|GROUP BY|DESC|ASC|INSERT INTO|VALUES|UPDATE|SET|DELETE)\b/g,
-  php: /\b(include|require|if|elseif|else|exit|echo|isset|empty|return|while|foreach)\b/g
+  php: /\b(include|require|if|elseif|else|exit|echo|isset|empty|return|while|foreach)\b/g,
+  cpp: /\b(struct|int|float|double|char|void|long|string|return|if|else|for|while|static|const)\b/g
 };
 function kjHi(src, lang) {
   // potong jadi token string/teks agar warna tidak saling menimpa

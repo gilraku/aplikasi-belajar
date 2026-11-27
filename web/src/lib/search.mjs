@@ -5,13 +5,15 @@ import { library } from './library.mjs';
 
 const arr = x => (Array.isArray(x) ? x : []);
 // Kunci yang isinya bukan teks bacaan (gambar, warna, kode SVG, data awal lab, dsb.)
-const SKIP = new Set(['type', 'scene', 'sorot', 'tone', 'svg', 'src', 'w', 'h', 'minw', 'id', 'target', 'row', 'col', 'style', 'icon', 'profile', 'seed', 'setup', 'url', 'img', 'alt', 'pill', 'starter', 'solution', 'solusi', 'html_starter', 'behavior', 'check', 'tests', 'mode', 'grid', 'answerKey', 'ans', 'algo']);
+const SKIP = new Set(['type', 'scene', 'sorot', 'tone', 'svg', 'src', 'w', 'h', 'minw', 'id', 'target', 'row', 'col', 'style', 'icon', 'profile', 'seed', 'setup', 'url', 'img', 'alt', 'pill', 'starter', 'solution', 'solusi', 'html_starter', 'behavior', 'check', 'tests', 'mode', 'grid', 'answerKey', 'ans', 'algo', 'lang']);
 const ENT = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', '#39': "'", copy: '©', reg: '®', hellip: '…', ndash: '–', mdash: '—', larr: '←', rarr: '→', times: '×' };
 // Sama dengan ALLOWED_TAGS di engine.js: hanya tag ini yang dirender rich(); tag lain tampil apa adanya (mis. #include <iostream>)
 const ALLOWED = new Set(['b', 'strong', 'i', 'em', 'u', 'code', 'br', 'ul', 'ol', 'li', 'p', 'span', 'sub', 'sup', 'mark', 'small', 'pre', 'kbd', 's', 'del']);
 // Kode di antara backtick ditampilkan apa adanya oleh rich(): amankan dulu tanda < > di dalamnya
 const codeSafe = s => String(s).replace(/`([^`\n]+)`/g, (m, c) => c.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
-const plain = s => codeSafe(s)
+// Tautan internal (#/c/…) yang dirender rich() sebagai <a>: yang terlihat hanya teks tautannya
+const INLINK = /<a href="#\/c\/[a-z0-9-]+(?:\/m\/[a-z0-9-]+(?:\/[a-z]+)?)?">([^<>]*)<\/a>/g;
+const plain = s => codeSafe(String(s).replace(INLINK, '$1'))
   .replace(/<\/?([a-zA-Z][\w.-]*)\b[^<>]*>/g, (m, n) => (ALLOWED.has(n.toLowerCase()) ? ' ' : m))
   .replace(/&(#?\w+);/g, (m, e) => ENT[e] ?? (e[0] === '#' ? String.fromCharCode(e[1] === 'x' ? parseInt(e.slice(2), 16) : +e.slice(1)) : m))
   .replace(/\*\*|`/g, '')
@@ -31,7 +33,7 @@ function rawPieces(s) {
 // Teks panjang (artikel materi) dipecah per paragraf/butir, lalu per kalimat bila masih kepanjangan
 function pieces(s) {
   const out = [];
-  codeSafe(s).split(/<\/p>|<\/li>|<br\s*\/?>|<\/h\d>|<\/tr>|\n{2,}/i).map(plain).filter(Boolean).forEach(p => {
+  codeSafe(String(s).replace(INLINK, '$1')).split(/<\/p>|<\/li>|<br\s*\/?>|<\/h\d>|<\/tr>|\n{2,}/i).map(plain).filter(Boolean).forEach(p => {
     if (p.length <= MAX) return out.push(p);
     let cur = '';
     p.split(/(?<=[.!?])\s+/).forEach(k => { if (cur && (cur + ' ' + k).length > MAX) { out.push(cur); cur = k; } else cur = cur ? cur + ' ' + k : k; });
