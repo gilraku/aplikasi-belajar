@@ -493,7 +493,7 @@ const ALGO_LAB = {
             <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Coba datamu sendiri</div>
             <div class="flex flex-wrap gap-2">
               <input data-field="${n}" data-key="data" value="${esc(s.values.data)}" aria-label="${esc(IN.aria || 'Angka, dipisah koma')}" inputmode="${IN.mode || 'numeric'}" autocomplete="off" autocapitalize="off" spellcheck="false" class="al-in flex-[1_1_10rem] min-w-0">
-              ${A.target ? `<label class="flex items-center gap-1.5 text-sm font-bold text-ink">${esc(IN.targetLabel || 'x =')}<input data-field="${n}" data-key="target" value="${esc(s.values.target)}" aria-label="${esc(IN.targetAria || 'Angka yang dicari')}" inputmode="numeric" autocomplete="off" class="al-in w-16"></label>` : ''}
+              ${A.target ? `<label class="flex items-center gap-1.5 text-sm font-bold text-ink">${esc(IN.targetLabel || 'x =')}<input data-field="${n}" data-key="target" value="${esc(s.values.target)}" aria-label="${esc(IN.targetAria || 'Angka yang dicari')}" inputmode="${IN.targetMode || 'numeric'}" autocomplete="off" autocapitalize="${IN.targetMode === 'text' ? 'characters' : 'off'}" spellcheck="false" class="al-in w-16"></label>` : ''}
             </div>
             <div class="flex flex-wrap gap-2">
               <button type="submit" class="al-btn is-main">Jalankan</button>

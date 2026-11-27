@@ -276,6 +276,11 @@ try {
       queue: ['9, 4, deq, 1', '', ['enqueue(9);', 'enqueue(4);', 'x = dequeue();', 'enqueue(1);'], '9, abc, 1'],
       linked: ['9, 4, 7, 1', '7', ['tambahBelakang(9);', 'hapus(7);'], '9']
     }, OWN = OWNS[algo] || ['9, 4, 7, 1', '7', [m.id === 'pencarian-biner' ? '{1, 4, 7, 9}' : '{9, 4, 7, 1}'], '1, 2'];
+    // Keyboard HP harus bisa mengetik isi yang sah: ada huruf → inputmode wajib text
+    for (const [key, val] of [['data', OWN[0]], ['target', OWN[1]]]) {
+      const im = await page.$eval(`.al input[data-key="${key}"]`, e => e.getAttribute('inputmode')).catch(() => null);
+      if (im && /[A-Za-z]/.test(val) && im !== 'text') bad(m.id, `kotak ${key} memakai inputmode=${im} padahal isinya huruf`);
+    }
     await page.fill('.al input[data-key="data"]', OWN[0]);
     if (await page.$('.al input[data-key="target"]')) await page.fill('.al input[data-key="target"]', OWN[1]);
     await page.press('.al input[data-key="data"]', 'Enter');

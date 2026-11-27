@@ -20,7 +20,7 @@ const alKeysInput = (min, max, label, aria, contoh) => ({
 });
 const AL_LET = 'ABCDEFGH';
 const alGraphInput = {
-  mode: 'text', aria: 'Sisi graf, misalnya A-B, A-C', targetLabel: 'mulai', targetAria: 'Simpul awal (huruf)',
+  mode: 'text', aria: 'Sisi graf, misalnya A-B, A-C', targetLabel: 'mulai', targetAria: 'Simpul awal (huruf)', targetMode: 'text',
   hint: '2 sampai 12 sisi berupa pasangan huruf A–H, dipisah koma (A-B atau AB). Kotak <b>mulai</b> diisi huruf simpul awal.',
   fmt: d => (d || []).join(', '),
   parse(raw, rawT) {
