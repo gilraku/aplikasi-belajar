@@ -5,7 +5,7 @@ import { library } from './library.mjs';
 
 const arr = x => (Array.isArray(x) ? x : []);
 // Kunci yang isinya bukan teks bacaan (gambar, warna, kode SVG, data awal lab, dsb.)
-const SKIP = new Set(['type', 'scene', 'sorot', 'tone', 'svg', 'src', 'w', 'h', 'minw', 'id', 'target', 'row', 'col', 'style', 'icon', 'profile', 'seed', 'setup', 'url', 'img', 'alt', 'pill', 'starter', 'solution', 'solusi', 'html_starter', 'behavior', 'check', 'tests', 'mode', 'grid', 'answerKey', 'ans']);
+const SKIP = new Set(['type', 'scene', 'sorot', 'tone', 'svg', 'src', 'w', 'h', 'minw', 'id', 'target', 'row', 'col', 'style', 'icon', 'profile', 'seed', 'setup', 'url', 'img', 'alt', 'pill', 'starter', 'solution', 'solusi', 'html_starter', 'behavior', 'check', 'tests', 'mode', 'grid', 'answerKey', 'ans', 'algo']);
 const ENT = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', '#39': "'", copy: '©', reg: '®', hellip: '…', ndash: '–', mdash: '—', larr: '←', rarr: '→', times: '×' };
 // Sama dengan ALLOWED_TAGS di engine.js: hanya tag ini yang dirender rich(); tag lain tampil apa adanya (mis. #include <iostream>)
 const ALLOWED = new Set(['b', 'strong', 'i', 'em', 'u', 'code', 'br', 'ul', 'ol', 'li', 'p', 'span', 'sub', 'sup', 'mark', 'small', 'pre', 'kbd', 's', 'del']);
