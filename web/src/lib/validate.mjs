@@ -104,6 +104,8 @@ const Block = z.lazy(() => z.looseObject({
       }
       if (b.urut !== undefined && (!Array.isArray(b.urut) || b.urut.length !== kode.length || !Array.isArray(b.urutan)))
         ctx.addIssue({ code: 'custom', path: ['urut'], message: 'urut harus sepanjang kode[] dan butuh urutan[] (nama tiap langkah)' });
+      else if (b.urut !== undefined && b.urut.some(u => !Number.isInteger(u) || u < 1 || u > b.urutan.length))
+        ctx.addIssue({ code: 'custom', path: ['urut'], message: `urut berisi nomor langkah 1–${b.urutan.length} (mulai dari 1, sesuai urutan[])` });
     }
     if (!b.inti || typeof b.inti !== 'object') ctx.addIssue({ code: 'custom', path: ['inti'], message: 'kode-jelas butuh inti { judul, html } (tampil sebelum ada baris yang diklik)' });
   }

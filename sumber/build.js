@@ -24,6 +24,8 @@ const lib=[BD, {
   id: 'bahasa-inggris', nama: 'Bahasa Inggris', prodi: 'PJJ Sistem Informasi', kampus: 'Universitas Siber Muhammadiyah', dosen: 'Septia Ayu Pratiwi, M.Pd',
   meetings: [[1,3],[2,6],[3,9],[4,2],[5,5],[6,8],[7,1],[8,4]].map(([n,sd])=>spread(require('./data_bing_p'+n+'.js'),sd))
 }];
+// Algoritma dan Pemrograman P9–P15 (menuju UAS)
+{const ALP=lib.find(c=>c.id==='algoritma-pemrograman');[[9,1],[10,4],[11,7],[12,0],[13,3],[14,6],[15,9]].forEach(([n,sd])=>ALP.meetings.push(spread(require('./data_alp_p'+n+'.js'),sd)));}
 // Section mandiri di luar jadwal kuliah (tidak ikut peta P1–P16)
 {const SDA=require('./sda.js');SDA.meetings.forEach((m,i)=>spread(m,(i*3)%10));lib.push(SDA);}
 // 📖 Materi lengkap per pertemuan
@@ -32,6 +34,8 @@ const MAT={'dasar-sistem-informasi':require('./materi_dsi.js'),'bahasa-indonesia
 MAT.aik=Object.assign({},MAT.aik,require('./materi_aik_uas.js'));
 // PWD P9–P13 (menuju UAS) juga di berkas materi terpisah
 MAT['pemrograman-web-dinamis']=Object.assign({},MAT['pemrograman-web-dinamis'],require('./materi_pwd_uas.js'));
+// ALP P9–P15 (menuju UAS) juga di berkas materi terpisah
+MAT['algoritma-pemrograman']=Object.assign({},MAT['algoritma-pemrograman'],require('./materi_alp_uas_a.js'),require('./materi_alp_uas_b.js'));
 // BD P9–P14 (menuju UAS) juga di berkas materi terpisah
 MAT['sif002-basis-data']=Object.assign({},MAT['sif002-basis-data'],require('./materi_bd_uas.js'));
 Object.entries(MAT).forEach(([cid,mm])=>{const c=lib.find(x=>x.id===cid);Object.entries(mm).forEach(([mid,blocks])=>{const m=c.meetings.find(x=>x.id===mid);if(!m)throw new Error('materi '+cid+'/'+mid);m.materi=blocks;});});

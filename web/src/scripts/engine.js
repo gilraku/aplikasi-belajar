@@ -35,6 +35,9 @@ function cleanNode(node) {
     if (ch.nodeType === 1) {
       if (DROP_TAGS.has(ch.tagName)) { ch.remove(); return; }
       cleanNode(ch);
+      // Tautan internal ke halaman Sinau lain (#/c/<matkul>[/m/<pertemuan>[/<tab>]]) boleh; tautan lain jadi teks biasa
+      const href = ch.tagName === 'A' && ch.getAttribute('href');
+      if (href && /^#\/c\/[a-z0-9-]+(\/m\/[a-z0-9-]+(\/[a-z]+)?)?$/.test(href)) { [...ch.attributes].forEach(a => ch.removeAttribute(a.name)); ch.setAttribute('href', href); ch.className = 'in-link'; return; }
       if (!ALLOWED_TAGS.has(ch.tagName)) { ch.replaceWith(...ch.childNodes); return; }
       [...ch.attributes].forEach(a => ch.removeAttribute(a.name));
     } else if (ch.nodeType !== 3) ch.remove();
@@ -133,8 +136,12 @@ function rich(s) {
   s = String(s);
   if (richCache.has(s)) return richCache.get(s);
   let t = s.replace(/`([^`\n]+)`/g, (m, c) => '<code>' + esc(c) + '</code>').replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  // Tautan internal Sinau (<a href="#/c/…">teks</a>) disisihkan dulu supaya tidak ikut dianggap teks biasa
+  const links = [];
+  t = t.replace(/<a href="(#\/c\/[a-z0-9-]+(?:\/m\/[a-z0-9-]+(?:\/[a-z]+)?)?)">([^<>]*)<\/a>/g, m => '\u0000L' + (links.push(m) - 1) + '\u0000');
   // Tag di luar daftar yang diizinkan (mis. #include <iostream>, tag <title>) adalah teks, bukan markup: tampilkan apa adanya
   t = t.replace(/<\/?([a-zA-Z][\w.-]*)\b[^<>]*>/g, (m, name) => (ALLOWED_TAGS.has(name.toUpperCase()) ? m : esc(m)));
+  if (links.length) t = t.replace(/\u0000L(\d+)\u0000/g, (m, i) => links[+i]);
   if (!/<(br|ul|ol|li|p|pre)\b/i.test(t)) t = t.replace(/\n/g, '<br>');
   const doc = new DOMParser().parseFromString('<div>' + t + '</div>', 'text/html');
   const root = doc.body.firstChild;
