@@ -310,7 +310,7 @@
   .al-rail.is-past { border-color: #17202a; color: #17202a; }
   .al-rail.is-on { border-color: #17202a; background: #ffe14d; color: #17202a; }
   .al-rail:disabled { opacity: .45; cursor: not-allowed; }
-  .al-vars { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.2rem, 1fr)); gap: .4rem; }
+  .al-vars { display: grid; grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr)); gap: .4rem; }
   .al-var { border: 1.5px solid #e4e3db; border-radius: .6rem; padding: .3rem .6rem; background: #fff; transition: background .2s, border-color .2s; }
   .al-var.is-ch { border-color: #17202a; background: #fff6c2; }
   .al-var-k { font: 600 11.5px 'JetBrains Mono', ui-monospace, monospace; color: #6c7480; }

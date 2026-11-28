@@ -111,7 +111,7 @@ Object.assign(AL_ALGO, {
       if (S.inc) g += alBox(mv, 'e' + S.inc.id, S.inc.v, cx + 8, 14, S.inc.c || 'cmp') + `<text class="al-lbl" x="${cx + cw + 10}" y="38">x = ${S.inc.v}</text>`;
       const ty = S.top >= 0 ? slotY(S.top) + sh / 2 : base + 14;
       g += `<g class="al-ptr al-mv" ${mv('top', cx + cw + 6, ty)}><path d="M0 0 H24 M6 -5 L0 0 L6 5"/><text x="62" y="4">top = ${S.top}</text></g>`;
-      g += `<text class="al-lbl" x="340" y="34">Keluar (urutan pop)</text>`;
+      g += `<text class="al-lbl" x="340" y="34">Urutan keluar</text>`;
       S.out.forEach((e, i) => { g += alBox(mv, 'e' + e.id, e.v, 340 + (i % 4) * 50, 46 + Math.floor(i / 4) * 48, e.id === S.hi ? 'found' : 'done', 44); });
       if (!S.out.length) g += `<text class="al-lbl al-muted" x="340" y="68">belum ada</text>`;
       return `<svg class="al-svg" viewBox="0 0 560 348" role="img" aria-label="Isi stack dari bawah: ${esc(S.st.map(e => e.v).join(', ') || 'kosong')}">${g}</svg>`;

@@ -402,7 +402,9 @@ function alFitText() {
     });
   });
 }
-if (typeof window !== 'undefined') { let rt = 0; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(alFitText, 150); }); }
+if (typeof window !== 'undefined') { let rt = 0; const refit = () => { clearTimeout(rt); rt = setTimeout(alFitText, 150); }; window.addEventListener('resize', refit);
+  // Ukuran teks bergantung pada font: hitung ulang setelah font web selesai dimuat (sebelumnya terukur dengan font cadangan).
+  if (document.fonts) { document.fonts.addEventListener('loadingdone', refit); document.fonts.ready.then(refit); } }
 // Panel kode yang panjang dibatasi tingginya (desktop) dan digulir sendiri ke baris yang sedang jalan.
 let alCodeQueued = false;
 function alCodeFocus() {

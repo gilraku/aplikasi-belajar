@@ -139,7 +139,32 @@ for (let t = 0; t < 400; t++) {
 for (let i = 0; i < 300; i++) { const d = AL.kembar.input.acak().data; if (d.length < 3 || d.length > 8 || d.some(v => !Number.isInteger(v) || v < 0 || v > 99) || new Set(d).size === d.length) bad('kembar', 'acak tidak sah atau tanpa kembar', d.join(',')); }
 [['0', '6', '3'], ['7', '-1', '2, 3', 'x', '']].forEach((list, bad0) => list.forEach(t => { const r = AL.perulangan.input.parse(t); if (!!r.err !== !!bad0) bad('perulangan', bad0 ? 'input salah diterima' : 'input sah ditolak', t); }));
 for (let i = 0; i < 100; i++) { const r = AL.perulangan.input.acak(); if (AL.perulangan.input.parse(r.data.join(', ')).err) bad('perulangan', 'acak tidak sah', r.data); }
-console.log(`dasar: ${dasar} jejak perulangan/Big-O/array/rekursi diperiksa`);
+// Pointer: nilai a dan b di setiap langkah cocok dengan simulasi tiga fungsi tukar
+for (let t = 0; t < 300; t++) {
+  let A0 = rnd(99), B0 = rnd(99); if (B0 === A0 + 1) B0 = (B0 + 2) % 99;
+  const F = AL.pointer.run([A0, B0]), last = F[F.length - 1], a1 = A0 + 1;
+  const at = ln => F.find(f => f.ln === ln).vars;
+  if (at('retV').a !== a1 || at('retV').b !== B0) bad('pointer', 'tukarNilai mengubah a/b', A0, B0);
+  if (at('retR').a !== B0 || at('retR').b !== a1) bad('pointer', 'tukarRef tidak menukar', A0, B0);
+  if (last.vars.a !== a1 || last.vars.b !== B0 || last.vars['*p'] !== a1) bad('pointer', 'hasil akhir salah', A0, B0, JSON.stringify(last.vars));
+  if (t < 100) frameOk('pointer', F, { data: [A0, B0] });
+  dasar++;
+}
+// Array of struct: hasil urut dari nilai terbesar, nama selalu ikut nilainya, dan pengurutannya stabil (bubble sort)
+for (let t = 0; t < 600; t++) {
+  const d = Array.from({ length: 3 + rnd(4) }, () => rnd(t % 2 ? 5 : 101)), F = AL.structsort.run(d), m = F[F.length - 1].S.m;
+  const want = d.map((v, k) => ({ v, k })).sort((p, q) => q.v - p.v || p.k - q.k);
+  if (JSON.stringify(m.map(e => [e.nilai, e.id])) !== JSON.stringify(want.map(e => [e.v, e.k]))) bad('structsort', 'hasil salah', d.join(','));
+  F.forEach(f => f.S.m.forEach(e => { if (e.nama !== AL.structsort.NAMA[e.id] || e.nilai !== d[e.id]) bad('structsort', 'nama terpisah dari nilainya', d.join(',')); }));
+  if (t < 150) frameOk('structsort', F, { data: d });
+  dasar++;
+}
+[['pointer', ['7, 3', '0 98', '5, 5'], ['7', '7, 8', '99, 1', '1, 2, 3', 'x, y']], ['structsort', ['72, 90, 65', '0 100 50 50 1 2'], ['1, 2', '1, 2, 3, 4, 5, 6, 7', '101, 2, 3', 'a, b, c']]].forEach(([k, ok, no]) => {
+  ok.forEach(t => { const r = AL[k].input.parse(t); if (r.err) bad(k, 'input sah ditolak', t, r.err); });
+  no.forEach(t => { if (!AL[k].input.parse(t).err) bad(k, 'input salah diterima', t); });
+  for (let i = 0; i < 200; i++) { const r = AL[k].input.acak(), f = AL[k].input.fmt ? AL[k].input.fmt(r.data) : r.data.join(', '); if (AL[k].input.parse(f).err) bad(k, 'acak tidak sah', f); }
+});
+console.log(`dasar: ${dasar} jejak perulangan/Big-O/array/rekursi/pointer/struct diperiksa`);
 
 // ---------- 1a''. Bab Bercabang ----------
 let cab = 0;
@@ -189,7 +214,7 @@ console.log(`bercabang: ${cab} jejak BST/hash/BFS/DFS cocok dengan simulasi`);
     let runs = 0;
     const OWN = { stack: [['5, 3, -, 8', ''], ['1, 2, 3, 4, 5, 6, -, -', ''], ['-, 4, -, -', '']], queue: [['4, 9, -, 2', ''], ['1, 2, 3, 4, 5, 6, -, 7, 8', ''], ['-, 4, -, -', '']],
       linked: [['12, 7, 25', '7'], ['12, 7', '12'], ['3, 3, 9', '42'], ['8, 1', '1']],
-      bigo: [['1, 2, 64', ''], ['4, 8, 16, 32', '']], perulangan: [['0', ''], ['1', ''], ['6', '']], array2d: [['3 5 1; 2 8 4', ''], ['0 99; 99 0; 5 5; 1 2', ''], ['1 2 3 4 5; 6 7 8 9 10', '']], rekursi: [['1', ''], ['7', ''], ['4', '']],
+      bigo: [['1, 2, 64', ''], ['4, 8, 16, 32', '']], perulangan: [['0', ''], ['1', ''], ['6', '']], array2d: [['3 5 1; 2 8 4', ''], ['0 99; 99 0; 5 5; 1 2', ''], ['1 2 3 4 5; 6 7 8 9 10', '']], rekursi: [['1', ''], ['7', ''], ['4', '']], pointer: [['7, 3', ''], ['0, 98', ''], ['5, 5', '']], structsort: [['72, 90, 65, 88, 79', ''], ['50, 50, 50', ''], ['0, 100, 7, 7, 3, 99', '']],
       bst: [['50, 30, 70, 20, 40, 60, 80', '60'], ['10, 20, 30', '5'], ['5, 5, 3', '5']], hash: [['25, 35, 41, 15, 9, 19', '15'], ['25, 35, 5', '45'], ['9, 19, 29, 39', '39']],
       bfs: [['A-B, A-C, B-D, C-D, C-E, D-F, E-F', 'A'], ['H-A, G-H, B-C', 'B']], dfs: [['A-B, A-C, B-D, C-D, C-E, D-F, E-F', 'A'], ['A-H, H-B, B-G', 'G']] };
     for (const k of Object.keys(AL)) {
@@ -302,6 +327,8 @@ try {
       perulangan: ['5', '', ['int n = 5;'], '9'],
       array2d: ['3 5 1; 2 8 4', '', ['{3, 5, 1}', '{2, 8, 4}'], '1 2 3'],
       rekursi: ['5', '', ['int n = 5;'], '9'],
+      pointer: ['9, 4', '', ['int a = 9, b = 4;'], '9, 10'],
+      structsort: ['81, 64, 93', '', ['{"Ani", 81}', '{"Citra", 93}'], '1, 2'],
       bst: ['9, 4, 7, 1', '7', ['akar = sisip(akar, 9);', 'cari(akar, 7)'], '9'],
       hash: ['9, 4, 7, 1', '7', ['sisip(9);', 'cari(7)'], '9'],
       bfs: ['A-B, B-C, C-D', 'B', ["sambung('A', 'B');", "bfs('B' - 'A');"], 'A-A, B-C'],
@@ -388,13 +415,15 @@ try {
     const ctxG = await browser.newContext({ viewport: vp, reducedMotion: 'reduce' }), pg = await ctxG.newPage();
     pg.on('pageerror', e => errs.push(e.message));
     for (const m of sda.meetings) {
-      await pg.goto(URL0 + `#/c/${sda.id}/m/${m.id}`); await pg.waitForSelector('.al');
+      await pg.goto(URL0 + `#/c/${sda.id}/m/${m.id}`); await pg.waitForSelector('.al'); await pg.evaluate(() => document.fonts.ready);
       if (nama === 'HP') { const w = await pg.evaluate(() => document.documentElement.scrollWidth); if (w > vp.width) bad(m.id, 'HP melebar', w); }
       const temu = new Set(), labs = pg.locator('.al');
       for (let li = 0; li < await labs.count(); li++) {
         const L = labs.nth(li);
         for (let k = 0; k < 400; k++) {
           await pg.waitForTimeout(40); (await pg.evaluate(gambar)).forEach(x => temu.add(x));
+          // Nama dan isi kartu variabel tidak terpotong
+          (await pg.evaluate(() => [...document.querySelectorAll('.al-var-k, .al-var-v')].filter(e => e.scrollWidth > e.clientWidth + 1).map(e => e.textContent))).forEach(x => temu.add(`kartu variabel terpotong: ${x}`));
           if (nama === 'desktop') {
             // Panel kode yang dibatasi tingginya harus memperlihatkan (baris pertama dari) baris yang sedang jalan
             const ok = await L.locator('.al-code').evaluate(pre => { const on = pre.querySelector('.trc-cur'); if (!on) return true; const a = pre.getBoundingClientRect(), b = on.getBoundingClientRect(); return b.top >= a.top - 1 && b.bottom <= a.bottom + 1; });
