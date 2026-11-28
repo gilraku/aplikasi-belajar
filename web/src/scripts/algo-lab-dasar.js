@@ -1,4 +1,4 @@
-// Lab Struktur Data & Algoritma, bab "Dasar": Big-O, array 1D, array 2D, dan fungsi rekursif.
+// Lab Struktur Data & Algoritma, bab "Dasar": perulangan (for, while, do-while, bersarang), Big-O, array 1D, array 2D, dan fungsi rekursif.
 // Ditambahkan ke AL_ALGO dari algo-lab.js (dimuat sesudahnya), memakai alRec / alRec2 / alMover dari sana.
 
 const alNums = (raw, min, max, lo, hi, contoh) => {
@@ -9,6 +9,210 @@ const alNums = (raw, min, max, lo, hi, contoh) => {
 const alRnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 
 Object.assign(AL_ALGO, {
+  // ---------------- Perulangan: for, while, do-while ----------------
+  // Ketiga fungsi menjumlah 1 sampai n. Yang ditelusuri: banyak putaran badan dan banyak cek kondisi.
+  perulangan: {
+    counters: ['Cek kondisi', 'Putaran'],
+    vars: ['n', 'i', 'total', 'i <= n'],
+    code: {
+      cpp: ['int jumlahFor(int n) {', '    int total = 0;', '    for (int i = 1; i <= n; i++) {', '        total += i;', '    }', '    return total;', '}', '',
+        'int jumlahWhile(int n) {', '    int total = 0, i = 1;', '    while (i <= n) {', '        total += i;', '        i++;', '    }', '    return total;', '}', '',
+        'int jumlahDoWhile(int n) {', '    int total = 0, i = 1;', '    do {', '        total += i;', '        i++;', '    } while (i <= n);', '    return total;', '}'],
+      ps: ['jumlah_for(n):', '    total ← 0', '    untuk i ← 1; selama i ≤ n; i ← i + 1:', '        total ← total + i', '    kembalikan total',
+        'jumlah_while(n):', '    total ← 0; i ← 1', '    selama i ≤ n:', '        total ← total + i; i ← i + 1', '    kembalikan total',
+        'jumlah_do_while(n):', '    total ← 0; i ← 1', '    ulangi:', '        total ← total + i; i ← i + 1', '    selama i ≤ n   (dicek di akhir)', '    kembalikan total']
+    },
+    lines: {
+      cpp: { intro: [1, 9, 18], finit: [2, 3], fcek: [3], fbody: [4], fstep: [3], fret: [6], winit: [10], wcek: [11], wbody: [12, 13], wret: [15], dinit: [19], dbody: [20, 21, 22], dcek: [23], dret: [24], end: [1, 9, 18] },
+      ps: { intro: [1, 6, 11], finit: [2, 3], fcek: [3], fbody: [4], fstep: [3], fret: [5], winit: [7], wcek: [8], wbody: [9], wret: [10], dinit: [12], dbody: [13, 14], dcek: [15], dret: [16], end: [1, 6, 11] }
+    },
+    input: {
+      aria: 'Nilai n', hint: 'Satu bilangan bulat 0–6. Coba 0 untuk melihat kapan do-while memberi hasil berbeda. Contoh: 4',
+      parse(raw) { return alNums(raw, 1, 1, 0, 6, '4'); },
+      acak() { return { data: [alRnd(0, 6)] }; }
+    },
+    run(data) {
+      const r = alRec2(), n = data[0], L = {}, sum = n * (n + 1) / 2;
+      const S = o => Object.assign({ n, L: JSON.parse(JSON.stringify(L)) }, o);
+      const K = (i, ok) => `${i} <= ${n} → ${ok ? 'true' : 'false'}`;
+      const reset = () => { r.cnt['Cek kondisi'] = 0; r.cnt.Putaran = 0; };
+      const isi = n ? `${Array.from({ length: n }, (_, k) => k + 1).join(' + ')} = ${sum}` : 'jumlah 1 sampai 0, yaitu 0 karena tidak ada angka yang dijumlah';
+      reset();
+      r.push({ grp: 'Mulai', kind: 'Konsep', ln: 'intro', vars: { n }, S: S({}), title: `Tiga cara menjumlah 1 sampai ${n}`,
+        body: `Ketiga fungsi menghitung ${isi}. Bedanya hanya bentuk perulangannya. Perhatikan dua hal: berapa kali <b>badan</b> dijalankan (putaran) dan berapa kali <b>kondisi</b> <code>i &lt;= n</code> dicek.`,
+        note: ['Dasarnya', 'Sintaks dan latihan menelusuri ketiga perulangan ada di <a href="#/c/algoritma-pemrograman/m/p6">Algoritma P6</a> dan <a href="#/c/algoritma-pemrograman/m/p7">Algoritma P7</a>. Di sini fokusnya menghitung putaran, karena itulah dasar Big-O.'] });
+
+      // ---- for ----
+      const lf = L.f = { put: [], cek: 0, total: 0, ret: '' };
+      let i = 1, total = 0;
+      r.push({ grp: 'for', kind: 'Mulai', ln: 'finit', vars: { n, i, total }, S: S({ cur: 'f' }), title: 'total = 0, lalu int i = 1',
+        body: 'Bagian pertama for (<code>int i = 1</code>) hanya dijalankan <b>sekali</b>, sebelum putaran pertama.' });
+      for (;;) {
+        const ok = i <= n; lf.cek++; r.cnt['Cek kondisi']++;
+        r.push({ grp: 'for', kind: 'Periksa', ln: 'fcek', vars: { n, i, total, 'i <= n': K(i, ok) }, S: S({ cur: 'f', at: ok ? lf.put.length : -1 }), title: `Cek ${i} <= ${n}`,
+          body: ok ? '<b>true</b>, jadi badan perulangan dijalankan.' : `<b>false</b>, perulangan selesai. Kondisi sudah dicek ${lf.cek} kali: ${lf.cek - 1} kali true dan sekali false.`,
+          q: { t: `i = ${i}. Apakah i <= ${n} bernilai true?`, o: ['true, masuk badan', 'false, keluar'], a: ok ? 0 : 1 } });
+        if (!ok) break;
+        total += i; lf.put.push(i); lf.total = total; r.cnt.Putaran++;
+        r.push({ grp: 'for', kind: 'Langkah', ln: 'fbody', vars: { n, i, total }, S: S({ cur: 'f', at: lf.put.length - 1 }), title: `total += ${i} → ${total}`, body: `Putaran ke-${lf.put.length}: total = ${total - i} + ${i} = <b>${total}</b>.` });
+        i++;
+        r.push({ grp: 'for', kind: 'Langkah', ln: 'fstep', vars: { n, i, total }, S: S({ cur: 'f', at: lf.put.length - 1 }), title: `i++ → i = ${i}`, body: 'Bagian ketiga for (<code>i++</code>) dijalankan <b>setelah</b> badan, lalu kembali ke cek kondisi.' });
+      }
+      lf.ret = total;
+      r.push({ grp: 'for', kind: 'Hasil', ln: 'fret', vars: { n, i, total }, S: S({ cur: 'f' }), title: `jumlahFor(${n}) = ${total}`,
+        body: `${lf.put.length} putaran, kondisi dicek ${lf.cek} kali (n + 1). Cek terakhir yang bernilai false itulah yang menghentikan perulangan.` });
+
+      // ---- while ----
+      reset();
+      const lw = L.w = { put: [], cek: 0, total: 0, ret: '' };
+      i = 1; total = 0;
+      r.push({ grp: 'while', kind: 'Mulai', ln: 'winit', vars: { n, i, total }, S: S({ cur: 'w' }), title: 'total = 0, i = 1',
+        body: 'Pada while, nilai awal ditulis <b>sebelum</b> perulangan dan <code>i++</code> ditulis sendiri di badan. Urutan kerjanya sama persis dengan for.' });
+      for (;;) {
+        const ok = i <= n; lw.cek++; r.cnt['Cek kondisi']++;
+        r.push({ grp: 'while', kind: 'Periksa', ln: 'wcek', vars: { n, i, total, 'i <= n': K(i, ok) }, S: S({ cur: 'w', at: ok ? lw.put.length : -1 }), title: `Cek ${i} <= ${n}`,
+          body: ok ? '<b>true</b>, badan dijalankan.' : `<b>false</b>, keluar dari while setelah ${lw.cek} kali cek.`,
+          q: { t: `i = ${i}. Apakah while masih mengulang?`, o: ['Ya, i <= n true', 'Tidak, keluar'], a: ok ? 0 : 1 } });
+        if (!ok) break;
+        total += i; lw.put.push(i); lw.total = total; r.cnt.Putaran++; i++;
+        r.push({ grp: 'while', kind: 'Langkah', ln: 'wbody', vars: { n, i, total }, S: S({ cur: 'w', at: lw.put.length - 1 }), title: `total += ${i - 1}, i++`,
+          body: `Putaran ke-${lw.put.length}: total = <b>${total}</b>, i menjadi ${i}.${lw.put.length === 1 ? ' Kalau baris <code>i++</code> lupa ditulis, i tetap 1 dan kondisi selalu true: perulangan tidak pernah berhenti.' : ''}` });
+      }
+      lw.ret = total;
+      r.push({ grp: 'while', kind: 'Hasil', ln: 'wret', vars: { n, i, total }, S: S({ cur: 'w' }), title: `jumlahWhile(${n}) = ${total}`,
+        body: `Sama dengan for: ${lw.put.length} putaran dan ${lw.cek} kali cek kondisi.` });
+
+      // ---- do-while ----
+      reset();
+      const ld = L.d = { put: [], cek: 0, total: 0, ret: '' }, runs = Math.max(n, 1);
+      i = 1; total = 0;
+      const opt = [...new Set([n, runs, n + 1])].sort((p, q) => p - q);
+      r.push({ grp: 'do-while', kind: 'Mulai', ln: 'dinit', vars: { n, i, total }, S: S({ cur: 'd' }), title: 'total = 0, i = 1',
+        body: `Pada do-while, kondisi baru dicek <b>di akhir</b>, setelah badan dijalankan. Jadi badan dijalankan ${runs} kali untuk n = ${n}.`,
+        q: { t: `Dengan n = ${n}, berapa kali badan do-while dijalankan?`, o: opt.map(String), a: opt.indexOf(runs) } });
+      for (;;) {
+        total += i; ld.put.push(i); ld.total = total; r.cnt.Putaran++; i++;
+        r.push({ grp: 'do-while', kind: 'Langkah', ln: 'dbody', vars: { n, i, total }, S: S({ cur: 'd', at: ld.put.length - 1 }), title: `total += ${i - 1}, i++`,
+          body: `Putaran ke-${ld.put.length}: total = <b>${total}</b>, i menjadi ${i}.${ld.put.length === 1 ? ' Putaran pertama ini berjalan <b>tanpa</b> cek kondisi.' : ''}` });
+        const ok = i <= n; ld.cek++; r.cnt['Cek kondisi']++;
+        r.push({ grp: 'do-while', kind: 'Periksa', ln: 'dcek', vars: { n, i, total, 'i <= n': K(i, ok) }, S: S({ cur: 'd', at: ok ? -1 : ld.put.length - 1 }), title: `Cek ${i} <= ${n}`,
+          body: ok ? '<b>true</b>, kembali ke <code>do</code> untuk putaran berikutnya.' : `<b>false</b>, perulangan selesai. Kondisi dicek ${ld.cek} kali, sama dengan banyak putarannya.`,
+          q: { t: `i = ${i}. Apakah do-while mengulang lagi?`, o: ['Ya, kembali ke do', 'Tidak, selesai'], a: ok ? 0 : 1 } });
+        if (!ok) break;
+      }
+      ld.ret = total;
+      r.push({ grp: 'do-while', kind: 'Hasil', ln: 'dret', vars: { n, i, total }, S: S({ cur: 'd' }), title: `jumlahDoWhile(${n}) = ${total}`,
+        body: n ? `${ld.put.length} putaran dan ${ld.cek} kali cek kondisi. Cek pertama baru terjadi setelah putaran pertama, jadi ceknya satu lebih sedikit daripada for dan while.`
+          : 'Hasilnya <b>1</b>, padahal jumlah 1 sampai 0 seharusnya 0. Badan do-while sudah menambah 1 sebelum kondisi sempat dicek. do-while tidak cocok kalau ada kemungkinan perulangan tidak perlu berjalan sama sekali.' });
+
+      reset(); r.cnt.Putaran = n; r.cnt['Cek kondisi'] = n + 1;
+      r.push({ grp: 'Hasil', kind: 'Hasil', ln: 'end', vars: { n, total: n ? sum : `${sum} / ${sum} / 1` }, S: S({}), title: n ? `Ketiganya menghasilkan ${sum}` : 'for dan while 0, do-while 1',
+        body: `for dan while: ${n} putaran, kondisi dicek ${n + 1} kali. do-while: ${runs} putaran, dicek ${runs} kali. Pilih for kalau banyak putaran sudah diketahui, while kalau berhentinya bergantung pada keadaan, do-while kalau badan memang harus jalan minimal sekali (misalnya menu).`,
+        note: ['Kaitannya dengan Big-O', 'Banyak putaran naik sebanding dengan n: n = 10 berarti 10 putaran, n = 1.000 berarti 1.000 putaran. Satu perulangan sampai n disebut <b>O(n)</b>. Lihat pelajaran <a href="#/c/struktur-data-algoritma/m/big-o">Big-O</a>.'] });
+      return r.F;
+    },
+    view(A, s, f) {
+      const S = f.S, n = S.n, W = 560, slots = Math.max(n, 1), gap = 8, bw = Math.min(52, (W - 150 - gap * (slots - 1)) / slots), x0 = 130;
+      let g = '';
+      [['f', 'for'], ['w', 'while'], ['d', 'do-while']].forEach(([k, nm], row) => {
+        const y = 22 + row * 84, ln = S.L[k], on = S.cur === k;
+        g += `<text class="al-lbl${ln ? '' : ' al-muted'}" x="20" y="${y + 23}">${on ? '▸ ' : ''}${nm}</text>`;
+        for (let p = 0; p < slots; p++) {
+          const done = ln && p < ln.put.length, cur = on && S.at === p;
+          g += `<g class="al-box${cur ? ' al-cmp' : done ? ' al-done' : ' al-dim'}" transform="translate(${x0 + p * (bw + gap)},${y})"><rect width="${bw}" height="36" rx="6"/><text x="${bw / 2}" y="18">${done ? '+' + ln.put[p] : ''}</text></g>`;
+        }
+        g += `<text class="al-lbl${ln ? '' : ' al-muted'}" x="${x0}" y="${y + 58}">${ln ? `${ln.put.length} putaran · cek ${ln.cek} kali · total ${ln.total}${ln.ret !== '' ? ` → return ${ln.ret}` : ''}` : 'belum dijalankan'}</text>`;
+      });
+      const desc = ['f', 'w', 'd'].map(k => S.L[k] ? `${S.L[k].put.length} putaran` : 'belum').join(', ');
+      return `<svg class="al-svg" viewBox="0 0 ${W} 270" role="img" aria-label="Putaran for, while, do-while untuk n = ${n}: ${esc(desc)}">${g}</svg>`;
+    },
+    program(s) {
+      const n = s.data[0], sum = n * (n + 1) / 2;
+      const L = ['#include <iostream>', 'using namespace std;', '', ...this.code.cpp, '', 'int main() {', `    int n = ${n};`, '    cout << "for      : " << jumlahFor(n) << endl;', '    cout << "while    : " << jumlahWhile(n) << endl;', '    cout << "do-while : " << jumlahDoWhile(n) << endl;', '    return 0;', '}'];
+      return { code: L.join('\n'), out: [`for      : ${sum}`, `while    : ${sum}`, `do-while : ${n ? sum : 1}`].join('\n') };
+    }
+  },
+
+  // ---------------- Perulangan bersarang: menghitung pasangan kembar ----------------
+  kembar: {
+    counters: ['Perbandingan'],
+    vars: ['n', 'i', 'j', 'a[i]', 'a[j]', 'kembar'],
+    code: {
+      cpp: ['int hitungKembar(int a[], int n) {', '    int kembar = 0;', '    for (int i = 0; i < n - 1; i++) {', '        for (int j = i + 1; j < n; j++) {', '            if (a[i] == a[j]) {', '                kembar++;', '            }', '        }', '    }', '    return kembar;', '}'],
+      ps: ['hitung_kembar(a, n):', '    kembar ← 0', '    untuk i dari 0 sampai n-2:', '        untuk j dari i+1 sampai n-1:', '            jika a[i] = a[j]: kembar ← kembar + 1', '    kembalikan kembar']
+    },
+    lines: { cpp: { sig: [1], init: [2], luar: [3], cmp: [4, 5], inc: [6], hit: [3, 4], ret: [10] }, ps: { sig: [1], init: [2], luar: [3], cmp: [4, 5], inc: [5], hit: [3, 4], ret: [6] } },
+    input: {
+      hint: '3 sampai 8 bilangan bulat 0–99, dipisah koma. Tulis angka yang sama lebih dari sekali supaya ada pasangan kembar.',
+      acak() {
+        const len = alRnd(4, 8), base = Array.from({ length: len - 2 }, () => alRnd(1, 60));
+        const d = Array.from({ length: len }, (_, k) => k < base.length ? base[k] : base[alRnd(0, base.length - 1)]);
+        for (let k = d.length - 1; k > 0; k--) { const m = alRnd(0, k); [d[k], d[m]] = [d[m], d[k]]; }
+        return { data: d };
+      }
+    },
+    run(data) {
+      const r = alRec2(), a = data.slice(), n = a.length, tot = n * (n - 1) / 2, seen = [], hits = [];
+      r.cnt.Perbandingan = 0;
+      let kembar = 0;
+      const S = o => Object.assign({ a, seen: seen.slice(), hits: hits.slice() }, o);
+      r.push({ grp: 'Mulai', kind: 'Konsep', ln: 'sig', vars: { n }, S: S({}), title: 'Bandingkan setiap pasangan',
+        body: `Data: ${alList(a)}. Untuk menghitung pasangan angka yang sama, setiap angka dibandingkan dengan semua angka di <b>kanannya</b>. Perulangan luar memilih a[i], perulangan dalam berjalan dari j = i + 1 sampai n - 1.`,
+        note: ['Kenapa j mulai dari i + 1?', 'Pasangan (0, 3) sama dengan (3, 0), dan angka tidak perlu dibandingkan dengan dirinya sendiri. Karena itu kotak di diagonal dan di bawahnya pada grid tidak pernah diperiksa.'] });
+      r.push({ grp: 'Mulai', kind: 'Mulai', ln: 'init', vars: { n, kembar }, S: S({}), title: 'kembar = 0', body: 'Penghitung pasangan kembar dikosongkan dulu.' });
+      for (let i = 0; i < n - 1; i++) {
+        const g = `i = ${i}`;
+        r.push({ grp: g, kind: 'Putaran', ln: 'luar', vars: { n, i, 'a[i]': a[i], kembar }, S: S({ i }), title: `Perulangan luar: i = ${i}`,
+          body: `a[${i}] = ${a[i]} dibandingkan dengan ${n - 1 - i} angka di kanannya (j = ${i + 1} sampai ${n - 1}).${i ? ' Perulangan dalam dimulai lagi dari awal, tetapi awalnya ikut bergeser karena j = i + 1.' : ''}`,
+          q: i ? { t: `Perulangan dalam dimulai lagi. Untuk i = ${i}, j mulai dari berapa?`, o: ['0', String(i), String(i + 1)], a: 2 } : undefined });
+        for (let j = i + 1; j < n; j++) {
+          r.cnt.Perbandingan++; seen.push([i, j]);
+          const eq = a[i] === a[j];
+          r.push({ grp: g, kind: 'Bandingkan', ln: 'cmp', vars: { n, i, j, 'a[i]': a[i], 'a[j]': a[j], kembar }, S: S({ i, j }), title: `a[${i}] == a[${j}]?`,
+            body: eq ? `${a[i]} == ${a[j]}: <b>sama</b>, jadi kembar bertambah.` : `${a[i]} == ${a[j]}? Tidak.`,
+            q: { t: `Apakah a[${i}] = ${a[i]} sama dengan a[${j}] = ${a[j]}?`, o: ['Ya, sama', 'Tidak'], a: eq ? 0 : 1 } });
+          if (eq) {
+            kembar++; hits.push([i, j]);
+            r.push({ grp: g, kind: 'Hasil', ln: 'inc', vars: { n, i, j, 'a[i]': a[i], 'a[j]': a[j], kembar }, S: S({ i, j }), title: `kembar = ${kembar}`, body: `Pasangan indeks (${i}, ${j}) dicatat.` });
+          }
+        }
+      }
+      const opts = [...new Set([tot, n * n, n, 2 * n])].sort((p, q) => p - q);
+      r.push({ grp: 'Hasil', kind: 'Periksa', ln: 'hit', vars: { n, kembar }, S: S({}), title: `${tot} perbandingan untuk ${n} data`,
+        body: `Perulangan dalam berjalan ${Array.from({ length: n - 1 }, (_, k) => n - 1 - k).join(' + ')} = ${tot} kali. Rumusnya n(n-1)/2.`,
+        q: { t: `Berapa total perbandingan untuk n = ${n}?`, o: opts.map(String), a: opts.indexOf(tot) } });
+      r.push({ grp: 'Hasil', kind: 'Hasil', ln: 'ret', vars: { n, kembar }, S: S({ end: true }), title: kembar ? `${kembar} pasangan kembar` : 'Tidak ada yang kembar',
+        body: `Fungsi mengembalikan ${kembar}. Banyak perbandingannya selalu ${tot}, ada atau tidak ada yang kembar, karena kedua perulangan tidak pernah berhenti lebih awal.`,
+        note: ['Kaitannya dengan Big-O', 'n(n-1)/2 = (n² - n)/2. Konstanta 1/2 dan suku -n dibuang, jadi <b>O(n²)</b>. Data 2 kali lipat, perbandingan sekitar 4 kali lipat: 8 data perlu 28 perbandingan, 16 data perlu 120.'] });
+      return r.F;
+    },
+    view(A, s, f) {
+      const S = f.S, a = S.a, n = a.length, W = 560, gap = 8, bw = Math.min(52, (W - 40 - gap * (n - 1)) / n), ax = (W - (bw * n + gap * (n - 1))) / 2;
+      const cs = n <= 6 ? 34 : 28, gx = (W - n * cs) / 2 + 12, gy = 150, has = (L, i, j) => L.some(p => p[0] === i && p[1] === j);
+      let g = '';
+      a.forEach((v, p) => {
+        const c = S.end ? (S.hits.some(h => h[0] === p || h[1] === p) ? ' al-found' : ' al-done') : p === S.i || p === S.j ? ' al-cmp' : '';
+        const x = ax + p * (bw + gap), t = [p === S.i ? 'i' : '', p === S.j ? 'j' : ''].filter(Boolean).join(',');
+        g += `<g class="al-box${c}" transform="translate(${x},16)"><rect width="${bw}" height="40" rx="6"/><text x="${bw / 2}" y="20">${v}</text></g><text class="al-idx" x="${x + bw / 2}" y="74">[${p}]</text>${t ? `<text class="al-lbl" x="${x + bw / 2}" y="94" text-anchor="middle">↑ ${t}</text>` : ''}`;
+      });
+      g += `<text class="al-lbl al-muted" x="${gx - 30}" y="${gy - 26}">grid pasangan: baris i, kolom j</text>`;
+      for (let k = 0; k < n; k++) g += `<text class="al-idx" x="${gx + k * cs + cs / 2}" y="${gy - 8}">${k}</text><text class="al-idx" x="${gx - 14}" y="${gy + k * cs + cs / 2 + 4}">${k}</text>`;
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+        const c = j <= i ? ' al-dim' : S.i === i && S.j === j ? ' al-cmp' : has(S.hits, i, j) ? ' al-found' : has(S.seen, i, j) ? ' al-done' : '';
+        g += `<g class="al-box${c}" transform="translate(${gx + j * cs + 2},${gy + i * cs + 2})"><rect width="${cs - 4}" height="${cs - 4}" rx="4"/></g>`;
+      }
+      const H = gy + n * cs + 30;
+      g += `<text class="al-lbl al-muted" x="${gx - 30}" y="${H - 8}">${S.seen.length} dari ${n * (n - 1) / 2} pasangan dibandingkan${S.hits.length ? ' · hijau = kembar' : ''}</text>`;
+      return `<svg class="al-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Isi array: ${esc(a.join(', '))}. ${S.seen.length} dari ${n * (n - 1) / 2} pasangan sudah dibandingkan.">${g}</svg>`;
+    },
+    program(s) {
+      const a = s.data, n = a.length; let k = 0;
+      for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) if (a[i] === a[j]) k++;
+      const L = ['#include <iostream>', 'using namespace std;', '', ...this.code.cpp, '', 'int main() {', `    int a[] = {${a.join(', ')}};`, '    int n = sizeof(a) / sizeof(a[0]);', '    cout << "Pasangan kembar: " << hitungKembar(a, n) << endl;', '    cout << "Perbandingan: " << n * (n - 1) / 2 << endl;', '    return 0;', '}'];
+      return { code: L.join('\n'), out: `Pasangan kembar: ${k}\nPerbandingan: ${n * (n - 1) / 2}` };
+    }
+  },
+
   // ---------------- Big-O: menghitung langkah ----------------
   bigo: {
     counters: [],

@@ -112,5 +112,6 @@ int main() {
     { prompt: "Jika int inner = 1; dipindah ke luar loop outer, apa yang terjadi pada nested while slide?", answer: "Setiap baris hanya berisi satu angka: 1, 2, 3, …, 10", reason: "inner tidak direset. Di baris ke-k, inner sudah bernilai k, jadi hanya k yang dicetak sebelum inner melebihi outer. Coba jejaki untuk outer 1–3!" },
     { prompt: "int i = 0; while (i < 3) { if (i == 1) continue; cout << i; i++; } → ?", answer: "Mencetak 0 lalu infinite loop", reason: "Saat i == 1, continue melompati i++, sehingga i tetap 1 selamanya." },
     { prompt: "Apa beda break di switch dan break di loop?", answer: "Sama-sama keluar dari blok terdekat", reason: "Jika switch ada di dalam loop, break hanya keluar dari switch, bukan dari loop." }
-  ])
+  ]),
+  tip("➕ Lanjutan: menghitung putaran", `<p>Untuk membandingkan while dan do-while langkah demi langkah dengan data sendiri (termasuk kasus n = 0, saat do-while tetap jalan sekali), buka <a href="#/c/struktur-data-algoritma/m/perulangan">Perulangan</a> di section Struktur Data &amp; Algoritma. Di sana juga ada cara menghitung putaran perulangan bersarang dan kaitannya dengan Big-O.</p>`)
 ];
