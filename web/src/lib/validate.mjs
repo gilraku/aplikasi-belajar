@@ -46,7 +46,7 @@ const Block = z.lazy(() => z.looseObject({
     });
   }
   if (b.type === 'algo-lab') {
-    const ALGO = { linear: 'cari', biner: 'cari-urut', bubble: '', selection: '', insertion: '', merge: '', quick: '', stack: 'ops:pop', queue: 'ops:deq', linked: 'list', bigo: 'n', array1d: '', array2d: 'matriks', rekursi: 'satu', perulangan: 'n0', kembar: '', bst: 'kunci', hash: 'kunci', bfs: 'graf', dfs: 'graf', pointer: 'dua', structsort: 'rekord', traversal: 'pohon', bsthapus: 'pohon-hapus', kurung: 'kurung', postfix: 'postfix', heap: 'ops:ambil', dijkstra: 'graf-bobot' };
+    const ALGO = { linear: 'cari', biner: 'cari-urut', bubble: '', selection: '', insertion: '', merge: '', quick: '', stack: 'ops:pop', queue: 'ops:deq', linked: 'list', bigo: 'n', array1d: '', array2d: 'matriks', rekursi: 'satu', perulangan: 'n0', kembar: '', bst: 'kunci', hash: 'kunci', bfs: 'graf', dfs: 'graf', pointer: 'dua', structsort: 'rekord', traversal: 'pohon', bsthapus: 'pohon-hapus', kurung: 'kurung', postfix: 'postfix', heap: 'ops:ambil', dijkstra: 'graf-bobot', greedy: 'koin:6:99:60', koindp: 'koin:4:12:12', ransel: 'ransel', cocok: 'teks' };
     const d = b.data, int = v => Number.isInteger(v) && v >= 0 && v <= 99, kind = ALGO[b.algo] || '';
     if (!(b.algo in ALGO)) ctx.addIssue({ code: 'custom', path: ['algo'], message: `algo "${b.algo}" tidak dikenal (yang ada: ${Object.keys(ALGO).join(', ')})` });
     if (kind.startsWith('ops:')) {
@@ -75,6 +75,17 @@ const Block = z.lazy(() => z.looseObject({
       const ok = Array.isArray(d) && d.length >= 2 && d.length <= 10 && d.every(e => { const m = /^([A-F])-([A-F]):(\d+)$/.exec(e); return m && m[1] !== m[2] && +m[3] >= 1 && +m[3] <= 20; }) && new Set(d.map(e => [e[0], e[2]].sort().join(''))).size === d.length;
       if (!ok) ctx.addIssue({ code: 'custom', path: ['data'], message: 'dijkstra butuh 2–10 sisi berbeda berbentuk "A-B:4" (huruf A–F, bobot 1–20)' });
       if (!(typeof b.target === 'string' && /^[A-F]$/.test(b.target) && ok && d.some(e => e.slice(0, 3).includes(b.target)))) ctx.addIssue({ code: 'custom', path: ['target'], message: 'dijkstra butuh target berupa huruf simpul awal yang ada di sisi-sisinya' });
+    } else if (kind.startsWith('koin:')) {
+      const [, mk, mv, mj] = kind.split(':').map(Number);
+      if (!Array.isArray(d) || d.length < 1 || d.length > mk || !d.every(v => Number.isInteger(v) && v >= 1 && v <= mv) || d.some((v, i) => i && d[i - 1] <= v)) ctx.addIssue({ code: 'custom', path: ['data'], message: `${b.algo} butuh 1–${mk} nilai koin 1–${mv} yang berbeda, urut dari besar ke kecil` });
+      if (!(Number.isInteger(b.target) && b.target >= 1 && b.target <= mj)) ctx.addIssue({ code: 'custom', path: ['target'], message: `${b.algo} butuh target (jumlah uang 1–${mj})` });
+    } else if (kind === 'ransel') {
+      if (!Array.isArray(d) || d.length < 2 || d.length > 4 || !d.every(e => { const m = /^(\d+):(\d+)$/.exec(e); return m && +m[1] >= 1 && +m[1] <= 8 && +m[2] >= 1 && +m[2] <= 99; })) ctx.addIssue({ code: 'custom', path: ['data'], message: 'ransel butuh 2–4 barang berbentuk "berat:nilai" (berat 1–8, nilai 1–99)' });
+      if (!(Number.isInteger(b.target) && b.target >= 1 && b.target <= 8)) ctx.addIssue({ code: 'custom', path: ['target'], message: 'ransel butuh target (kapasitas 1–8)' });
+    } else if (kind === 'teks') {
+      const ok = Array.isArray(d) && d.length >= 3 && d.length <= 16 && d.every(c => typeof c === 'string' && /^[A-Za-z0-9]$/.test(c));
+      if (!ok) ctx.addIssue({ code: 'custom', path: ['data'], message: 'cocok butuh 3–16 karakter tunggal (huruf atau angka)' });
+      if (!(typeof b.target === 'string' && /^[A-Za-z0-9]{1,5}$/.test(b.target) && ok && b.target.length <= d.length)) ctx.addIssue({ code: 'custom', path: ['target'], message: 'cocok butuh target berupa pola 1–5 huruf/angka, tidak lebih panjang dari teks' });
     } else if (kind === 'n0') {
       if (!Array.isArray(d) || d.length !== 1 || !Number.isInteger(d[0]) || d[0] < 0 || d[0] > 6) ctx.addIssue({ code: 'custom', path: ['data'], message: 'perulangan butuh data [n] dengan n 0–6' });
     } else if (kind === 'kunci') {

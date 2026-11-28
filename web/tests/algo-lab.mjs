@@ -17,7 +17,7 @@ const bad = (...m) => { fail++; if (fail < 20) console.error('✗', ...m); };
 // ---------- 1. Jejak ----------
 const ctx = { esc: s => String(s), hlCpp: s => s, document: { addEventListener() {} }, Math, JSON };
 vm.createContext(ctx);
-vm.runInContext(['algo-lab.js', 'algo-lab-linear.js', 'algo-lab-dasar.js', 'algo-lab-cabang.js'].map(f => fs.readFileSync(path.resolve('src/scripts', f), 'utf8')).join('\n') + ';this.AL = AL_ALGO; this.alProgram = alProgram; this.alSvg = alSvg;', ctx);
+vm.runInContext(['algo-lab.js', 'algo-lab-linear.js', 'algo-lab-dasar.js', 'algo-lab-cabang.js', 'algo-lab-strategi.js'].map(f => fs.readFileSync(path.resolve('src/scripts', f), 'utf8')).join('\n') + ';this.AL = AL_ALGO; this.alProgram = alProgram; this.alSvg = alSvg;', ctx);
 const AL = ctx.AL;
 const SORTS = ['bubble', 'selection', 'insertion', 'merge', 'quick'];
 let seed = 7; const rnd = k => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed % k; };
@@ -303,6 +303,58 @@ console.log(`bercabang: ${cab} jejak BST/hash/BFS/DFS cocok dengan simulasi`);
   for (let i = 0; i < 200; i++) { const r = AL[k].input.acak(), f = AL[k].input.fmt ? AL[k].input.fmt(r.data) : r.data.join(', '); if (AL[k].input.parse(f, String(r.target)).err) bad(k, 'acak tidak sah', f, r.target); }
 });
 
+// ---------- Teknik lanjut: greedy, DP koin, knapsack 0/1, pencocokan string ----------
+{
+  let n = 0;
+  // Pembanding koin minimum: BFS atas jumlah uang (cara lain dari tabel DP di lab)
+  const minKoin = (koin, J) => { const d = { 0: 0 }, q = [0]; while (q.length) { const x = q.shift(); if (x === J) return d[x]; koin.forEach(c => { if (x + c <= J && d[x + c] === undefined) { d[x + c] = d[x] + 1; q.push(x + c); } }); } return null; };
+  const koinAcak = (mk, mv) => { const k = 1 + rnd(mk), d = []; while (d.length < k) { const v = 1 + rnd(mv); if (!d.includes(v)) d.push(v); } return d.sort((a, b) => b - a); };
+  for (let t = 0; t < 1500; t++) {
+    const koin = koinAcak(6, t % 2 ? 12 : 99), J = 1 + rnd(60), F = AL.greedy.run(koin, J), last = F[F.length - 1].S;
+    let sisa = J, b = 0; koin.forEach(c => { while (sisa >= c) { sisa -= c; b++; } });
+    if (last.sisa !== sisa || last.banyak !== b || !!last.fail !== (sisa > 0)) bad('greedy', 'hasil salah', koin.join(','), J);
+    if (last.cnt.reduce((a, c, i) => a + c * koin[i], 0) !== J - sisa) bad('greedy', 'jumlah koin tidak sama dengan uang', koin.join(','), J);
+    const m = minKoin(koin, J); if ((last.opt ? last.opt.length : null) !== m || (last.opt && last.opt.reduce((a, c) => a + c, 0) !== J)) bad('greedy', 'cara terbaik salah', koin.join(','), J, m);
+    if (t < 150) frameOk('greedy', F, { data: koin, target: J });
+    const kd = koinAcak(4, 12), Jd = 1 + rnd(12), Fd = AL.koindp.run(kd, Jd), dp = Fd[Fd.length - 1].S.dp;
+    for (let x = 0; x <= Jd; x++) { const want = minKoin(kd, x); if ((dp[x] === Infinity ? null : dp[x]) !== want) { bad('koindp', 'isi tabel salah', kd.join(','), Jd, x, dp[x], want); break; } }
+    if (t < 150) frameOk('koindp', Fd, { data: kd, target: Jd });
+    n += 2;
+  }
+  for (let t = 0; t < 1500; t++) {
+    const k = 2 + rnd(3), it = Array.from({ length: k }, () => ({ b: 1 + rnd(8), v: 1 + rnd(99) })), W = 1 + rnd(8), data = it.map(x => `${x.b}:${x.v}`);
+    const F = AL.ransel.run(data, W), last = F[F.length - 1].S;
+    let best = 0; for (let m = 0; m < 1 << k; m++) { let bb = 0, vv = 0; it.forEach((x, i) => { if (m >> i & 1) { bb += x.b; vv += x.v; } }); if (bb <= W && vv > best) best = vv; }
+    if (last.dp[k][W] !== best) bad('ransel', 'nilai terbaik salah', data.join(','), W, last.dp[k][W], best);
+    const pb = last.pick.reduce((a, i) => a + it[i - 1].b, 0), pv = last.pick.reduce((a, i) => a + it[i - 1].v, 0);
+    if (pb > W || pv !== best || new Set(last.pick).size !== last.pick.length) bad('ransel', 'barang yang dilacak salah', data.join(','), W, last.pick.join(','));
+    if (t < 150) frameOk('ransel', F, { data, target: W });
+    n++;
+  }
+  for (let t = 0; t < 1500; t++) {
+    const al = ['AB', 'ABC', 'AaB1'][t % 3], len = 3 + rnd(14), txt = Array.from({ length: len }, () => al[rnd(al.length)]).join(''), m = 1 + rnd(Math.min(5, len)), s0 = rnd(len - m + 1);
+    const pola = rnd(4) ? txt.slice(s0, s0 + m) : Array.from({ length: m }, () => al[rnd(al.length)]).join('');
+    const F = AL.cocok.run(txt.split(''), pola), last = F[F.length - 1];
+    const want = []; for (let i = 0; i + pola.length <= txt.length; i++) if (txt.slice(i, i + pola.length) === pola) want.push(i);
+    if (JSON.stringify(last.S.found) !== JSON.stringify(want)) bad('cocok', 'posisi ketemu salah', txt, pola, last.S.found.join(','));
+    let cmp = 0; for (let i = 0; i + pola.length <= txt.length; i++) { let j = 0; for (;;) { cmp++; if (txt[i + j] !== pola[j]) break; j++; if (j === pola.length) break; } }
+    if (last.cnt.Perbandingan !== cmp) bad('cocok', 'banyak perbandingan salah', txt, pola);
+    if (t < 150) frameOk('cocok', F, { data: txt.split(''), target: pola });
+    n++;
+  }
+  for (const [k, d, tg] of [['greedy', '99, 98, 97, 96, 95, 1', '60'], ['greedy', '99, 98, 97, 96, 95, 94', '60'], ['greedy', '7, 5, 3', '59'], ['koindp', '12, 11, 10, 9', '12'], ['koindp', '12', '11'], ['ransel', '1:99, 2:98, 3:97, 4:96', '8'], ['ransel', '8:99, 8:99', '1'], ['cocok', 'ABCDEFGHIJKLMNOP', 'ABCDE'], ['cocok', 'AAAAAAAAAAAAAAAA', 'AAAAA']]) {
+    const r = AL[k].input.parse(d, tg); if (r.err) { bad(k, 'data ekstrem ditolak', d, r.err); continue; } frameOk(k, AL[k].run(r.data, r.target), { data: r.data, target: r.target }); }
+  console.log(`teknik lanjut: ${n} jejak greedy/DP/knapsack/pencocokan cocok dengan pembanding`);
+}
+[['greedy', [['25, 10, 5, 1', '30'], ['1 5 10 25', '60'], ['7', '1'], ['99, 98, 97, 96, 95, 94', '60']], [['25, 10', ''], ['25, 10', '0'], ['25, 10', '61'], ['25, 25', '30'], ['0, 5', '10'], ['100, 1', '5'], ['1, 2, 3, 4, 5, 6, 7', '9'], ['a, 2', '5'], ['', '5']]],
+ ['koindp', [['4, 3, 1', '6'], ['12', '12'], ['5 2', '7']], [['4, 3, 1', '13'], ['13, 1', '5'], ['5, 4, 3, 2, 1', '6'], ['4, 4', '6'], ['4, 3', '0']]],
+ ['ransel', [['1:1, 3:4, 4:5, 5:7', '7'], ['2/3 3/4', '5'], ['8:99, 1:1', '8']], [['1:1', '5'], ['1:1, 2:2, 3:3, 4:4, 5:5', '5'], ['0:5, 1:1', '3'], ['9:5, 1:1', '3'], ['1:0, 1:1', '3'], ['1:100, 1:1', '3'], ['1:1, 2:2', '9'], ['1:1, 2:2', '0'], ['1-1, 2:2', '3'], ['1:1, 2:2', '']]],
+ ['cocok', [['ABABCABAB', 'ABAB'], ['abc', 'c'], ['A B A', 'AB'], ['Sinau2026', 'au2'], ['ABCDEFGHIJKLMNOP', 'ABCDE']], [['AB', 'A'], ['ABC', ''], ['ABC', 'ABCD'], ['ABCDEFGHIJKLMNOPQ', 'A'], ['AB-C', 'A'], ['ABCDEFG', 'ABCDEF'], ['ABC', 'A?']]]].forEach(([k, ok, no]) => {
+  ok.forEach(([d, t]) => { const r = AL[k].input.parse(d, t); if (r.err) bad(k, 'input sah ditolak', d, t, r.err); else { const f = AL[k].input.fmt ? AL[k].input.fmt(r.data) : r.data.join(', '); const r2 = AL[k].input.parse(f, String(r.target)); if (JSON.stringify(r2.data) !== JSON.stringify(r.data)) bad(k, 'fmt tidak bisa dibaca ulang', d); } });
+  no.forEach(([d, t]) => { if (!AL[k].input.parse(d, t).err) bad(k, 'input salah diterima', d, t); });
+  for (let i = 0; i < 200; i++) { const r = AL[k].input.acak(), f = AL[k].input.fmt ? AL[k].input.fmt(r.data) : r.data.join(', '); if (AL[k].input.parse(f, String(r.target)).err) bad(k, 'acak tidak sah', f, r.target); }
+});
+
 // ---------- 1b. Program lengkap: dikompilasi g++ dan output-nya dicocokkan ----------
 {
   const { execFileSync } = await import('node:child_process');
@@ -322,6 +374,10 @@ console.log(`bercabang: ${cab} jejak BST/hash/BFS/DFS cocok dengan simulasi`);
       kurung: [['{[(a+b)*c]}', ''], ['([)]', ''], ['(()', ''], ['())', ''], [')(', '']],
       heap: [['40, 25, 60, ambil, 50, 10, ambil, ambil', ''], ['ambil, 5, ambil', ''], ['1, 2, 3, 4, 5, 6, 7, 8, 9, 10', ''], ['10, 9, 8, ambil, ambil, ambil, ambil', '']],
       dijkstra: [['A-B:4, A-C:2, B-C:1, B-D:5, C-D:8, C-E:10, D-E:2, D-F:6, E-F:2', 'A'], ['A-B:3, C-D:1', 'A'], ['B-D:7, D-F:1, B-F:9', 'F']],
+      greedy: [['25, 10, 5, 1', '40'], ['4, 3, 1', '6'], ['5, 2', '6'], ['99', '5'], ['50, 20, 10, 5, 2, 1', '59']],
+      koindp: [['4, 3, 1', '6'], ['5, 3', '7'], ['12, 11, 10, 9', '12'], ['1', '1']],
+      ransel: [['1:1, 3:4, 4:5, 5:7', '7'], ['8:1, 7:2', '3'], ['1:99, 2:98, 3:97, 4:96', '8'], ['2:3, 2:3', '4']],
+      cocok: [['ABABCABAB', 'ABAB'], ['AAAAAB', 'AAB'], ['abc', 'x'], ['AAAA', 'AA'], ['Sinau', 'Sinau']],
       postfix: [['5 3 + 2 *', ''], ['9 4 - 7 2 / *', ''], ['2 9 - 4 /', ''], ['3 7 -', ''], ['2 3 4 * +', '']], dfs: [['A-B, A-C, B-D, C-D, C-E, D-F, E-F', 'A'], ['A-H, H-B, B-G', 'G']] };
     for (const k of Object.keys(AL)) {
       const sample = OWN[k] ? OWN[k].map(([d, t]) => AL[k].input.parse(d, t)) : [[5, 1, 4, 2, 8], [7, 7, 3], [0, 99, 0, 99, 50, 1, 2, 3], [3, 1, 2]].flatMap(d0 => {
@@ -446,7 +502,11 @@ try {
       bsthapus: ['9, 4, 7, 1', '4', ['akar = sisip(akar, 7);', 'akar = hapus(akar, 4);'], '9, 4'],
       kurung: ['(a[b]{c})', '', ['string s = "(a[b]{c})";'], 'a+b'],
       heap: ['9, 4, ambil, 1', '', ['sisip(9);', 'sisip(4);', 'ambil()', 'sisip(1);'], 'ambil, ambil, ambil'],
-      dijkstra: ['A-B:3, B-C:4, A-C:9', 'B', ["sambung('A', 'B', 3);", "dijkstra('B' - 'A');"], 'A-B:3, B-C']
+      dijkstra: ['A-B:3, B-C:4, A-C:9', 'B', ["sambung('A', 'B', 3);", "dijkstra('B' - 'A');"], 'A-B:3, B-C'],
+      greedy: ['9, 4, 1', '17', ['int koin[] = {9, 4, 1};', 'koinGreedy(koin, n, 17)'], '9, 9'],
+      koindp: ['5, 2', '9', ['int koin[] = {5, 2};', 'koinMinimum(koin, n, 9)'], '13, 1'],
+      ransel: ['2:3, 3:4, 4:5', '5', ['tambah(2, 3);', 'ransel(5)'], '2:3'],
+      cocok: ['XYXYX', 'XYX', ['string teks = "XYXYX";', 'string pola = "XYX";'], 'XY'] 
     }, OWN = OWNS[algo] || ['9, 4, 7, 1', '7', [m.id === 'pencarian-biner' ? '{1, 4, 7, 9}' : '{9, 4, 7, 1}'], '1, 2'];
     // Keyboard HP harus bisa mengetik isi yang sah: ada huruf → inputmode wajib text
     for (const [key, val] of [['data', OWN[0]], ['target', OWN[1]]]) {
@@ -528,7 +588,7 @@ try {
     bigo: ['1, 8, 16, 32, 64'], array2d: ['99 98 97 96 95; 1 2 3 4 5; 50 51 52 53 54; 7 8 9 10 11'], rekursi: ['7'], perulangan: ['6'], pointer: ['98, 0'], structsort: ['100, 0, 99, 1, 98, 2'],
     bst: ['10, 20, 30, 40, 50, 60, 70, 80', '80'], hash: ['9, 19, 29, 39, 49, 59, 69, 79', '79'], bfs: ['A-B, B-C, C-D, D-E, E-F, F-G, G-H, A-H, B-G, C-F', 'D'], dfs: ['A-B, B-C, C-D, D-E, E-F, F-G, G-H, A-H, B-G, C-F', 'D'],
     traversal: ['1, 2, 3, 4, 5, 6, 7, 8'], bsthapus: ['8, 7, 6, 5, 4, 3, 2, 1', '1'], kurung: ['(((((((((((((((('], postfix: ['1 2 3 4 5 6 + + + + +'],
-    heap: ['99, 98, 97, 96, 95, 94, 93, 92, 91, 90'], dijkstra: ['A-B:20, A-C:20, A-D:20, A-E:20, A-F:20, B-C:20, B-D:20, C-E:20, D-F:20, E-F:20', 'A'] };
+    heap: ['99, 98, 97, 96, 95, 94, 93, 92, 91, 90'], greedy: ['99, 98, 97, 96, 95, 1', '60'], koindp: ['12, 11, 10, 9', '12'], ransel: ['1:99, 2:98, 3:97, 4:96', '8'], cocok: ['ABCDEFGHIJKLMNOP', 'ABCDE'], dijkstra: ['A-B:20, A-C:20, A-D:20, A-E:20, A-F:20, B-C:20, B-D:20, C-E:20, D-F:20, E-F:20', 'A'] };
   const lupa = Object.keys(AL).filter(k => !XL[k]); if (lupa.length) bad('data terpanjang belum didaftarkan untuk', lupa.join(', '));
   for (const [nama, vp] of [['HP', { width: 360, height: 800 }], ['desktop', { width: 1280, height: 900 }]]) {
     const ctxG = await browser.newContext({ viewport: vp, reducedMotion: 'reduce' }), pg = await ctxG.newPage();
