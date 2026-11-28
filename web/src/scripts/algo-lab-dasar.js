@@ -259,7 +259,7 @@ Object.assign(AL_ALGO, {
       });
       r.push({ grp: 'Hasil', kind: 'Hasil', ln: 'end', vars: { n: data.join(', ') }, S: S({ table: true }), title: 'Bandingkan keempatnya',
         body: `Untuk n = ${data[data.length - 1]}: O(1) = 1, O(log n) = ${FN[1].c(data[data.length - 1])}, O(n) = ${data[data.length - 1]}, O(n²) = ${data[data.length - 1] ** 2} langkah. Selisihnya makin jauh saat n membesar, jadi untuk data besar pilih algoritma dengan Big-O yang lebih kecil.`,
-        note: ['Cara cepat menebak Big-O', 'Tidak ada perulangan → O(1). Satu perulangan sampai n → O(n). Perulangan bersarang → O(n²). Perulangan yang membagi dua → O(log n).'] });
+        note: ['Cara cepat menebak Big-O', 'Tidak ada perulangan → O(1). Satu perulangan sampai n → O(n). Dua perulangan bersarang yang masing-masing sampai n → O(n²). Perulangan yang membagi dua → O(log n).'] });
       return r.F;
     },
     view(A, s, f) {
