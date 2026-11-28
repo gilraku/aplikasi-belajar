@@ -6,7 +6,10 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "test": "node tests/sql-lab.mjs && node tests/bd-uas.mjs && node tests/adegan.mjs && node tests/bertahap.mjs && node tests/algo-lab.mjs && node tests/alp-uas.mjs && node tests/validasi.mjs && node tests/smoke.mjs && node tests/cari.mjs && node tests/modal.mjs"
+    "test": "npm run test:lain && npm run test:adegan && npm run test:halaman",
+    "test:adegan": "node tests/adegan.mjs",
+    "test:halaman": "node tests/smoke.mjs && node tests/modal.mjs",
+    "test:lain": "node tests/semua-terdaftar.mjs && node tests/sql-lab.mjs && node tests/bd-uas.mjs && node tests/validasi.mjs && node tests/bertahap.mjs && node tests/algo-lab.mjs && node tests/alp-uas.mjs && node tests/cari.mjs"
   },
   "dependencies": {
     "astro": "^7.4.12"

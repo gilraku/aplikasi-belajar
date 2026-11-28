@@ -30,6 +30,15 @@ const { lib } = createRequire(path.resolve('../sumber/build.js'))('./build.js');
 const found = [];
 for (const c of lib) for (const m of c.meetings) (m.materi || []).forEach(b => { if (b && (b.type === 'adegan' || b.type === 'penelusur')) found.push({ c: c.id, m: m.id, b }); });
 if (!found.some(x => x.b.type === 'adegan')) { console.error('Tidak ada blok adegan di materi.'); process.exit(1); }
+// SHARD=i/n (dipakai CI): hanya jalankan blok ke-i dari tiap n blok, supaya bisa dibagi ke beberapa job paralel
+const SHARD = /^(\d+)\/(\d+)$/.exec(process.env.SHARD || '');
+if (SHARD) {
+  const [i, n] = [+SHARD[1], +SHARD[2]];
+  if (!(n >= 1 && i >= 1 && i <= n)) { console.error(`SHARD tidak sah: ${process.env.SHARD}`); process.exit(1); }
+  const all = found.splice(0);
+  all.forEach((x, k) => { if (k % n === i - 1) found.push(x); });
+  console.log(`adegan: shard ${i}/${n}, ${found.length} dari ${all.length} blok`);
+} else if (process.env.SHARD) { console.error(`SHARD harus berbentuk i/n, bukan ${process.env.SHARD}`); process.exit(1); }
 
 const fails = [];
 const fail = m => { fails.push(m); console.log('  ✗ ' + m); };
