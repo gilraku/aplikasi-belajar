@@ -121,7 +121,7 @@ Object.assign(AL_ALGO, {
           const done = ln && p < ln.put.length, cur = on && S.at === p;
           g += `<g class="al-box${cur ? ' al-cmp' : done ? ' al-done' : ' al-dim'}" transform="translate(${x0 + p * (bw + gap)},${y})"><rect width="${bw}" height="36" rx="6"/><text x="${bw / 2}" y="18">${done ? '+' + ln.put[p] : ''}</text></g>`;
         }
-        g += `<text class="al-lbl${ln ? '' : ' al-muted'}" x="${x0}" y="${y + 58}">${ln ? `${ln.put.length} putaran · cek ${ln.cek} kali · total ${ln.total}${ln.ret !== '' ? ` → return ${ln.ret}` : ''}` : 'belum dijalankan'}</text>`;
+        g += `<text class="al-lbl${ln ? '' : ' al-muted'}" x="${x0}" y="${y + 58}">${ln ? `${ln.put.length} putaran · cek ${ln.cek}× · total ${ln.total}` : 'belum dijalankan'}</text>`;
       });
       const desc = ['f', 'w', 'd'].map(k => S.L[k] ? `${S.L[k].put.length} putaran` : 'belum').join(', ');
       return `<svg class="al-svg" viewBox="0 0 ${W} 270" role="img" aria-label="Putaran for, while, do-while untuk n = ${n}: ${esc(desc)}">${g}</svg>`;
@@ -188,21 +188,21 @@ Object.assign(AL_ALGO, {
     },
     view(A, s, f) {
       const S = f.S, a = S.a, n = a.length, W = 560, gap = 8, bw = Math.min(52, (W - 40 - gap * (n - 1)) / n), ax = (W - (bw * n + gap * (n - 1))) / 2;
-      const cs = n <= 6 ? 34 : 28, gx = (W - n * cs) / 2 + 12, gy = 150, has = (L, i, j) => L.some(p => p[0] === i && p[1] === j);
+      const cs = n <= 6 ? 34 : 28, gx = (W - n * cs) / 2 + 12, gy = 160, has = (L, i, j) => L.some(p => p[0] === i && p[1] === j);
       let g = '';
       a.forEach((v, p) => {
         const c = S.end ? (S.hits.some(h => h[0] === p || h[1] === p) ? ' al-found' : ' al-done') : p === S.i || p === S.j ? ' al-cmp' : '';
         const x = ax + p * (bw + gap), t = [p === S.i ? 'i' : '', p === S.j ? 'j' : ''].filter(Boolean).join(',');
-        g += `<g class="al-box${c}" transform="translate(${x},16)"><rect width="${bw}" height="40" rx="6"/><text x="${bw / 2}" y="20">${v}</text></g><text class="al-idx" x="${x + bw / 2}" y="74">[${p}]</text>${t ? `<text class="al-lbl" x="${x + bw / 2}" y="94" text-anchor="middle">↑ ${t}</text>` : ''}`;
+        g += `<g class="al-box${c}" transform="translate(${x},16)"><rect width="${bw}" height="40" rx="6"/><text x="${bw / 2}" y="20">${v}</text></g><text class="al-idx" x="${x + bw / 2}" y="74">[${p}]</text>${t ? `<text class="al-lbl" x="${x + bw / 2}" y="98" text-anchor="middle">↑ ${t}</text>` : ''}`;
       });
-      g += `<text class="al-lbl al-muted" x="${gx - 30}" y="${gy - 26}">grid pasangan: baris i, kolom j</text>`;
+      g += `<text class="al-lbl al-muted" x="${gx - 30}" y="${gy - 32}">grid pasangan: baris i, kolom j</text>`;
       for (let k = 0; k < n; k++) g += `<text class="al-idx" x="${gx + k * cs + cs / 2}" y="${gy - 8}">${k}</text><text class="al-idx" x="${gx - 14}" y="${gy + k * cs + cs / 2 + 4}">${k}</text>`;
       for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
         const c = j <= i ? ' al-dim' : S.i === i && S.j === j ? ' al-cmp' : has(S.hits, i, j) ? ' al-found' : has(S.seen, i, j) ? ' al-done' : '';
         g += `<g class="al-box${c}" transform="translate(${gx + j * cs + 2},${gy + i * cs + 2})"><rect width="${cs - 4}" height="${cs - 4}" rx="4"/></g>`;
       }
       const H = gy + n * cs + 30;
-      g += `<text class="al-lbl al-muted" x="${gx - 30}" y="${H - 8}">${S.seen.length} dari ${n * (n - 1) / 2} pasangan dibandingkan${S.hits.length ? ' · hijau = kembar' : ''}</text>`;
+      g += `<text class="al-lbl al-muted" x="${gx - 30}" y="${H - 8}">${S.seen.length}/${n * (n - 1) / 2} pasangan dicek${S.hits.length ? ' · hijau = kembar' : ''}</text>`;
       return `<svg class="al-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Isi array: ${esc(a.join(', '))}. ${S.seen.length} dari ${n * (n - 1) / 2} pasangan sudah dibandingkan.">${g}</svg>`;
     },
     program(s) {
@@ -270,12 +270,12 @@ Object.assign(AL_ALGO, {
         FN.forEach((fn, r) => { const y = 72 + r * 52;
           g += `<text class="al-lbl" x="20" y="${y + 4}">${fn.o}</text>` + ns.map((n, i) => { const v = fn.c(n), max = ns[ns.length - 1] ** 2, w = Math.max(3, (cw - 12) * Math.log2(v + 1) / Math.log2(max + 1));
             return `<rect class="al-heat" x="${x0 + i * cw + 6}" y="${y - 16}" width="${w}" height="10" rx="3"/><text class="al-lbl" x="${x0 + i * cw + 6}" y="${y + 14}">${v}</text>`; }).join(''); });
-        return `<svg class="al-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Tabel banyak langkah untuk n = ${esc(ns.join(', '))}">${g}<text class="al-lbl al-muted" x="20" y="${H - 12}">Panjang garis memakai skala log supaya O(n²) tetap muat.</text></svg>`;
+        return `<svg class="al-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Tabel banyak langkah untuk n = ${esc(ns.join(', '))}">${g}<text class="al-lbl al-muted" x="20" y="${H - 12}">Skala log, supaya O(n²) tetap muat.</text></svg>`;
       }
       const fn = FN.find(x => x.k === S.cur) || FN[0], vals = ns.map(fn.c), max = Math.max(...vals, 1), bw = Math.min(70, 380 / ns.length), gap = 18, x0 = (W - ns.length * (bw + gap)) / 2, base = 240;
       let g = `<text class="al-lbl" x="20" y="30">${fn.o} · ${fn.f}(n)</text><line class="al-floor" x1="${x0 - 8}" x2="${x0 + ns.length * (bw + gap) - gap + 8}" y1="${base + .5}" y2="${base + .5}"/>`;
       ns.forEach((n, i) => { const h = S.hide ? 0 : Math.max(4, (vals[i] / max) * 170), x = x0 + i * (bw + gap);
-        g += `<rect class="al-col${S.hide ? '' : ' is-on'}" x="${x}" y="${base - h}" width="${bw}" height="${h}" rx="4"/><text class="al-lbl" x="${x + bw / 2}" y="${base - h - 8}" text-anchor="middle">${S.hide ? '?' : vals[i]}</text><text class="al-idx" x="${x + bw / 2}" y="${base + 18}">n = ${n}</text>`; });
+        g += `<rect class="al-bigo${S.hide ? '' : ' is-on'}" x="${x}" y="${base - h}" width="${bw}" height="${h}" rx="4"/><text class="al-lbl" x="${x + bw / 2}" y="${base - h - 8}" text-anchor="middle">${S.hide ? '?' : vals[i]}</text><text class="al-idx" x="${x + bw / 2}" y="${base + 18}">n = ${n}</text>`; });
       return `<svg class="al-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Banyak langkah ${esc(fn.o)}: ${esc(S.hide ? 'belum dibuka' : vals.join(', '))}">${g}</svg>`;
     },
     program(s) {
@@ -452,7 +452,7 @@ Object.assign(AL_ALGO, {
     },
     view(A, s, f) {
       const S = f.S, mv = alMover(s), base = 300, h = 40, cx = 130, w = 300;
-      let g = `<text class="al-lbl" x="${cx}" y="${base + 26}">call stack (bawah = yang pertama dipanggil)</text><line class="al-floor" x1="${cx - 10}" x2="${cx + w + 10}" y1="${base + .5}" y2="${base + .5}"/>`;
+      let g = `<text class="al-lbl" x="${cx}" y="${base + 26}">call stack: bawah = dipanggil pertama</text><line class="al-floor" x1="${cx - 10}" x2="${cx + w + 10}" y1="${base + .5}" y2="${base + .5}"/>`;
       S.st.forEach((fr, k) => {
         const top = k === S.st.length - 1, c = fr.ret != null ? 'found' : top && S.top ? 'cmp' : '';
         const txt = fr.ret != null ? `faktorial(${fr.n}) = ${fr.ret}` : fr.wait ? `faktorial(${fr.n}): ${fr.n} × ?` : `faktorial(${fr.n})`;

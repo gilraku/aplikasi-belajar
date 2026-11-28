@@ -111,10 +111,10 @@ Object.assign(AL_ALGO, {
       if (S.inc) g += alBox(mv, 'e' + S.inc.id, S.inc.v, cx + 8, 14, S.inc.c || 'cmp') + `<text class="al-lbl" x="${cx + cw + 10}" y="38">x = ${S.inc.v}</text>`;
       const ty = S.top >= 0 ? slotY(S.top) + sh / 2 : base + 14;
       g += `<g class="al-ptr al-mv" ${mv('top', cx + cw + 6, ty)}><path d="M0 0 H24 M6 -5 L0 0 L6 5"/><text x="62" y="4">top = ${S.top}</text></g>`;
-      g += `<text class="al-lbl" x="340" y="34">Sudah keluar (urutan pop)</text>`;
+      g += `<text class="al-lbl" x="340" y="34">Keluar (urutan pop)</text>`;
       S.out.forEach((e, i) => { g += alBox(mv, 'e' + e.id, e.v, 340 + (i % 4) * 50, 46 + Math.floor(i / 4) * 48, e.id === S.hi ? 'found' : 'done', 44); });
       if (!S.out.length) g += `<text class="al-lbl al-muted" x="340" y="68">belum ada</text>`;
-      return `<svg class="al-svg" viewBox="0 0 560 336" role="img" aria-label="Isi stack dari bawah: ${esc(S.st.map(e => e.v).join(', ') || 'kosong')}">${g}</svg>`;
+      return `<svg class="al-svg" viewBox="0 0 560 348" role="img" aria-label="Isi stack dari bawah: ${esc(S.st.map(e => e.v).join(', ') || 'kosong')}">${g}</svg>`;
     },
     program(s) {
       const L = ['#include <iostream>', 'using namespace std;', '', ...this.code.cpp, '', 'int main() {'], out = [], st = [];
@@ -199,11 +199,11 @@ Object.assign(AL_ALGO, {
       const fx = X(S.front) + (sw - 6) / 2, rx = S.rear >= 0 ? X(S.rear) + (sw - 6) / 2 : X(0) - 34;
       const same = S.rear >= 0 && S.front === S.rear;
       g += alPtr(mv, 'pf', fx - (same ? 12 : 0), y0 + 74, 'front');
-      g += `<g class="al-ptr al-mv" ${mv('pr', rx + (same ? 12 : 0), y0 + 74)}><path d="M0 12 V0 M-5 6 L0 0 L5 6"/><text x="0" y="46">${S.rear >= 0 ? 'rear' : 'rear = -1'}</text></g>`;
-      g += `<text class="al-lbl" x="${x0}" y="246">Sudah keluar (urutan dequeue)</text>`;
-      S.out.forEach((e, i) => { g += alBox(mv, 'e' + e.id, e.v, x0 + i * 50, 258, e.id === S.hi ? 'found' : 'done', 44); });
-      if (!S.out.length) g += `<text class="al-lbl al-muted" x="${x0}" y="280">belum ada</text>`;
-      return `<svg class="al-svg" viewBox="0 0 560 310" role="img" aria-label="Isi antrian per indeks: ${esc(S.q.map(e => e ? e.v : '-').join(', '))}">${g}</svg>`;
+      g += `<g class="al-ptr al-mv" ${mv('pr', rx + (same ? 12 : 0), y0 + 74)}><path d="M0 12 V0 M-5 6 L0 0 L5 6"/>${S.rear >= 0 ? `<text x="0" y="${same ? 70 : 46}">rear</text>` : '<text x="0" y="46">rear</text><text x="0" y="70">= -1</text>'}</g>`;
+      g += `<text class="al-lbl" x="${x0}" y="262">Sudah keluar (urutan dequeue)</text>`;
+      S.out.forEach((e, i) => { g += alBox(mv, 'e' + e.id, e.v, x0 + i * 50, 272, e.id === S.hi ? 'found' : 'done', 44); });
+      if (!S.out.length) g += `<text class="al-lbl al-muted" x="${x0}" y="294">belum ada</text>`;
+      return `<svg class="al-svg" viewBox="0 0 560 324" role="img" aria-label="Isi antrian per indeks: ${esc(S.q.map(e => e ? e.v : '-').join(', '))}">${g}</svg>`;
     },
     program(s) {
       const L = ['#include <iostream>', 'using namespace std;', '', ...this.code.cpp, '', 'int main() {'], out = [], q = [];
@@ -333,10 +333,10 @@ Object.assign(AL_ALGO, {
       let g = '';
       S.list.forEach((e, k) => { const c = e.id === S.cmp ? 'cmp' : e.id === S.hi ? 'found' : S.end ? 'done' : ''; g += node(e, X(k), y0, c, k === S.list.length - 1, k < S.list.length - 1); });
       if (S.list.length) g += `<g class="al-ptr al-mv" ${mv('head', X(0) + 22, y0 - 6)}><path d="M0 0 V-16 M-5 -6 L0 0 L5 -6"/><text x="0" y="-22">head</text></g>`;
-      else g += `<g class="al-ptr al-mv" ${mv('head', X(0) + 22, y0 - 6)}><text x="0" y="-22">head = NULL</text></g>`;
+      else g += `<g class="al-ptr al-mv" ${mv('head', X(0) + 22, y0 - 6)}><text x="-22" y="-22" style="text-anchor:start">head = NULL</text></g>`;
       if (S.p != null) g += alPtr(mv, 'p', X(S.p) + 22, y0 + 46, 'p');
       if (S.low) { const L = S.low; g += node(L.e, X(L.at), yl, L.c || 'cmp', L.t === 'baru', false) + `<text class="al-lbl" x="${X(L.at) + 22}" y="${yl + 60}" text-anchor="middle">${L.t}</text>`; }
-      return `<svg class="al-svg" viewBox="0 0 620 276" role="img" aria-label="Isi linked list: ${esc(S.list.map(e => e.v).join(' → ') || 'kosong')}">${g}</svg>`;
+      return `<svg class="al-svg al-wide" viewBox="0 0 620 276" role="img" aria-label="Isi linked list: ${esc(S.list.map(e => e.v).join(' → ') || 'kosong')}">${g}</svg>`;
     },
     program(s) {
       const L = ['#include <iostream>', 'using namespace std;', '', ...this.code.cpp, '', 'void cetak() {', '    Node* p = head;', '    while (p != NULL) {', '        cout << p->data << " -> ";', '        p = p->next;', '    }', '    cout << "NULL" << endl;', '}', '', 'int main() {'];

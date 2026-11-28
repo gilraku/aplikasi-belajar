@@ -274,27 +274,27 @@
   @media (min-width: 900px) { .al-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); } }
   .al-col { display: grid; gap: .9rem; align-content: start; min-width: 0; grid-template-columns: minmax(0, 1fr); }
   .al-stage { border: 1.5px solid #e4e3db; border-radius: .9rem; background: repeating-linear-gradient(0deg, transparent 0 23px, #efeee8 23px 24px), #fdfdfb; padding: .4rem .25rem 0; }
-  .al-svg { display: block; width: 100%; height: auto; }
+  .al-svg { display: block; width: 100%; height: auto; stroke: none; }
   .al-bar { transition: transform .45s cubic-bezier(.4, 0, .2, 1); }
   .al-bar rect { fill: #fff; stroke: #17202a; stroke-width: 2; transition: fill .2s, stroke .2s, opacity .2s; }
-  .al-bar text { font: 800 17px 'Bricolage Grotesque', system-ui, sans-serif; fill: #17202a; text-anchor: middle; }
+  .al-bar text { font: 700 17px 'Bricolage Grotesque', system-ui, sans-serif; fill: #17202a; text-anchor: middle; }
   .al-bar.al-cmp rect { fill: #ffe14d; }
   .al-bar.al-done rect { fill: #d9ebe6; stroke: #1f5c52; }
   .al-bar.al-found rect { fill: #8fe3a2; stroke: #1f5c52; stroke-width: 3; }
   .al-bar.al-key rect { fill: #ffd9cf; stroke: #b2412e; stroke-width: 2.5; }
   .al-bar.al-small rect { fill: #e8f1ff; stroke: #3b5b8c; }
   .al-bar.al-dim { opacity: .35; }
-  .al-idx { font: 600 11px 'JetBrains Mono', ui-monospace, monospace; fill: #6c7480; text-anchor: middle; }
-  .al-tmp { font: 700 11px 'JetBrains Mono', ui-monospace, monospace; fill: #6c7480; }
+  .al-idx { font: 500 11px 'JetBrains Mono', ui-monospace, monospace; fill: #6c7480; text-anchor: middle; }
+  .al-tmp { font: 500 11px 'JetBrains Mono', ui-monospace, monospace; fill: #6c7480; }
   .al-floor { stroke: #17202a; stroke-width: 1.5; }
   .al-ptr path { stroke: #17202a; stroke-width: 2; fill: none; }
-  .al-ptr text { font: 700 12px 'JetBrains Mono', ui-monospace, monospace; fill: #17202a; text-anchor: middle; }
+  .al-ptr text { font: 500 12px 'JetBrains Mono', ui-monospace, monospace; fill: #17202a; text-anchor: middle; }
   .al-text { display: grid; gap: .4rem; }
   .al-kind { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: .1rem .45rem; border-radius: 5px; background: #fff6c2; color: #17202a; }
   .al-kind.al-k-ok { background: #d9ebe6; color: #1f5c52; }
   .al-kind.al-k-bad { background: #ffe3dc; color: #8f2f1f; }
   .al-note { border-left: 4px solid #ffe14d; background: #fffbe0; padding: .5rem .75rem; border-radius: 0 .6rem .6rem 0; font-size: 14px; color: #334155; }
-  .al-note b { display: block; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: #17202a; }
+  .al-note > b { display: block; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: #17202a; }
   .al-guess { display: grid; gap: .5rem; border: 1.5px dashed #17202a; border-radius: .8rem; padding: .7rem .8rem; background: #fff; }
   .al-btn { font-size: 13px; font-weight: 700; line-height: 1.2; color: #17202a; background: #fff; border: 1.5px solid #17202a; border-radius: .6rem; padding: .5rem .8rem; transition: box-shadow .12s; }
   .al-btn.is-main { background: #17202a; color: #fff; }
@@ -320,7 +320,8 @@
   .al-own { display: grid; gap: .5rem; border-top: 1.5px solid #e4e3db; padding-top: .9rem; }
   .al-in { font: 600 14px 'JetBrains Mono', ui-monospace, monospace; padding: .45rem .6rem; border-radius: .6rem; border: 1.5px solid #17202a; background: #fff; color: #17202a; }
   @media (prefers-reduced-motion: reduce) { .al-bar, .al-bar rect, .al-var, .al-btn { transition: none; } }
-  @media (min-width: 900px) { .al-now { display: none; } }
+  @media (min-width: 900px) { .al-now { display: none; } .al-code { position: relative; max-height: min(26rem, 62vh); overflow-y: auto; overscroll-behavior: contain; } }
+  @media (max-width: 639px) { .al-own .al-in[data-key="data"] { flex-basis: 100%; } }
   @media (max-width: 639px) { .al-rails { flex-wrap: nowrap; overflow-x: auto; padding-bottom: .2rem; margin-inline: -.25rem; padding-inline: .25rem; } .al-rail { flex-shrink: 0; } }
   .al-full { display: grid; gap: .5rem; min-width: 0; }
   .al-out { margin: 0; padding: .5rem .75rem; border-radius: .75rem; border: 1.5px solid #17202a; background: #fffbe0; color: #17202a; font: 600 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; }
@@ -328,10 +329,10 @@
   .al-mv { transition: transform .45s cubic-bezier(.4, 0, .2, 1); }
   .al-slot { fill: #fff; stroke: #c9c8bf; stroke-width: 1.5; stroke-dasharray: 4 3; }
   .al-wall { fill: none; stroke: #17202a; stroke-width: 2; }
-  .al-lbl { font: 700 12px 'JetBrains Mono', ui-monospace, monospace; fill: #17202a; }
-  .al-lbl.al-muted { fill: #9aa1aa; font-weight: 600; }
+  .al-lbl { font: 500 12px 'JetBrains Mono', ui-monospace, monospace; fill: #17202a; }
+  .al-lbl.al-muted { fill: #8a919a; font-weight: 400; }
   .al-box rect { fill: #fff; stroke: #17202a; stroke-width: 2; transition: fill .2s, stroke .2s; }
-  .al-box text { font: 800 16px 'Bricolage Grotesque', system-ui, sans-serif; fill: #17202a; text-anchor: middle; dominant-baseline: central; }
+  .al-box text { font: 700 16px 'Bricolage Grotesque', system-ui, sans-serif; fill: #17202a; text-anchor: middle; dominant-baseline: central; }
   .al-box.al-cmp rect { fill: #ffe14d; }
   .al-box.al-found rect { fill: #8fe3a2; stroke: #1f5c52; }
   .al-box.al-done rect { fill: #d9ebe6; stroke: #1f5c52; }
@@ -340,22 +341,32 @@
   .al-node rect.al-nx { fill: #f4f3ee; }
   .al-dot { fill: #17202a; }
   .al-arw { fill: none; stroke: #17202a; stroke-width: 2; }
-  .al-box text.al-null { font: 700 11px 'JetBrains Mono', ui-monospace, monospace; fill: #6c7480; text-anchor: start; }
+  .al-box text.al-null { font: 500 11px 'JetBrains Mono', ui-monospace, monospace; fill: #6c7480; text-anchor: start; }
   @media (prefers-reduced-motion: reduce) { .al-mv, .al-box rect { transition: none; } }
   .al-heat { fill: #1f5c52; }
-  .al-col { fill: #fff; stroke: #17202a; stroke-width: 2; transition: height .3s, y .3s; }
-  .al-col.is-on { fill: #ffe14d; }
-  .al-sum { font: 800 16px 'Bricolage Grotesque', system-ui, sans-serif; fill: #1f5c52; }
+  /* Nama kelas sengaja beda dari .al-col (kolom tata letak): stroke di kolom tata letak ikut diwarisi semua teks gambar. */
+  .al-bigo { fill: #fff; stroke: #17202a; stroke-width: 2; transition: height .3s, y .3s; }
+  .al-bigo.is-on { fill: #ffe14d; }
+  .al-sum { font: 700 16px 'Bricolage Grotesque', system-ui, sans-serif; fill: #1f5c52; }
   .al-sum.is-new { fill: #17202a; text-decoration: underline; text-decoration-color: #ffe14d; text-decoration-thickness: 4px; }
   .al-box.al-line rect { fill: #fff6c2; }
   .al-edge { stroke: #c9c8bf; stroke-width: 2; }
   .al-edge.is-tree { stroke: #1f5c52; stroke-width: 3; }
   .al-edge.is-on { stroke: #17202a; stroke-width: 3.5; stroke-dasharray: 6 4; }
   .al-gn circle { fill: #fff; stroke: #17202a; stroke-width: 2; transition: fill .2s, stroke .2s; }
-  .al-gn text { font: 800 15px 'Bricolage Grotesque', system-ui, sans-serif; fill: #17202a; text-anchor: middle; dominant-baseline: central; }
+  .al-gn text { font: 700 15px 'Bricolage Grotesque', system-ui, sans-serif; fill: #17202a; text-anchor: middle; dominant-baseline: central; }
   .al-gn.al-cmp circle { fill: #ffe14d; }
   .al-gn.al-chk circle { fill: #fff; stroke: #b2412e; stroke-width: 3; stroke-dasharray: 5 3; }
   .al-gn.al-found circle { fill: #8fe3a2; stroke: #1f5c52; }
   .al-gn.al-done circle { fill: #d9ebe6; stroke: #1f5c52; }
-  .al-ord { font: 800 16px 'Bricolage Grotesque', system-ui, sans-serif; fill: #17202a; }
+  .al-ord { font: 700 16px 'Bricolage Grotesque', system-ui, sans-serif; fill: #17202a; }
   .al-slot.is-chk { stroke: #17202a; stroke-width: 2.5; stroke-dasharray: none; }
+  /* HP: gambar lab diperkecil sekitar separuhnya, jadi ukuran huruf di dalam gambar dinaikkan supaya tetap terbaca (± 10–13px di layar). */
+  @media (max-width: 639px) {
+    .al-bar text, .al-box text, .al-sum { font-size: 24px; }
+    .al-gn text { font-size: 22px; }
+    .al-ord { font-size: 22px; }
+    .al-idx, .al-tmp, .al-box text.al-null { font-size: 19px; }
+    .al-ptr text, .al-lbl { font-size: 19px; }
+    .al-wide .al-ptr text, .al-wide .al-lbl, .al-wide .al-box text.al-null { font-size: 21px; }
+  }

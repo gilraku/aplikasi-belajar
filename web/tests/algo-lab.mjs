@@ -218,6 +218,17 @@ console.log(`bercabang: ${cab} jejak BST/hash/BFS/DFS cocok dengan simulasi`);
   }
 }
 
+// ---------- 1b. Graf contoh BFS/DFS: simpul di lingkaran disusun tanpa sisi bersilang ----------
+{
+  const O = vm.runInContext('alGraphOrder', ctx);
+  const silang = (ord, E) => { const pos = {}; ord.forEach((n, i) => { pos[n] = i; }); let c = 0;
+    for (let i = 0; i < E.length; i++) for (let j = i + 1; j < E.length; j++) { let [a, b] = E[i].split('-').map(v => pos[v]), [p, q] = E[j].split('-').map(v => pos[v]);
+      if (a > b) [a, b] = [b, a]; if (p > q) [p, q] = [q, p]; if (new Set([a, b, p, q]).size < 4) continue; if ((a < p && p < b) !== (a < q && q < b)) c++; } return c; };
+  const E = ['A-B', 'A-C', 'B-D', 'C-D', 'C-E', 'D-F', 'E-F'], ord = O([...'ABCDEF'], E);
+  if (silang(ord, E)) bad('graf contoh masih punya sisi bersilang', ord.join(''));
+  if (ord.length !== 6 || new Set(ord).size !== 6 || ord[0] !== 'A') bad('urutan simpul graf rusak', ord.join(''));
+}
+
 // ---------- 2. Browser ----------
 const DIST = path.resolve(process.cwd(), process.env.ASTRO_OUT || 'dist');
 const BASE = (process.env.ASTRO_BASE || (process.env.VERCEL ? '/' : '/aplikasi-belajar/')).replace(/\/?$/, '/');
@@ -358,12 +369,46 @@ try {
       if (!(await page.$('a[href="#/c/struktur-data-algoritma/m/perulangan"]'))) bad('ALP', p, 'tidak menautkan ke pelajaran Perulangan');
     }
   }
-  const hp = await browser.newPage({ viewport: { width: 375, height: 800 } });
-  hp.on('pageerror', e => errs.push(e.message));
-  for (const m of sda.meetings) {
-    await hp.goto(URL0 + `#/c/${sda.id}/m/${m.id}`); await hp.waitForSelector('.al');
-    const w = await hp.evaluate(() => document.documentElement.scrollWidth);
-    if (w > 375) bad(m.id, 'HP melebar', w);
+  // Keterbacaan gambar: teks tidak bergaris tepi (tebal menggumpal), tidak terlalu kecil, tidak keluar gambar,
+  // dan tidak saling menumpuk. Diperiksa di setiap langkah, di HP (gambar mengecil) dan di desktop.
+  const gambar = () => [...document.querySelectorAll('.al-stage svg')].flatMap((s, li) => {
+    const o = [], sb = s.getBoundingClientRect(), sc = sb.width / s.viewBox.baseVal.width;
+    const ts = [...s.querySelectorAll('text')].filter(t => t.textContent.trim() && t.getBoundingClientRect().width)
+      .map(t => ({ t: t.textContent.trim(), b: t.getBoundingClientRect(), px: parseFloat(getComputedStyle(t).fontSize) * sc, st: getComputedStyle(t).stroke }));
+    ts.forEach(x => {
+      if (x.st !== 'none') o.push(`teks bergaris tepi "${x.t}"`);
+      if (x.px < 8.9) o.push(`teks terlalu kecil ${x.px.toFixed(1)}px "${x.t}"`);
+      if (x.b.left < sb.left - 1 || x.b.right > sb.right + 1 || x.b.top < sb.top - 1 || x.b.bottom > sb.bottom + 1) o.push(`teks keluar gambar "${x.t}"`);
+    });
+    for (let i = 0; i < ts.length; i++) for (let j = i + 1; j < ts.length; j++) { const p = ts[i].b, q = ts[j].b;
+      if (Math.min(p.right, q.right) - Math.max(p.left, q.left) > 2 && Math.min(p.bottom, q.bottom) - Math.max(p.top, q.top) > 2) o.push(`teks menumpuk "${ts[i].t}" / "${ts[j].t}"`); }
+    return o.map(x => `lab ${li + 1}: ${x}`);
+  });
+  for (const [nama, vp] of [['HP', { width: 360, height: 800 }], ['desktop', { width: 1280, height: 900 }]]) {
+    const ctxG = await browser.newContext({ viewport: vp, reducedMotion: 'reduce' }), pg = await ctxG.newPage();
+    pg.on('pageerror', e => errs.push(e.message));
+    for (const m of sda.meetings) {
+      await pg.goto(URL0 + `#/c/${sda.id}/m/${m.id}`); await pg.waitForSelector('.al');
+      if (nama === 'HP') { const w = await pg.evaluate(() => document.documentElement.scrollWidth); if (w > vp.width) bad(m.id, 'HP melebar', w); }
+      const temu = new Set(), labs = pg.locator('.al');
+      for (let li = 0; li < await labs.count(); li++) {
+        const L = labs.nth(li);
+        for (let k = 0; k < 400; k++) {
+          await pg.waitForTimeout(40); (await pg.evaluate(gambar)).forEach(x => temu.add(x));
+          if (nama === 'desktop') {
+            // Panel kode yang dibatasi tingginya harus memperlihatkan (baris pertama dari) baris yang sedang jalan
+            const ok = await L.locator('.al-code').evaluate(pre => { const on = pre.querySelector('.trc-cur'); if (!on) return true; const a = pre.getBoundingClientRect(), b = on.getBoundingClientRect(); return b.top >= a.top - 1 && b.bottom <= a.bottom + 1; });
+            if (!ok) temu.add(`lab ${li + 1}: baris kode yang jalan tersembunyi di panel kode`);
+          }
+          const nx = L.locator('[data-act="next"]'); if (await nx.isDisabled()) break; await nx.click();
+        }
+      }
+      // Catatan: hanya judulnya yang huruf besar dan berdiri sendiri; teks tebal di isinya tetap sebaris.
+      const nb = await pg.evaluate(() => [...document.querySelectorAll('.al-note .rich b')].filter(b => getComputedStyle(b).display !== 'inline').length);
+      if (nb) temu.add(`${nb} teks tebal di catatan tidak sebaris`);
+      [...temu].slice(0, 6).forEach(x => bad(m.id, nama, x));
+    }
+    await ctxG.close();
   }
   if (errs.length) bad('galat di browser', errs.slice(0, 5));
 } finally { await browser.close(); server.close(); }
