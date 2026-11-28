@@ -360,3 +360,217 @@ Object.assign(AL_ALGO, {
     }
   }
 });
+
+// ---------- Lanjutan pohon: traversal dan hapus node ----------
+// Masukan: angka berbeda yang disisipkan berurutan ke BST (supaya setiap node bisa disebut dengan angkanya).
+const alTreeInput = (target, contoh) => ({
+  mode: 'numeric', aria: 'Angka berbeda yang disisipkan ke pohon, dipisah koma', targetLabel: target ? 'hapus' : undefined, targetAria: 'Angka yang dihapus',
+  hint: `3 sampai 8 bilangan bulat 0–99 yang <b>berbeda</b>, dipisah koma, disisipkan berurutan ke BST.${target ? ' Angka di kotak <b>hapus</b> lalu dihapus dari pohon.' : ''}`,
+  parse(raw, rawT) {
+    const nums = raw.split(/[\s,;]+/).filter(Boolean).map(Number);
+    if (nums.length < 3 || nums.length > 8 || nums.some(v => !Number.isInteger(v) || v < 0 || v > 99)) return { err: `Isi 3 sampai 8 bilangan bulat 0–99, dipisah koma. Contoh: ${contoh}` };
+    if (new Set(nums).size !== nums.length) return { err: 'Ada angka yang kembar. Pakai angka yang berbeda semua.' };
+    if (!target) return { data: nums };
+    const t = Number(String(rawT).trim());
+    if (String(rawT).trim() === '' || !Number.isInteger(t) || t < 0 || t > 99) return { err: 'Isi angka di kotak hapus dengan bilangan bulat 0–99.' };
+    return { data: nums, target: t };
+  },
+  acak() {
+    const len = alRnd(5, 8), data = [];
+    while (data.length < len) { const v = alRnd(1, 99); if (!data.includes(v)) data.push(v); }
+    if (!target) return { data };
+    // Utamakan node yang punya dua anak, karena kasus itu yang paling perlu dilihat
+    const T = AL_ALGO.bst.shape(data).T, two = T.filter(n => n.l != null && n.r != null);
+    const pick = two.length && Math.random() < 0.5 ? two[alRnd(0, two.length - 1)].v : Math.random() < 0.85 ? data[alRnd(0, len - 1)] : alRnd(1, 99);
+    return { data, target: pick };
+  }
+});
+// Gambar pohon dari daftar node {id, v, l, r}: posisi mendatar = urutan inorder, baris = kedalaman.
+function alTreeSvg(nodes, root, opt) {
+  const by = {}; nodes.forEach(t => { by[t.id] = t; });
+  const pos = {}, ord = []; let depth = 0;
+  (function walk(i, d) { if (i == null) return; walk(by[i].l, d + 1); ord.push(i); pos[i] = { d }; depth = Math.max(depth, d); walk(by[i].r, d + 1); })(root, 0);
+  const n = ord.length, top = opt.top || 52;
+  ord.forEach((id, k) => { pos[id].x = n === 1 ? 280 : 36 + k * (488 / (n - 1)); pos[id].y = top + pos[id].d * 58; });
+  let g = '';
+  ord.forEach(id => { const t = by[id]; [t.l, t.r].forEach(c => { if (c != null) g += `<line class="al-edge${(opt.edge || []).includes(c) ? ' is-on' : ' is-tree'}" x1="${pos[id].x}" y1="${pos[id].y}" x2="${pos[c].x}" y2="${pos[c].y}"/>`; }); });
+  ord.forEach(id => { const c = (opt.cls && opt.cls(id)) || '';
+    g += `<g class="al-gn${c ? ' al-' + c : ''}" transform="translate(${pos[id].x},${pos[id].y})"><circle r="19"/><text>${by[id].v}</text></g>`; });
+  // Label penunjuk di kanan atas node; node paling kanan diberi label di kirinya supaya tidak keluar gambar
+  (opt.tags || []).forEach(([id, label]) => { if (!pos[id]) return; const R = pos[id].x > 470;
+    g += `<text class="al-lbl" x="${pos[id].x + (R ? -24 : 24)}" y="${pos[id].y - 16}"${R ? ' style="text-anchor:end"' : ''}>${esc(label)}</text>`; });
+  return { g, h: top + depth * 58 + 30, ord };
+}
+const alTreeStruct = ['struct Node {', '    int data;', '    Node* kiri;', '    Node* kanan;', '};'];
+// Fungsi sisip dari lab BST (baris "Node* sisip" sampai "}" penutupnya)
+const alSisipCode = () => { const c = AL_ALGO.bst.code.cpp, a = c.indexOf('Node* sisip(Node* akar, int x) {'); return c.slice(a, c.indexOf('}', a + 12) + 1); };
+
+Object.assign(AL_ALGO, {
+  // ---------------- Traversal preorder / inorder / postorder ----------------
+  traversal: {
+    counters: ['Dicetak'],
+    vars: ['p->data', 'urutan', 'sudah dicetak'],
+    code: {
+      cpp: [...alTreeStruct, '', 'void preorder(Node* p) {', '    if (p == NULL) return;', '    cout << p->data << " ";', '    preorder(p->kiri);', '    preorder(p->kanan);', '}', '',
+        'void inorder(Node* p) {', '    if (p == NULL) return;', '    inorder(p->kiri);', '    cout << p->data << " ";', '    inorder(p->kanan);', '}', '',
+        'void postorder(Node* p) {', '    if (p == NULL) return;', '    postorder(p->kiri);', '    postorder(p->kanan);', '    cout << p->data << " ";', '}'],
+      ps: ['preorder(p):        (berhenti jika p kosong)', '    cetak p.data', '    preorder(p.kiri), lalu preorder(p.kanan)',
+        'inorder(p):', '    inorder(p.kiri)', '    cetak p.data', '    inorder(p.kanan)',
+        'postorder(p):', '    postorder(p.kiri), lalu postorder(p.kanan)', '    cetak p.data']
+    },
+    lines: {
+      cpp: { decl: [1, 2, 3, 4, 5], preS: [7, 8], preV: [9], inS: [14, 15], inV: [17], postS: [21, 22], postV: [25], end: [7, 14, 21] },
+      ps: { decl: [1, 4, 8], preS: [1], preV: [2], inS: [4, 5], inV: [6], postS: [8, 9], postV: [10], end: [1, 4, 8] }
+    },
+    input: alTreeInput(false, '50, 30, 70, 20, 40'),
+    ORD: [['pre', 'Preorder', 'node, kiri, kanan'], ['in', 'Inorder', 'kiri, node, kanan'], ['post', 'Postorder', 'kiri, kanan, node']],
+    seq(T, root) {
+      const q = { pre: [], in: [], post: [] };
+      (function w(i) { if (i == null) return; q.pre.push(i); w(T[i].l); q.in.push(i); w(T[i].r); q.post.push(i); })(root);
+      return q;
+    },
+    run(data) {
+      const r = alRec2(), { T, root } = AL_ALGO.bst.shape(data), Q = this.seq(T, root), out = { pre: [], in: [], post: [] };
+      r.cnt.Dicetak = 0;
+      const S = o => Object.assign({ T, root, out: { pre: out.pre.slice(), in: out.in.slice(), post: out.post.slice() } }, o);
+      const V = id => T[id].v;
+      r.push({ grp: 'Mulai', kind: 'Konsep', ln: 'decl', vars: {}, S: S({}), title: 'Tiga cara mengunjungi semua node',
+        body: `Angka ${data.join(', ')} sudah disisipkan ke BST. <b>Traversal</b> berarti mengunjungi setiap node tepat satu kali. Ketiganya sama-sama turun ke kiri dulu lalu ke kanan. Bedanya hanya <b>kapan node dicetak</b>: sebelum anak-anaknya (preorder), di antara kiri dan kanan (inorder), atau sesudah keduanya (postorder).` });
+      this.ORD.forEach(([k, name, rule]) => {
+        const seq = Q[k], first = V(seq[0]);
+        r.push({ grp: name, kind: 'Mulai', ln: k + 'S', vars: { urutan: rule }, S: S({ k }), title: `${name}: ${rule}`,
+          body: k === 'pre' ? `Cetak node begitu sampai, baru turun ke kiri, lalu ke kanan. Jadi yang pertama dicetak selalu akar, ${first}.`
+            : k === 'in' ? `Turun ke kiri sejauh mungkin dulu. Node baru dicetak setelah seluruh subpohon kirinya selesai. Yang pertama dicetak adalah node paling kiri, ${first}.`
+            : `Node baru dicetak setelah subpohon kiri <b>dan</b> kanannya selesai. Yang pertama dicetak adalah daun paling kiri, ${first}, dan akar selalu paling akhir.`,
+          q: { t: `Angka berapa yang dicetak pertama pada ${name.toLowerCase()}?`, ...this.opts(T, seq, 0) } });
+        seq.forEach((id, j) => {
+          const t = T[id], kids = [t.l, t.r].filter(c => c != null).map(V);
+          out[k].push(id); r.cnt.Dicetak++;
+          const why = k === 'pre' ? `Sampai di ${t.v}, langsung dicetak. ${kids.length ? `Berikutnya turun ke ${t.l != null ? 'kiri (' + V(t.l) + ')' : 'kanan (' + V(t.r) + ')'}.` : `${t.v} tidak punya anak, jadi kembali ke node di atasnya yang subpohon kanannya belum dikunjungi.`}`
+            : k === 'in' ? `${t.l != null ? `Subpohon kiri ${t.v} (mulai dari ${V(t.l)}) sudah selesai` : `${t.v} tidak punya anak kiri`}, jadi sekarang ${t.v} dicetak. ${t.r != null ? `Berikutnya subpohon kanannya (mulai dari ${V(t.r)}).` : 'Lalu kembali ke atas.'}`
+            : `${kids.length ? `Anak ${t.v} (${kids.join(' dan ')}) sudah dicetak semua` : `${t.v} adalah daun (tanpa anak)`}, jadi ${t.v} dicetak sekarang.`;
+          const done = j === seq.length - 1;
+          r.push({ grp: name, kind: 'Cetak', ln: k + 'V', vars: { 'p->data': t.v, urutan: rule, 'sudah dicetak': out[k].length }, S: S({ k, cur: id }), title: `Cetak ${t.v}`,
+            body: why + (done ? ` ${name} selesai: <b>${seq.map(V).join(' ')}</b>.` : ''),
+            q: done ? undefined : { t: `Angka berapa yang dicetak berikutnya?`, ...this.opts(T, seq, j + 1) } });
+        });
+      });
+      r.push({ grp: 'Hasil', kind: 'Hasil', ln: 'end', vars: {}, S: S({ end: true }), title: 'Tiga urutan dari pohon yang sama',
+        body: `Preorder ${Q.pre.map(V).join(' ')}. Inorder ${Q.in.map(V).join(' ')}, selalu urut naik pada BST. Postorder ${Q.post.map(V).join(' ')}.`,
+        note: ['Kapan dipakai', 'Preorder untuk menyalin pohon (akar dibuat dulu). Inorder untuk mencetak isi BST secara urut. Postorder untuk menghapus seluruh pohon (anak dibuang dulu sebelum induknya).'] });
+      return r.F;
+    },
+    // Pilihan tebakan: jawaban yang benar + dua node lain yang belum dicetak (atau node lain mana saja)
+    opts(T, seq, j) {
+      const right = T[seq[j]].v, rest = seq.slice(j + 1).map(i => T[i].v), other = T.map(t => t.v).filter(v => v !== right && !rest.includes(v));
+      const pool = [...rest.slice(0, 2), ...other].filter(v => v !== right).slice(0, 2), o = [right, ...pool].sort((a, b) => a - b).map(String);
+      return { o, a: o.indexOf(String(right)) };
+    },
+    view(A, s, f) {
+      const S = f.S, T = S.T, cur = S.cur, k = S.k, printed = new Set(k ? S.out[k] : []);
+      const tr = alTreeSvg(T, S.root, { cls: id => id === cur ? 'cmp' : S.end ? 'done' : printed.has(id) ? 'done' : '', tags: cur != null ? [[cur, 'p']] : [] });
+      let g = tr.g, y = tr.h + 6;
+      A.ORD.forEach(([key, name]) => { const on = key === k || S.end, vals = S.out[key].map(i => T[i].v).join(' ');
+        g += `<text class="al-lbl${on ? '' : ' al-muted'}" x="16" y="${y + 20}">${name}</text><text class="al-ord" x="150" y="${y + 21}">${vals || '–'}</text>`; y += 32; });
+      return `<svg class="al-svg" viewBox="0 0 560 ${y + 10}" role="img" aria-label="Pohon ${esc(T.map(t => t.v).join(', '))}. ${esc(A.ORD.map(([key, name]) => name + ': ' + (S.out[key].map(i => T[i].v).join(' ') || 'belum')).join('. '))}">${g}</svg>`;
+    },
+    program(s) {
+      const L = ['#include <iostream>', 'using namespace std;', '', ...this.code.cpp, '', ...alSisipCode(), '', 'int main() {', '    Node* akar = NULL;'];
+      s.data.forEach(v => L.push(`    akar = sisip(akar, ${v});`));
+      L.push('    cout << "Preorder : "; preorder(akar); cout << endl;', '    cout << "Inorder  : "; inorder(akar); cout << endl;', '    cout << "Postorder: "; postorder(akar); cout << endl;', '    return 0;', '}');
+      const { T, root } = AL_ALGO.bst.shape(s.data), Q = this.seq(T, root), w = q => q.map(i => T[i].v).join(' ');
+      return { code: L.join('\n'), out: alOutLines([`Preorder : ${w(Q.pre)}`, `Inorder  : ${w(Q.in)}`, `Postorder: ${w(Q.post)}`]) };
+    }
+  },
+
+  // ---------------- Hapus node di BST ----------------
+  bsthapus: {
+    target: true,
+    counters: ['Perbandingan'],
+    vars: ['x', 'akar->data', 's->data'],
+    code: {
+      cpp: [...alTreeStruct, '', 'Node* hapus(Node* akar, int x) {', '    if (akar == NULL) return NULL;', '    if (x < akar->data) akar->kiri = hapus(akar->kiri, x);', '    else if (x > akar->data) akar->kanan = hapus(akar->kanan, x);', '    else {',
+        '        if (akar->kiri == NULL) {', '            Node* t = akar->kanan;', '            delete akar;', '            return t;', '        }',
+        '        if (akar->kanan == NULL) {', '            Node* t = akar->kiri;', '            delete akar;', '            return t;', '        }',
+        '        Node* s = akar->kanan;', '        while (s->kiri != NULL) s = s->kiri;', '        akar->data = s->data;', '        akar->kanan = hapus(akar->kanan, s->data);', '    }', '    return akar;', '}'],
+      ps: ['hapus(akar, x):', '    jika akar kosong: x tidak ada', '    jika x < akar.data: hapus di subpohon kiri', '    jika x > akar.data: hapus di subpohon kanan', '    ketemu:',
+        '        tanpa anak kiri: ganti node dengan anak kanannya', '        tanpa anak kanan: ganti node dengan anak kirinya', '        dua anak: s = node terkecil di subpohon kanan', '            salin s.data ke node ini', '            hapus s dari subpohon kanan']
+    },
+    lines: {
+      cpp: { decl: [1, 2, 3, 4, 5], none: [8], left: [9], right: [10], found: [11], noL: [12, 13, 14, 15], noR: [17, 18, 19, 20], succ: [22, 23], copy: [24], recDel: [25], end: [27] },
+      ps: { decl: [1], none: [2], left: [3], right: [4], found: [5], noL: [6], noR: [7], succ: [8], copy: [9], recDel: [10], end: [1] }
+    },
+    input: alTreeInput(true, '50, 30, 70, 20, 40'),
+    run(data, x) {
+      const r = alRec2(), { T: T0, root: R0 } = AL_ALGO.bst.shape(data), N = T0.map(t => ({ id: t.id, v: t.v, l: t.l, r: t.r }));
+      let root = R0;
+      r.cnt.Perbandingan = 0;
+      const S = o => Object.assign({ nodes: N.filter(t => !t.gone).map(t => Object.assign({}, t)), root }, o);
+      const kid = t => [t.l, t.r].filter(c => c != null).length;
+      const relink = (par, side, to) => { if (par == null) root = to; else N[par][side] = to; };
+      r.push({ grp: 'Mulai', kind: 'Konsep', ln: 'decl', vars: { x }, S: S({}), title: `Hapus ${x} dari BST`,
+        body: `Pohon dibuat dari ${data.join(', ')}. Menghapus dimulai seperti mencari: turun ke kiri atau kanan sampai ${x} ketemu. Setelah itu ada tiga kasus, tergantung berapa anak yang dimiliki node tersebut.` });
+      let p = root, par = null, side = null;
+      for (;;) {
+        if (p == null) {
+          r.push({ grp: `cari ${x}`, kind: 'Hasil', ln: 'none', vars: { x }, S: S({ path: [] }), title: `${x} tidak ada`, body: `Penelusuran sampai di NULL. ${x} tidak ada di pohon, jadi tidak ada yang dihapus dan pohon tetap sama.` });
+          break;
+        }
+        const t = N[p], hit = x === t.v, left = x < t.v; r.cnt.Perbandingan++;
+        const nk = kid(t), kase = nk === 2 ? 2 : nk;
+        r.push({ grp: `cari ${x}`, kind: 'Bandingkan', ln: hit ? 'found' : left ? 'left' : 'right', vars: { x, 'akar->data': t.v }, S: S({ p, tag: [[p, 'akar']] }), title: hit ? `${x} ketemu` : `${x} ${left ? '<' : '>'} ${t.v}`,
+          body: hit ? `${x} == ${t.v}. Node ini yang dihapus. Anaknya ${nk === 0 ? 'tidak ada (daun)' : nk === 1 ? 'hanya satu' : 'ada dua'}.` : `Turun ke ${left ? 'kiri' : 'kanan'} lewat <code>akar-&gt;${left ? 'kiri' : 'kanan'} = hapus(akar-&gt;${left ? 'kiri' : 'kanan'}, x)</code>. Hasil pemanggilan itu disimpan kembali ke pointer yang sama.`,
+          q: hit ? { t: `Node ${t.v} punya berapa anak?`, o: ['Tidak ada (daun)', 'Satu anak', 'Dua anak'], a: kase } : { t: `Dari ${t.v}, ${x} dicari ke mana?`, o: ['Ke kiri', 'Ke kanan'], a: left ? 0 : 1 } });
+        if (!hit) { par = p; side = left ? 'l' : 'r'; p = left ? t.l : t.r; continue; }
+        const g = nk === 0 ? 'Kasus 1: daun' : nk === 1 ? 'Kasus 2: satu anak' : 'Kasus 3: dua anak';
+        if (nk < 2) {
+          const ch = t.l == null ? t.r : t.l, ln = t.l == null ? 'noL' : 'noR', parV = par == null ? null : N[par].v;
+          r.push({ grp: g, kind: 'Periksa', ln, vars: { x, 'akar->data': t.v }, S: S({ p, bad: p, tag: [[p, 'akar']], edge: ch != null ? [ch] : [] }), title: nk === 0 ? `${t.v} tidak punya anak` : `Anak ${t.v} naik menggantikannya`,
+            body: nk === 0 ? `<code>akar-&gt;kiri == NULL</code>, jadi <code>t = akar-&gt;kanan</code>, yaitu NULL juga. Node ${t.v} dibuang dengan <code>delete</code>, dan ${parV == null ? 'pohon menjadi kosong' : `pointer ${side === 'l' ? 'kiri' : 'kanan'} milik ${parV} diisi NULL`}.`
+              : `${t.l == null ? 'Anak kiri kosong' : 'Anak kanan kosong'}, jadi <code>t</code> menyimpan satu-satunya anak, ${N[ch].v}. ${t.v} dibuang, lalu ${N[ch].v} beserta seluruh subpohonnya ${parV == null ? 'menjadi akar baru' : `tersambung langsung ke ${parV}`}.` });
+          t.gone = true; relink(par, side, ch);
+          r.push({ grp: g, kind: 'Hapus', ln: 'end', vars: { x }, S: S({ hi: ch }), title: `${x} terhapus`, body: `Pohon tinggal ${N.filter(n => !n.gone).length} node. Urutan inorder tetap urut: ${this.ino(N, root).join(', ') || 'kosong'}.` });
+        } else {
+          let sp = t.r, spar = p, sside = 'r';
+          r.push({ grp: g, kind: 'Periksa', ln: 'succ', vars: { x, 'akar->data': t.v, 's->data': N[sp].v }, S: S({ p, tag: [[p, 'akar'], [sp, 's']], s: sp }), title: 'Cari pengganti di subpohon kanan',
+            body: `${t.v} punya dua anak, jadi tidak bisa langsung dibuang. Penggantinya adalah <b>angka terkecil di subpohon kanan</b> (successor): angka itu lebih besar dari semua isi kiri dan lebih kecil dari sisa isi kanan. Mulai dari <code>s = akar-&gt;kanan</code> = ${N[sp].v}.`,
+            q: { t: 'Dari s, ke mana mencari angka terkecil?', o: ['Terus ke kiri', 'Terus ke kanan', 'Kembali ke akar'], a: 0 } });
+          while (N[sp].l != null) { spar = sp; sside = 'l'; sp = N[sp].l;
+            r.push({ grp: g, kind: 'Telusuri', ln: 'succ', vars: { x, 'akar->data': t.v, 's->data': N[sp].v }, S: S({ p, tag: [[p, 'akar'], [sp, 's']], s: sp }), title: `s turun ke ${N[sp].v}`, body: `<code>s-&gt;kiri</code> masih ada, jadi <code>s = s-&gt;kiri</code>. Angka yang lebih kecil selalu di kiri.` }); }
+          const sv = N[sp].v;
+          r.push({ grp: g, kind: 'Periksa', ln: 'succ', vars: { x, 'akar->data': t.v, 's->data': sv }, S: S({ p, tag: [[p, 'akar'], [sp, 's']], s: sp }), title: `Pengganti: ${sv}`,
+            body: `${sv} tidak punya anak kiri, jadi ${sv} adalah angka terkecil di subpohon kanan ${t.v}.`,
+            q: { t: `Setelah dihapus, angka berapa yang menempati posisi ${t.v}?`, ...AL_ALGO.traversal.opts(N, [sp, ...N.filter(n => !n.gone && n.id !== sp && n.id !== p).map(n => n.id)], 0) } });
+          t.v = sv;
+          r.push({ grp: g, kind: 'Salin', ln: 'copy', vars: { x, 'akar->data': sv, 's->data': sv }, S: S({ p, hi: p, bad: sp, tag: [[p, 'akar'], [sp, 's']] }), title: `${x} ditimpa ${sv}`,
+            body: `<code>akar-&gt;data = s-&gt;data</code>. Node di posisi ${x} sekarang berisi ${sv}, jadi ${x} sudah hilang dari pohon. Tapi sekarang ${sv} ada dua: yang lama harus dibuang.` });
+          const ch = N[sp].r;
+          N[sp].gone = true; N[spar][sside] = ch;
+          r.push({ grp: g, kind: 'Hapus', ln: 'recDel', vars: { x, 'akar->data': sv }, S: S({ hi: p, edge: ch != null ? [ch] : [] }), title: `${sv} yang lama dibuang`,
+            body: `<code>hapus(akar-&gt;kanan, ${sv})</code> membuang node ${sv} yang lama. Node itu tidak punya anak kiri, jadi ini selalu kasus 1 atau 2 ${ch != null ? `(anak kanannya, ${N[ch].v}, naik menggantikan)` : '(daun, langsung dibuang)'}. Inorder sekarang: ${this.ino(N, root).join(', ')}.` });
+        }
+        break;
+      }
+      const ino = this.ino(N, root);
+      r.push({ grp: 'Hasil', kind: 'Hasil', ln: 'end', vars: { x }, S: S({ end: true }), title: 'Selesai',
+        body: `Isi pohon dibaca inorder: ${ino.length ? ino.join(', ') : 'kosong'}. Aturan BST (kiri lebih kecil, kanan lebih besar) tetap terjaga.`,
+        note: ['Bisa juga dari kiri', 'Selain angka terkecil di subpohon kanan (successor), pengganti boleh angka terbesar di subpohon kiri (predecessor). Hasil pohonnya berbeda, tapi keduanya benar. Lihat soal: dosen biasanya menyebut mana yang dipakai.'] });
+      return r.F;
+    },
+    ino(N, root) { const o = []; (function w(i) { if (i == null) return; w(N[i].l); o.push(N[i].v); w(N[i].r); })(root); return o; },
+    view(A, s, f) {
+      const S = f.S;
+      if (S.root == null) return `<svg class="al-svg" viewBox="0 0 560 90" role="img" aria-label="Pohon kosong"><text class="al-lbl al-muted" x="280" y="50" style="text-anchor:middle">pohon kosong (akar = NULL)</text></svg>`;
+      const tr = alTreeSvg(S.nodes, S.root, { top: 40, edge: S.edge, tags: S.tag, cls: id => id === S.bad ? 'bad' : id === S.hi ? 'found' : id === S.p || id === S.s ? 'cmp' : S.end ? 'done' : '' });
+      return `<svg class="al-svg" viewBox="0 0 560 ${tr.h}" role="img" aria-label="Pohon berisi ${esc(tr.ord.map(i => S.nodes.find(t => t.id === i).v).join(', '))}">${tr.g}</svg>`;
+    },
+    program(s) {
+      const L = ['#include <iostream>', 'using namespace std;', '', ...this.code.cpp, '', ...alSisipCode(), '',
+        'void inorder(Node* akar) {', '    if (akar == NULL) return;', '    inorder(akar->kiri);', '    cout << akar->data << " ";', '    inorder(akar->kanan);', '}', '', 'int main() {', '    Node* akar = NULL;'];
+      s.data.forEach(v => L.push(`    akar = sisip(akar, ${v});`));
+      L.push('    cout << "Sebelum: "; inorder(akar); cout << endl;', `    akar = hapus(akar, ${s.target});`, `    cout << "Sesudah hapus ${s.target}: "; inorder(akar); cout << endl;`, '    return 0;', '}');
+      const F = this.run(s.data, s.target), last = F[F.length - 1].S, ino = this.ino(Object.fromEntries(last.nodes.map(t => [t.id, t])), last.root);
+      return { code: L.join('\n'), out: alOutLines([`Sebelum: ${s.data.slice().sort((a, b) => a - b).join(' ')}`, `Sesudah hapus ${s.target}: ${ino.join(' ')}`]) };
+    }
+  }
+});

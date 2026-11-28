@@ -368,6 +368,46 @@ const SDA = {
       { q: 'Stack dibuat dengan array berukuran MAX = 5 dan top awal -1. Kondisi stack penuh adalah…', opts: ['top == 5', 'top == 4', 'top == -1', 'top == 0'], ans: 1, exp: 'Indeks array 0 sampai 4. Stack penuh saat top sudah di indeks terakhir, yaitu MAX - 1 = 4.' },
       { q: 'Sifat stack yang benar adalah…', opts: ['FIFO: yang pertama masuk, pertama keluar', 'LIFO: yang terakhir masuk, pertama keluar', 'Data diambil dari tengah', 'Data selalu urut naik'], ans: 1, exp: 'Stack hanya punya satu ujung (atas) untuk masuk dan keluar, jadi yang terakhir masuk selalu keluar duluan.' }
     ]),
+    L(0, 'aplikasi-stack', 'Struktur linear', 'Aplikasi Stack: Kurung dan Postfix', 'Dua soal klasik yang diselesaikan dengan stack', [
+      A('Mengecek pasangan kurung', `<p>Sebuah teks disebut <b>seimbang</b> (balanced) kalau setiap kurung buka <code>( [ {</code> punya kurung tutup yang sejenis, dan kurung yang dibuka paling akhir ditutup paling dulu. <code>{[(a+b)*c]}</code> seimbang. <code>([)]</code> tidak, karena <code>[</code> ditutup sebelum <code>(</code> di dalamnya selesai.</p>
+<p>Caranya dengan satu stack, membaca teks dari kiri:</p>
+<ul><li>Kurung buka: <b>push</b> ke stack.</li>
+<li>Kurung tutup: kalau stack <b>kosong</b>, berarti tidak seimbang (tutup kelebihan). Kalau tidak, <b>pop</b> dan cocokkan. Pasangan salah berarti tidak seimbang.</li>
+<li>Karakter lain (huruf, angka, operator) dilewati.</li>
+<li>Di akhir, stack harus <b>kosong</b>. Kalau masih ada isinya, ada kurung buka yang tidak pernah ditutup.</li></ul>
+<p><b>Kapan dipakai:</b> compiler mengecek kurung di kode program, editor kode mewarnai pasangan kurung, dan validasi rumus di kalkulator atau spreadsheet.</p>`),
+      lab('kurung', '{[(a+b)*c]}'.split(''), undefined, 'Tekan Lanjut atau tombol panah. Lihat kurung buka masuk stack dan kurung tutup mencari pasangannya di atas stack. Coba juga ([)], (() dan ()) di bawah untuk melihat tiga cara gagal.'),
+      tbl('Tiga cara tidak seimbang', ['Contoh', 'Terdeteksi saat', 'Penyebab'], [
+        ['<code>([)]</code>', 'membaca <code>)</code>', 'yang di-pop <code>[</code>, bukan <code>(</code>: kurung bersilang'],
+        ['<code>())</code>', 'membaca <code>)</code> kedua', 'stack sudah kosong: kurung tutup kelebihan'],
+        ['<code>(()</code>', 'teks habis', 'stack masih berisi <code>(</code>: kurung buka tidak ditutup'],
+        ['<code>{[()]}</code>', '–', 'seimbang: stack kosong di akhir']
+      ], 'Ringkasan'),
+      A('Postfix: menghitung tanpa kurung', `<p>Cara biasa menulis rumus disebut <b>infix</b>: operator di antara angka, misalnya <code>(5 + 3) * 2</code>. Supaya benar, kita perlu kurung dan aturan "kali dan bagi dulu". Pada <b>postfix</b> (notasi polandia terbalik), operator ditulis <b>sesudah</b> kedua angkanya: <code>5 3 + 2 *</code>. Tidak perlu kurung sama sekali.</p>
+<p>Menghitung postfix dengan stack:</p>
+<ul><li>Angka: <b>push</b>.</li>
+<li>Operator: <b>pop dua kali</b>. Yang keluar pertama adalah <code>b</code> (angka kanan), yang kedua <code>a</code> (angka kiri). Hitung <code>a operator b</code>, lalu push hasilnya.</li>
+<li>Setelah token habis, isi stack tinggal satu angka: itulah hasilnya.</li></ul>
+<p>Ada juga <b>prefix</b>: operator ditulis sebelum angkanya, misalnya <code>* + 5 3 2</code>.</p>`),
+      lab('postfix', [5, 3, '+', 2, '*'], undefined, 'Tekan Lanjut atau tombol panah. Perhatikan urutan pop: yang keluar pertama menjadi b (kanan). Coba 9 4 - dan 8 2 / untuk melihat urutan yang berpengaruh, atau 2 3 4 * + untuk melihat stack menampung tiga angka.'),
+      tbl('Mengubah infix ke postfix', ['Infix', 'Langkah berpikir', 'Postfix'], [
+        ['<code>A + B</code>', 'operator dipindah ke belakang kedua operan', '<code>A B +</code>'],
+        ['<code>A + B * C</code>', 'B * C dikerjakan dulu: <code>B C *</code>, lalu ditambah A', '<code>A B C * +</code>'],
+        ['<code>(A + B) * C</code>', 'kurung dulu: <code>A B +</code>, lalu dikali C', '<code>A B + C *</code>'],
+        ['<code>A - B - C</code>', 'kiri ke kanan: <code>A B -</code>, lalu dikurangi C', '<code>A B - C -</code>'],
+        ['<code>A * (B + C) / D</code>', '<code>B C +</code>, dikali A, lalu dibagi D', '<code>A B C + * D /</code>']
+      ], 'Infix ke postfix'),
+      salah(`<ul><li><b>Membalik a dan b saat pop.</b> Untuk <code>9 4 -</code>, pop pertama adalah 4 (b) dan kedua 9 (a), jadi hasilnya 9 - 4 = 5. Kalau terbalik, hasilnya -5. Untuk + dan * tidak terasa, tapi untuk - dan / hasilnya salah.</li>
+<li><b>Lupa mengecek stack kosong sebelum pop</b> saat mengecek kurung. Teks <code>)(</code> membuat pop dilakukan pada stack kosong.</li>
+<li><b>Mengira seimbang cukup dengan menghitung jumlah buka dan tutup.</b> <code>([)]</code> punya jumlah yang sama tapi tetap tidak seimbang, karena urutannya bersilang. Yang menentukan adalah urutan, dan itu sebabnya butuh stack.</li>
+<li><b>Mengubah infix ke postfix tanpa memperhatikan urutan operator.</b> <code>A + B * C</code> bukan <code>A B + C *</code>, karena perkalian dikerjakan lebih dulu.</li></ul>`)
+    ], [
+      { q: 'Teks mana yang seimbang?', opts: ['([)]', '{[()]}', '(()', '())'], ans: 1, exp: 'Setiap kurung tutup bertemu kurung buka sejenis yang paling akhir dibuka, dan stack kosong di akhir.' },
+      { q: 'Saat memeriksa "(()", di mana kesalahannya terdeteksi?', opts: ['Di karakter pertama', 'Di karakter kedua', 'Di karakter ketiga', 'Setelah teks habis, stack masih berisi ('], ans: 3, exp: 'Semua kurung tutup menemukan pasangannya, tapi satu ( tidak pernah ditutup. Itu baru ketahuan karena stack tidak kosong di akhir.' },
+      { q: 'Hasil postfix 6 2 / 3 + adalah…', opts: ['5', '6', '1', '9'], ans: 1, exp: '6 / 2 = 3, lalu 3 + 3 = 6.' },
+      { q: 'Bentuk postfix dari A + B * C adalah…', opts: ['A B + C *', 'A B C * +', '+ A * B C', 'A B C + *'], ans: 1, exp: 'B * C dikerjakan dulu (B C *), lalu hasilnya ditambah A, jadi A B C * +. Pilihan + A * B C adalah bentuk prefix.' },
+      { q: 'Postfix 8 5 - dihitung dengan stack. Nilai b (pop pertama) dan hasilnya adalah…', opts: ['b = 8, hasil -3', 'b = 5, hasil 3', 'b = 5, hasil -3', 'b = 8, hasil 3'], ans: 1, exp: 'Pop pertama mengambil angka paling atas, 5, sebagai b. Lalu a = 8, dan a - b = 3.' }
+    ]),
     L(9, 'queue', 'Struktur linear', 'Queue (Antrian)', 'Masuk di belakang, keluar di depan', [
       A('Apa itu queue?', `<p><b>Queue</b> (antrian) adalah kumpulan data yang ditambah di <b>belakang</b> dan diambil dari <b>depan</b>. Data yang masuk paling dulu keluar paling dulu. Sifat ini disebut <b>FIFO</b> (<i>First In, First Out</i>), seperti antrean di kasir.</p>
 <ul><li><b>enqueue(x)</b>: menaruh x di belakang antrian.</li>
@@ -438,6 +478,52 @@ const SDA = {
       { q: 'Angka 40, 20, 60, 10 disisipkan berurutan ke BST kosong. Di mana posisi 10?', opts: ['Anak kanan 40', 'Anak kiri 20', 'Anak kanan 20', 'Anak kiri 60'], ans: 1, exp: '10 < 40 ke kiri (20), 10 < 20 ke kiri. Anak kiri 20 masih kosong.' },
       { q: 'Penelusuran inorder pada BST menghasilkan data yang…', opts: ['Acak', 'Urut naik', 'Urut sesuai waktu disisipkan', 'Urut turun'], ans: 1, exp: 'Inorder mengunjungi kiri (lebih kecil), node, lalu kanan (lebih besar), jadi hasilnya urut naik.' },
       { q: 'Data 10, 20, 30, 40, 50 disisipkan berurutan. Bentuk pohonnya…', opts: ['Seimbang', 'Miring ke kanan seperti linked list', 'Miring ke kiri', 'Hanya akar'], ans: 1, exp: 'Setiap angka lebih besar dari sebelumnya, jadi selalu menjadi anak kanan. Pencarian menjadi O(n).' }
+    ]),
+    L(0, 'traversal-pohon', 'Bercabang', 'Traversal Pohon: Preorder, Inorder, Postorder', 'Tiga urutan mengunjungi semua node', [
+      A('Apa itu traversal?', `<p><b>Traversal</b> berarti mengunjungi setiap node pohon tepat satu kali, misalnya untuk mencetak isinya. Pada binary tree ada tiga cara yang paling sering dipakai. Ketiganya ditulis rekursif dan sama-sama mengunjungi subpohon kiri sebelum kanan. Bedanya hanya <b>kapan node itu sendiri dicetak</b>:</p>
+<ul><li><b>Preorder</b> (node, kiri, kanan): cetak dulu, baru turun ke anak-anaknya. Yang pertama dicetak selalu akar.</li>
+<li><b>Inorder</b> (kiri, node, kanan): cetak setelah subpohon kiri selesai. Pada BST hasilnya <b>urut naik</b>.</li>
+<li><b>Postorder</b> (kiri, kanan, node): cetak setelah kedua subpohon selesai. Akar selalu dicetak paling akhir.</li></ul>
+<p>Cara cepat mengerjakan soal: tulis dulu urutannya untuk setiap subpohon kecil, lalu gabungkan. Untuk pohon dengan akar 50, kiri 30 (anak 20 dan 40), kanan 70 (anak 60 dan 80), preorder = 50, lalu preorder kiri (30 20 40), lalu preorder kanan (70 60 80).</p>
+<p>Ada juga <b>level order</b>: dikunjungi per tingkat dari atas, kiri ke kanan. Caranya sama dengan BFS (memakai queue), lihat pelajaran <a href="#/c/struktur-data-algoritma/m/bfs">BFS</a>.</p>`),
+      lab('traversal', [50, 30, 70, 20, 40, 60, 80], undefined, 'Tekan Lanjut atau tombol panah. Ketiga traversal dijalankan berurutan pada pohon yang sama. Pilih "Tebak dulu" untuk menebak angka yang dicetak berikutnya, atau isi angkamu sendiri di bawah.'),
+      tbl('Bandingkan tiga traversal', ['Traversal', 'Urutan', 'Ciri hasilnya', 'Dipakai untuk'], [
+        ['Preorder', 'node, kiri, kanan', 'akar paling depan', 'menyalin pohon, menyimpan bentuk pohon'],
+        ['Inorder', 'kiri, node, kanan', 'pada BST selalu urut naik', 'mencetak isi BST secara urut'],
+        ['Postorder', 'kiri, kanan, node', 'akar paling belakang', 'menghapus seluruh pohon, menghitung ukuran subpohon'],
+        ['Level order', 'per tingkat, kiri ke kanan', 'akar paling depan, lalu anak-anaknya', 'mencetak per tingkat (memakai queue)']
+      ], 'Ringkasan'),
+      salah(`<ul><li><b>Menulis preorder sebagai "urutan disisipkan".</b> Kebetulan sering sama untuk pohon kecil, tapi tidak selalu. Telusuri pohonnya, jangan menyalin data masukan.</li>
+<li><b>Mencetak satu subpohon setengah jalan.</b> Pada inorder, seluruh subpohon kiri harus selesai sebelum node dicetak, termasuk cucu-cucunya, bukan hanya anak langsung.</li>
+<li><b>Lupa kasus dasar <code>if (p == NULL) return;</code>.</b> Tanpa itu, rekursi membaca <code>p-&gt;kiri</code> dari NULL dan program berhenti mendadak.</li></ul>`)
+    ], [
+      { q: 'Pohon: akar 8, anak kiri 3 (anak 1 dan 6), anak kanan 10 (anak kanan 14). Preorder-nya adalah…', opts: ['1 3 6 8 10 14', '8 3 1 6 10 14', '1 6 3 14 10 8', '8 3 10 1 6 14'], ans: 1, exp: 'Cetak akar 8, lalu preorder subpohon kiri (3 1 6), lalu subpohon kanan (10 14).' },
+      { q: 'Pada pohon yang sama, postorder-nya adalah…', opts: ['1 6 3 14 10 8', '8 10 14 3 6 1', '1 3 6 8 10 14', '6 1 3 14 10 8'], ans: 0, exp: 'Kiri dulu (1 6 3), lalu kanan (14 10), akar paling akhir: 8.' },
+      { q: 'Traversal yang menghasilkan isi BST urut naik adalah…', opts: ['Preorder', 'Inorder', 'Postorder', 'Level order'], ans: 1, exp: 'Inorder mencetak semua yang lebih kecil (kiri) sebelum node, lalu yang lebih besar (kanan).' },
+      { q: 'Preorder sebuah BST adalah 40 20 10 30 60. Angka berapa yang menjadi akar?', opts: ['10', '20', '40', '60'], ans: 2, exp: 'Preorder selalu dimulai dari akar.' }
+    ]),
+    L(0, 'hapus-bst', 'Bercabang', 'Menghapus Node di BST', 'Daun, satu anak, atau dua anak', [
+      A('Tiga kasus menghapus', `<p>Menghapus angka dari BST dimulai seperti mencari: turun ke kiri atau kanan sampai node berisi angka itu ketemu. Setelah itu caranya tergantung <b>banyak anak</b> node tersebut:</p>
+<ul><li><b>Kasus 1, daun (tanpa anak):</b> node langsung dibuang, dan pointer induknya diisi NULL.</li>
+<li><b>Kasus 2, satu anak:</b> anak itu (beserta seluruh subpohonnya) naik menggantikan posisi node yang dihapus.</li>
+<li><b>Kasus 3, dua anak:</b> node tidak bisa langsung dibuang karena dua subpohonnya butuh induk. Cari <b>pengganti</b>, yaitu angka terkecil di subpohon kanan (disebut <b>successor</b>): dari anak kanan, terus turun ke kiri. Salin angka pengganti ke node ini, lalu hapus node pengganti yang lama. Node pengganti tidak punya anak kiri, jadi penghapusannya selalu kasus 1 atau 2.</li></ul>
+<p>Pengganti boleh juga angka terbesar di subpohon kiri (<b>predecessor</b>). Keduanya menjaga aturan BST. Kode di lab memakai successor.</p>
+<p>Di C++, fungsi <code>hapus</code> mengembalikan akar subpohon yang baru, dan hasilnya disimpan lagi: <code>akar-&gt;kiri = hapus(akar-&gt;kiri, x)</code>. Dengan cara ini induk otomatis tersambung ke pengganti tanpa perlu menyimpan pointer induk.</p>`),
+      lab('bsthapus', [50, 30, 70, 20, 40, 60, 80], 50, 'Tekan Lanjut atau tombol panah. Contoh ini menghapus akar yang punya dua anak. Coba juga hapus 20 (daun) atau masukkan 50, 30, 70, 60 lalu hapus 70 (satu anak).'),
+      tbl('Ringkasan tiga kasus', ['Kasus', 'Contoh (pohon contoh di lab)', 'Yang terjadi'], [
+        ['Daun', 'hapus 20', 'node dibuang, anak kiri 30 menjadi NULL'],
+        ['Satu anak', 'hapus 70 pada pohon 50, 30, 70, 60', '60 naik menjadi anak kanan 50'],
+        ['Dua anak', 'hapus 50', 'pengganti 60 (terkecil di kanan) disalin ke akar, lalu 60 yang lama dibuang'],
+        ['Tidak ada', 'hapus 45', 'penelusuran sampai NULL, pohon tidak berubah']
+      ], 'Ringkasan'),
+      salah(`<ul><li><b>Mengambil pengganti dari tempat yang salah.</b> Successor adalah angka terkecil di subpohon <b>kanan</b> (anak kanan lalu terus ke kiri), bukan anak kanan langsung dan bukan angka terkecil di seluruh pohon.</li>
+<li><b>Lupa menghapus node pengganti yang lama.</b> Setelah angkanya disalin, angka itu ada dua di pohon. Node lama harus dibuang dengan <code>hapus(akar-&gt;kanan, s-&gt;data)</code>.</li>
+<li><b>Membuang node satu anak beserta anaknya.</b> Pada kasus 2, subpohon anaknya tetap ada dan naik satu tingkat, tidak ikut terhapus.</li>
+<li><b>Tidak menyimpan hasil rekursi.</b> Kalau hanya menulis <code>hapus(akar-&gt;kiri, x)</code>, pointer induk masih menunjuk node yang sudah di-delete.</li></ul>`)
+    ], [
+      { q: 'BST dibuat dari 50, 30, 70, 20, 40, 60, 80. Jika 30 dihapus memakai successor, angka berapa yang menggantikan posisinya?', opts: ['20', '40', '50', '60'], ans: 1, exp: 'Subpohon kanan 30 hanya berisi 40, jadi angka terkecilnya 40.' },
+      { q: 'Node yang dihapus punya satu anak. Yang terjadi adalah…', opts: ['Anak ikut terhapus', 'Anak beserta subpohonnya naik menggantikan node itu', 'Pohon disusun ulang dari awal', 'Node tidak bisa dihapus'], ans: 1, exp: 'Induk langsung disambungkan ke satu-satunya anak itu.' },
+      { q: 'Successor dari sebuah node yang punya dua anak dicari dengan cara…', opts: ['Ambil anak kiri', 'Ambil anak kanan, lalu terus turun ke kiri', 'Ambil anak kiri, lalu terus turun ke kanan', 'Ambil akar'], ans: 1, exp: 'Angka terkecil di subpohon kanan ada di ujung paling kiri subpohon itu. Pilihan ketiga adalah predecessor.' }
     ]),
     L(0, 'bfs', 'Bercabang', 'Graf dan BFS (Breadth-First Search)', 'Telusuri melebar memakai antrian', [
       A('Apa itu graf?', `<p><b>Graf</b> terdiri dari <b>simpul</b> (vertex/node) dan <b>sisi</b> (edge) yang menghubungkan dua simpul. Contohnya peta kota (kota dan jalan), jaringan pertemanan, atau jaringan komputer. Berbeda dengan pohon, graf boleh punya siklus dan tidak punya akar.</p>

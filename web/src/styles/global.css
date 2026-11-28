@@ -358,6 +358,7 @@
   .al-gn.al-cmp circle { fill: #ffe14d; }
   .al-gn.al-chk circle { fill: #fff; stroke: #b2412e; stroke-width: 3; stroke-dasharray: 5 3; }
   .al-gn.al-found circle { fill: #8fe3a2; stroke: #1f5c52; }
+  .al-gn.al-bad circle { fill: #ffd9cf; stroke: #b2412e; stroke-width: 3; }
   .al-gn.al-done circle { fill: #d9ebe6; stroke: #1f5c52; }
   .al-ord { font: 700 16px 'Bricolage Grotesque', system-ui, sans-serif; fill: #17202a; }
   .al-slot.is-chk { stroke: #17202a; stroke-width: 2.5; stroke-dasharray: none; }

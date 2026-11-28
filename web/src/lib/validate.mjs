@@ -46,7 +46,7 @@ const Block = z.lazy(() => z.looseObject({
     });
   }
   if (b.type === 'algo-lab') {
-    const ALGO = { linear: 'cari', biner: 'cari-urut', bubble: '', selection: '', insertion: '', merge: '', quick: '', stack: 'ops:pop', queue: 'ops:deq', linked: 'list', bigo: 'n', array1d: '', array2d: 'matriks', rekursi: 'satu', perulangan: 'n0', kembar: '', bst: 'kunci', hash: 'kunci', bfs: 'graf', dfs: 'graf', pointer: 'dua', structsort: 'rekord' };
+    const ALGO = { linear: 'cari', biner: 'cari-urut', bubble: '', selection: '', insertion: '', merge: '', quick: '', stack: 'ops:pop', queue: 'ops:deq', linked: 'list', bigo: 'n', array1d: '', array2d: 'matriks', rekursi: 'satu', perulangan: 'n0', kembar: '', bst: 'kunci', hash: 'kunci', bfs: 'graf', dfs: 'graf', pointer: 'dua', structsort: 'rekord', traversal: 'pohon', bsthapus: 'pohon-hapus', kurung: 'kurung', postfix: 'postfix' };
     const d = b.data, int = v => Number.isInteger(v) && v >= 0 && v <= 99, kind = ALGO[b.algo] || '';
     if (!(b.algo in ALGO)) ctx.addIssue({ code: 'custom', path: ['algo'], message: `algo "${b.algo}" tidak dikenal (yang ada: ${Object.keys(ALGO).join(', ')})` });
     if (kind.startsWith('ops:')) {
@@ -62,6 +62,15 @@ const Block = z.lazy(() => z.looseObject({
       if (!Array.isArray(d) || d.length !== 2 || !d.every(v => Number.isInteger(v) && v >= 0 && v <= 98) || d[0] + 1 === d[1]) ctx.addIssue({ code: 'custom', path: ['data'], message: 'pointer butuh data [a, b], bilangan 0–98, dengan b bukan a + 1' });
     } else if (kind === 'rekord') {
       if (!Array.isArray(d) || d.length < 3 || d.length > 6 || !d.every(v => Number.isInteger(v) && v >= 0 && v <= 100)) ctx.addIssue({ code: 'custom', path: ['data'], message: 'structsort butuh 3–6 nilai 0–100' });
+    } else if (kind === 'pohon' || kind === 'pohon-hapus') {
+      if (!Array.isArray(d) || d.length < 3 || d.length > 8 || !d.every(int) || new Set(d).size !== d.length) ctx.addIssue({ code: 'custom', path: ['data'], message: `${b.algo} butuh 3–8 bilangan bulat 0–99 yang berbeda` });
+      if (kind === 'pohon-hapus' && !int(b.target)) ctx.addIssue({ code: 'custom', path: ['target'], message: 'bsthapus butuh target (angka yang dihapus, 0–99)' });
+    } else if (kind === 'kurung') {
+      if (!Array.isArray(d) || d.length < 2 || d.length > 16 || !d.every(c => typeof c === 'string' && /^[()[\]{}a-zA-Z0-9+\-*/]$/.test(c)) || !d.some(c => '()[]{}'.includes(c))) ctx.addIssue({ code: 'custom', path: ['data'], message: 'kurung butuh 2–16 karakter tunggal (kurung, huruf, angka, + - * /), minimal satu kurung' });
+    } else if (kind === 'postfix') {
+      let depth = 0, okp = Array.isArray(d) && d.length >= 3 && d.length <= 11;
+      if (okp) for (const t of d) { if (int(t)) depth++; else if (['+', '-', '*', '/'].includes(t) && depth >= 2) depth--; else { okp = false; break; } }
+      if (!okp || depth !== 1) ctx.addIssue({ code: 'custom', path: ['data'], message: 'postfix butuh 3–11 token (bilangan 0–99 atau + - * /) yang membentuk ekspresi postfix sah' });
     } else if (kind === 'n0') {
       if (!Array.isArray(d) || d.length !== 1 || !Number.isInteger(d[0]) || d[0] < 0 || d[0] > 6) ctx.addIssue({ code: 'custom', path: ['data'], message: 'perulangan butuh data [n] dengan n 0–6' });
     } else if (kind === 'kunci') {

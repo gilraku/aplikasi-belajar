@@ -349,3 +349,195 @@ Object.assign(AL_ALGO, {
     }
   }
 });
+
+// ---------- Aplikasi stack: cek pasangan kurung dan menghitung postfix ----------
+const AL_BUKA = { ')': '(', ']': '[', '}': '{' };
+const alCharRow = (s, cur, y, cls) => s.map((c, i) => { const x = 280 - s.length * 16 + i * 32, k = cls(i);
+  return `<g class="al-box${k ? ' al-' + k : ''}" transform="translate(${x},${y})"><rect width="28" height="36" rx="5"/><text x="14" y="18">${esc(c)}</text></g>${i === cur ? `<text class="al-idx" x="${x + 14}" y="${y + 56}">i = ${i}</text>` : ''}`; }).join('');
+
+Object.assign(AL_ALGO, {
+  // ---------------- Cek pasangan kurung ----------------
+  kurung: {
+    counters: ['Push', 'Pop'],
+    vars: ['i', 'c', 'top', 'st[top]'],
+    code: {
+      cpp: ['bool seimbang(string s) {', '    char st[50];', '    int top = -1;', '    int n = s.length();', '    for (int i = 0; i < n; i++) {', '        char c = s[i];', "        if (c == '(' || c == '[' || c == '{') {", '            top++;', '            st[top] = c;',
+        "        } else if (c == ')' || c == ']' || c == '}') {", '            if (top == -1) return false;', '            char buka = st[top];', '            top--;',
+        "            if (c == ')' && buka != '(') return false;", "            if (c == ']' && buka != '[') return false;", "            if (c == '}' && buka != '{') return false;", '        }', '    }', '    return top == -1;', '}'],
+      ps: ['seimbang(s):   stack st kosong', '    untuk setiap karakter c di s:', '        jika c kurung buka: push(c)', '        jika c kurung tutup:', '            jika stack kosong: tidak seimbang', '            buka = pop()', '            jika buka bukan pasangan c: tidak seimbang', '    seimbang jika stack kosong di akhir']
+    },
+    lines: {
+      cpp: { decl: [1, 2, 3, 4], open: [6, 7, 8, 9], close: [6, 10, 11], empty: [11], pop: [12, 13, 14, 15, 16], bad: [14, 15, 16], end: [19] },
+      ps: { decl: [1], open: [2, 3], close: [4, 5], empty: [5], pop: [6, 7], bad: [7], end: [8] }
+    },
+    input: {
+      mode: 'text', aria: 'Teks berisi kurung, misalnya {[(a+b)*c]}',
+      hint: '2 sampai 16 karakter: kurung <b>( ) [ ] { }</b>, huruf, angka, atau + - * /. Spasi diabaikan. Contoh: {[(a+b)*c]}',
+      fmt: d => (d || []).join(''),
+      parse(raw) {
+        const s = String(raw).replace(/\s+/g, '').split('');
+        if (s.length < 2 || s.length > 16) return { err: 'Isi 2 sampai 16 karakter. Contoh: {[(a+b)*c]}' };
+        const badc = s.find(c => !/^[()[\]{}a-zA-Z0-9+\-*/]$/.test(c));
+        if (badc) return { err: `Karakter "${badc}" tidak bisa dipakai. Pakai kurung ( ) [ ] { }, huruf, angka, atau + - * /.` };
+        if (!s.some(c => '()[]{}'.includes(c))) return { err: 'Minimal ada satu kurung.' };
+        return { data: s };
+      },
+      acak() {
+        const P = ['()', '[]', '{}'], build = d => { if (d === 0 || Math.random() < 0.3) return ''; const p = P[alRnd(0, 2)]; return p[0] + build(d - 1) + p[1] + (Math.random() < 0.4 ? build(d - 1) : ''); };
+        let s = ''; while (s.length < 4 || s.length > 14) s = build(3) + build(2);
+        const a = s.split('');
+        if (Math.random() < 0.5) { const i = alRnd(0, a.length - 1), k = '()[]{}'; a[i] = k[(k.indexOf(a[i]) + 2 + alRnd(0, 3)) % 6]; }
+        return { data: a };
+      }
+    },
+    run(data) {
+      const r = alRec2(), st = [], txt = data.join('');
+      let top = -1, uid = 0, ok = true;
+      r.cnt.Push = 0; r.cnt.Pop = 0;
+      const S = o => Object.assign({ s: data, st: st.slice() }, o);
+      r.push({ grp: 'Mulai', kind: 'Konsep', ln: 'decl', vars: { top }, S: S({}), title: 'Setiap kurung tutup harus menemukan pasangannya',
+        body: `Teks <code>${esc(txt)}</code> dibaca dari kiri. Kurung buka disimpan di stack. Setiap kurung tutup harus cocok dengan kurung buka <b>yang paling akhir</b> disimpan, dan itulah isi paling atas stack. Huruf, angka, dan operator dilewati.` });
+      for (let i = 0; i < data.length && ok; i++) {
+        const c = data[i], g = `i = ${i}: ${c}`;
+        if ('([{'.includes(c)) {
+          top++; st.push({ id: uid++, c }); r.cnt.Push++;
+          r.push({ grp: g, kind: 'Masuk', ln: 'open', vars: { i, c, top, 'st[top]': c }, S: S({ i, hi: st[top].id }), title: `${c} masuk stack`, body: `<code>${c}</code> kurung buka, jadi disimpan: <code>top++</code> menjadi ${top}, lalu <code>st[${top}] = '${c}'</code>.` });
+        } else if (')]}'.includes(c)) {
+          const empty = top === -1, buka = empty ? null : st[top].c, match = buka === AL_BUKA[c];
+          r.push({ grp: g, kind: 'Periksa', ln: 'close', vars: { i, c, top, 'st[top]': empty ? undefined : buka }, S: S({ i, hi: empty ? null : st[top].id }), title: `${c} kurung tutup: cek atas stack`,
+            body: empty ? '<code>top == -1</code>: stack kosong, padahal ada kurung tutup.' : `Isi paling atas adalah <code>${buka}</code>. Pasangan <code>${c}</code> seharusnya <code>${AL_BUKA[c]}</code>.`,
+            q: { t: `Apa yang terjadi dengan ${c}?`, o: ['Cocok, pasangan dibuang', 'Tidak cocok, berhenti', 'Stack kosong, berhenti'], a: empty ? 2 : match ? 0 : 1 } });
+          if (empty) { ok = false;
+            r.push({ grp: g, kind: 'Gagal', ln: 'empty', vars: { i, c, top }, S: S({ i, badc: i }), title: 'Tidak seimbang: kurung tutup kelebihan', body: `<code>${c}</code> di indeks ${i} tidak punya kurung buka. Fungsi langsung <code>return false</code>.` }); break; }
+          const e = st.pop(); top--; r.cnt.Pop++;
+          if (match) r.push({ grp: g, kind: 'Keluar', ln: 'pop', vars: { i, c, top, 'st[top]': top >= 0 ? st[top].c : undefined }, S: S({ i, out: e, ok: true }), title: `${buka} dan ${c} berpasangan`, body: `<code>buka = st[top]</code> lalu <code>top--</code> menjadi ${top}. <code>${buka}</code> memang pasangan <code>${c}</code>, jadi keduanya selesai.` });
+          else { ok = false;
+            r.push({ grp: g, kind: 'Gagal', ln: 'bad', vars: { i, c, top }, S: S({ i, out: e, badc: i }), title: 'Tidak seimbang: pasangan salah', body: `Yang keluar <code>${buka}</code>, padahal <code>${c}</code> butuh <code>${AL_BUKA[c]}</code>. Kurungnya bersilang, jadi fungsi <code>return false</code>.` }); }
+        }
+      }
+      if (ok) {
+        const fine = top === -1;
+        r.push({ grp: 'Akhir', kind: fine ? 'Hasil' : 'Gagal', ln: 'end', vars: { top }, S: S({ end: true, badEnd: !fine }), title: fine ? 'Seimbang' : 'Tidak seimbang: kurung buka tersisa',
+          body: fine ? `Semua karakter sudah dibaca dan stack kosong (<code>top == -1</code>). Setiap kurung buka sudah bertemu pasangannya: <code>${esc(txt)}</code> seimbang.` : `Teks habis, tapi stack masih berisi ${st.map(e => e.c).join(' ')}. Kurung buka itu tidak pernah ditutup, jadi <code>top == -1</code> bernilai false.`,
+          note: ['Mengapa stack', 'Kurung yang dibuka paling akhir harus ditutup paling dulu. Itu persis sifat LIFO, sehingga cukup melihat isi paling atas stack.'] });
+      } else {
+        r.push({ grp: 'Akhir', kind: 'Hasil', ln: 'end', vars: { top }, S: S({ end: true, badEnd: true }), title: 'Hasil: tidak seimbang', body: `<code>${esc(txt)}</code> tidak seimbang. Sisa teks tidak perlu dibaca lagi.` });
+      }
+      return r.F;
+    },
+    view(A, s, f) {
+      const S = f.S, mv = alMover(s), y = 168;
+      let g = `<text class="al-lbl" x="20" y="22">teks</text>` + alCharRow(S.s, S.end ? null : S.i, 34, i => i === S.badc ? 'bad' : S.end ? 'done' : i === S.i ? 'cmp' : S.i != null && i < S.i ? 'done' : '');
+      g += `<text class="al-lbl" x="20" y="${y - 12}">stack (bawah → atas)</text><line class="al-floor" x1="16" x2="16" y1="${y - 2}" y2="${y + 42}"/>`;
+      S.st.forEach((e, k) => { g += alBox(mv, 'e' + e.id, e.c, 24 + k * 50, y, e.id === S.hi ? 'cmp' : '', 44); });
+      if (!S.st.length) g += `<text class="al-lbl al-muted" x="28" y="${y + 24}">kosong</text>`;
+      if (S.out) g += alBox(mv, 'e' + S.out.id, S.out.c, 470, y, S.ok ? 'found' : 'bad', 44) + `<text class="al-lbl" x="470" y="${y - 12}">keluar</text>`;
+      if (S.end) g += `<text class="al-lbl" x="20" y="${y + 74}">${S.badEnd ? 'tidak seimbang' : 'seimbang'}</text>`;
+      return `<svg class="al-svg" viewBox="0 0 560 ${y + (S.end ? 88 : 56)}" role="img" aria-label="Teks ${esc(S.s.join(''))}. Isi stack: ${esc(S.st.map(e => e.c).join(' ') || 'kosong')}">${g}</svg>`;
+    },
+    program(s) {
+      const txt = s.data.join(''), F = this.run(s.data), last = F[F.length - 1];
+      const L = ['#include <iostream>', '#include <string>', 'using namespace std;', '', ...this.code.cpp, '', 'int main() {', `    string s = "${txt}";`,
+        '    if (seimbang(s)) cout << s << ": seimbang" << endl;', '    else cout << s << ": tidak seimbang" << endl;', '    return 0;', '}'];
+      return { code: L.join('\n'), out: `${txt}: ${last.S.badEnd ? 'tidak seimbang' : 'seimbang'}` };
+    }
+  },
+
+  // ---------------- Menghitung ekspresi postfix ----------------
+  postfix: {
+    counters: ['Push', 'Pop'],
+    vars: ['i', 't[i]', 'a', 'b', 'top'],
+    code: {
+      cpp: ['int st[20];', 'int top = -1;', '', 'void push(int x) {', '    top++;', '    st[top] = x;', '}', '', 'int pop() {', '    int x = st[top];', '    top--;', '    return x;', '}', '',
+        'int hitung(string t[], int n) {', '    for (int i = 0; i < n; i++) {', '        if (t[i] == "+" || t[i] == "-" || t[i] == "*" || t[i] == "/") {', '            int b = pop();', '            int a = pop();',
+        '            if (t[i] == "+") push(a + b);', '            else if (t[i] == "-") push(a - b);', '            else if (t[i] == "*") push(a * b);', '            else push(a / b);', '        } else {', '            push(stoi(t[i]));', '        }', '    }', '    return pop();', '}'],
+      ps: ['hitung(t):   stack kosong', '    untuk setiap token t[i]:', '        jika t[i] angka: push(angka)', '        jika t[i] operator:', '            b = pop(), lalu a = pop()', '            push(a operator b)', '    hasil = pop()']
+    },
+    lines: {
+      cpp: { decl: [1, 2], num: [16, 24, 25], op: [17, 18, 19], '+': [20], '-': [21], '*': [22], '/': [23], end: [28] },
+      ps: { decl: [1], num: [2, 3], op: [4, 5], '+': [6], '-': [6], '*': [6], '/': [6], end: [7] }
+    },
+    calc: (a, op, b) => op === '+' ? a + b : op === '-' ? a - b : op === '*' ? a * b : Math.trunc(a / b),
+    check(t) {
+      let d = 0; const st = [];
+      for (const x of t) {
+        if (alNum(x)) { st.push(x); continue; }
+        if (st.length < 2) return `Operator ${x} butuh dua angka di stack, tapi baru ada ${st.length}. Di postfix, operator ditulis sesudah kedua angkanya.`;
+        const b = st.pop(), a = st.pop();
+        if (x === '/' && b === 0) return 'Ada pembagian dengan 0. Ganti angkanya.';
+        const v = this.calc(a, x, b); if (Math.abs(v) > 99999) return 'Hasil antaranya terlalu besar. Pakai angka yang lebih kecil.';
+        st.push(v); d++;
+      }
+      if (st.length !== 1) return `Di akhir stack berisi ${st.length} angka. Ekspresi postfix yang benar menyisakan tepat satu angka (banyak operator = banyak angka − 1).`;
+      return '';
+    },
+    input: {
+      mode: 'text', aria: 'Ekspresi postfix, token dipisah spasi',
+      hint: '3 sampai 11 token dipisah spasi: angka 0–99 dan operator <b>+ - * /</b>. Pembagian membuang sisa seperti int di C++ (7 / 2 = 3). Contoh: 5 3 + 2 *',
+      fmt: d => (d || []).join(' '),
+      parse(raw) {
+        const t = String(raw).split(/[\s,;]+/).filter(Boolean);
+        if (t.length < 3 || t.length > 11) return { err: 'Isi 3 sampai 11 token dipisah spasi. Contoh: 5 3 + 2 *' };
+        const data = [];
+        for (const x of t) { if (/^\d+$/.test(x) && +x <= 99) data.push(+x); else if (/^[+\-*/x×:]$/.test(x)) data.push({ x: '*', '×': '*', ':': '/' }[x] || x); else return { err: `"${x}" bukan angka 0–99 atau operator. Pisahkan setiap token dengan spasi, misalnya 5 3 +` }; }
+        const e = AL_ALGO.postfix.check(data); if (e) return { err: e };
+        return { data };
+      },
+      acak() {
+        for (;;) {
+          const t = [alRnd(1, 9), alRnd(1, 9)], ops = '+-*/'; let need = alRnd(1, 3), d = 2;
+          t.push(ops[alRnd(0, 3)]); d--;
+          while (need > 0) { t.push(alRnd(1, 9)); d++; if (Math.random() < 0.4 && t.length < 9) { t.push(alRnd(1, 9)); d++; } while (d > 1) { t.push(ops[alRnd(0, 3)]); d--; } need--; }
+          if (t.length <= 11 && !AL_ALGO.postfix.check(t)) return { data: t };
+        }
+      }
+    },
+    run(data) {
+      const r = alRec2(), st = [];
+      let uid = 0;
+      r.cnt.Push = 0; r.cnt.Pop = 0;
+      const S = o => Object.assign({ t: data, st: st.slice() }, o), top = () => st.length - 1;
+      r.push({ grp: 'Mulai', kind: 'Konsep', ln: 'decl', vars: { top: -1 }, S: S({}), title: 'Operator ditulis sesudah angkanya',
+        body: `Pada <b>postfix</b> <code>${data.join(' ')}</code>, setiap operator bekerja pada dua angka yang muncul tepat sebelumnya. Tidak perlu kurung dan tidak perlu aturan "kali dulu". Cukup baca dari kiri dengan satu stack: angka di-push, operator mem-pop dua angka lalu mem-push hasilnya.` });
+      data.forEach((x, i) => {
+        const g = `${i + 1}. ${x}`;
+        if (alNum(x)) {
+          st.push({ id: uid++, v: x }); r.cnt.Push++;
+          r.push({ grp: g, kind: 'Masuk', ln: 'num', vars: { i, 't[i]': x, top: top() }, S: S({ i, hi: st[top()].id }), title: `${x} masuk stack`, body: `Token ${x} adalah angka, jadi <code>push(${x})</code>. Angka menunggu di stack sampai ada operator yang memakainya.` });
+          return;
+        }
+        const B = st.pop(), Aa = st.pop(), v = this.calc(Aa.v, x, B.v); r.cnt.Pop += 2;
+        const wrong = this.calc(B.v, x, Aa.v), alt = x === '+' ? Aa.v * B.v : Aa.v + B.v, o = [...new Set([v, wrong, alt, v + 1])].slice(0, 3).sort((p, q) => p - q).map(String);
+        r.push({ grp: g, kind: 'Periksa', ln: 'op', vars: { i, 't[i]': x, a: Aa.v, b: B.v, top: top() }, S: S({ i, a: Aa, b: B }), title: `${x}: ambil dua angka teratas`,
+          body: `<code>b = pop()</code> mengambil ${B.v} (paling atas), lalu <code>a = pop()</code> mengambil ${Aa.v}. Urutannya penting: yang keluar pertama adalah angka <b>kanan</b>.`,
+          q: { t: `Berapa hasil yang di-push?`, o, a: o.indexOf(String(v)) } });
+        st.push({ id: uid++, v }); r.cnt.Push++;
+        r.push({ grp: g, kind: 'Masuk', ln: x, vars: { i, 't[i]': x, a: Aa.v, b: B.v, top: top() }, S: S({ i, hi: st[top()].id, expr: `${Aa.v} ${x} ${B.v} = ${v}` }), title: `${Aa.v} ${x} ${B.v} = ${v}`,
+          body: `Hasilnya, ${v}, di-push kembali. ${x === '/' && Aa.v % B.v ? 'Pembagian int di C++ membuang sisa (dibulatkan ke arah 0). ' : ''}${x === '-' || x === '/' ? `Kalau urutan a dan b tertukar, hasilnya salah: ${B.v} ${x} ${Aa.v} = ${wrong}.` : 'Angka ini bisa menjadi bahan untuk operator berikutnya.'}` });
+      });
+      const res = st[0].v;
+      r.push({ grp: 'Hasil', kind: 'Hasil', ln: 'end', vars: { top: -1 }, S: S({ end: true, hi: st[0].id }), title: `Hasil: ${res}`,
+        body: `Token habis dan stack berisi satu angka, ${res}. <code>return pop()</code> mengembalikannya.`,
+        note: ['Dari mana postfix?', 'Ekspresi biasa (infix) seperti (5 + 3) * 2 diubah dulu menjadi postfix 5 3 + 2 *, juga memakai stack. Komputer lebih mudah menghitung postfix karena tidak perlu memikirkan kurung dan urutan operator.'] });
+      return r.F;
+    },
+    view(A, s, f) {
+      const S = f.S, mv = alMover(s), y = 168, n = S.t.length;
+      let g = `<text class="al-lbl" x="20" y="22">token</text>`;
+      S.t.forEach((x, i) => { const w = 42, gx = 280 - n * 24 + i * 48, k = i === S.i && !S.end ? 'cmp' : (S.i != null && i < S.i) || S.end ? 'done' : '';
+        g += `<g class="al-box${k ? ' al-' + k : ''}" transform="translate(${gx},34)"><rect width="${w}" height="36" rx="5"/><text x="${w / 2}" y="18">${esc(String(x))}</text></g>${i === S.i && !S.end ? `<text class="al-idx" x="${gx + w / 2}" y="90">i = ${i}</text>` : ''}`; });
+      g += `<text class="al-lbl" x="20" y="${y - 12}">stack (bawah → atas)</text><line class="al-floor" x1="16" x2="16" y1="${y - 2}" y2="${y + 42}"/>`;
+      S.st.forEach((e, k) => { g += alBox(mv, 'e' + e.id, e.v, 24 + k * 74, y, e.id === S.hi ? (S.end ? 'found' : 'cmp') : '', 68); });
+      if (!S.st.length && !S.a) g += `<text class="al-lbl al-muted" x="28" y="${y + 24}">kosong</text>`;
+      if (S.a) g += `<text class="al-lbl" x="330" y="${y - 12}">a</text><text class="al-lbl" x="444" y="${y - 12}">b</text>` + alBox(mv, 'e' + S.a.id, S.a.v, 330, y, 'cmp', 68) + alBox(mv, 'e' + S.b.id, S.b.v, 444, y, 'cmp', 68);
+      if (S.expr) g += `<text class="al-ord" x="20" y="${y + 76}">${esc(S.expr)}</text>`;
+      return `<svg class="al-svg" viewBox="0 0 560 ${y + 90}" role="img" aria-label="Postfix ${esc(S.t.join(' '))}. Isi stack: ${esc(S.st.map(e => e.v).join(', ') || 'kosong')}">${g}</svg>`;
+    },
+    program(s) {
+      const t = s.data.map(String), F = this.run(s.data), res = F[F.length - 1].S.st[0].v;
+      const L = ['#include <iostream>', '#include <string>', 'using namespace std;', '', ...this.code.cpp, '', 'int main() {', `    string t[] = {${t.map(x => `"${x}"`).join(', ')}};`,
+        `    cout << "Hasil: " << hitung(t, ${t.length}) << endl;`, '    return 0;', '}'];
+      return { code: L.join('\n'), out: `Hasil: ${res}` };
+    }
+  }
+});
