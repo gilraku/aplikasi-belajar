@@ -61,6 +61,12 @@ const frameOk = (name, F, s) => F.forEach((f, i) => {
   if (/undefined|NaN|null/.test(f.title + f.body + (f.note ? f.note.join('') : ''))) bad(name, 'teks berisi undefined/NaN', i, f.title);
   const svg = (AL[name].view || ctx.alSvg)(AL[name], s, f); s.anim = true;
   if (/undefined|NaN/.test(svg)) bad(name, 'gambar berisi undefined/NaN', i, f.title);
+  // Setiap kotak/node (posisi tujuan + lebar) harus di dalam viewBox, termasuk untuk data terpanjang yang diterima
+  { const vb = /viewBox="(-?[\d.]+) (-?[\d.]+) ([\d.]+) ([\d.]+)"/.exec(svg), x0 = +vb[1], W = +vb[3], y0 = +vb[2], H = +vb[4];
+    for (const m of svg.matchAll(/(?:data-tx="(-?[\d.]+)" data-ty="(-?[\d.]+)"|transform="translate\((-?[\d.]+),(-?[\d.]+)\)")>\s*<(rect|circle) (?:width="([\d.]+)" height="([\d.]+)"|r="([\d.]+)")/g)) {
+      const x = +(m[1] ?? m[3]), y = +(m[2] ?? m[4]), r = m[8] ? +m[8] : 0, w = m[6] ? +m[6] : r, h = m[7] ? +m[7] : r;
+      const [l, rr, t, b] = r ? [x - r, x + r, y - r, y + r] : [x, x + w, y, y + h];
+      if (l < x0 - 1 || rr > x0 + W + 1 || t < y0 - 1 || b > y0 + H + 1) { bad(name, 'kotak keluar gambar', i, f.title, JSON.stringify(s.data).slice(0, 80), [l, rr, t, b].map(Math.round).join(',')); break; } } }
   Object.values(f.vars || {}).forEach(v => { if (typeof v === 'number' && !Number.isFinite(v)) bad(name, 'variabel NaN', i); });
 });
 let linCases = 0;
@@ -242,6 +248,9 @@ console.log(`bercabang: ${cab} jejak BST/hash/BFS/DFS cocok dengan simulasi`);
     if (t < 150) frameOk('postfix', F, { data: d });
     n++;
   }
+  // Data terpanjang yang masih diterima
+  for (const [k, d] of [['kurung', '(((((((((((((((('], ['kurung', '{[({[({[({[({[(a'], ['postfix', '1 2 3 4 5 6 + + + + +'], ['traversal', '1, 2, 3, 4, 5, 6, 7, 8'], ['bsthapus', '8, 7, 6, 5, 4, 3, 2, 1']]) {
+    const r = AL[k].input.parse(d, '1'); if (r.err) { bad(k, 'data ekstrem ditolak', d, r.err); continue; } frameOk(k, AL[k].run(r.data, r.target), { data: r.data, target: r.target }); }
   console.log(`lanjutan pohon & stack: ${n} jejak traversal/hapus/kurung/postfix cocok dengan simulasi`);
 }
 [['traversal', [['50, 30, 70', ''], ['0 99 50 1 2 3 4 5', '']], [['50, 30', ''], ['5, 5, 3', ''], ['1,2,3,4,5,6,7,8,9', ''], ['a, b, c', '']]],

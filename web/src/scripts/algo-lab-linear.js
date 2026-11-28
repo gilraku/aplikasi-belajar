@@ -428,12 +428,14 @@ Object.assign(AL_ALGO, {
     view(A, s, f) {
       const S = f.S, mv = alMover(s), y = 168;
       let g = `<text class="al-lbl" x="20" y="22">teks</text>` + alCharRow(S.s, S.end ? null : S.i, 34, i => i === S.badc ? 'bad' : S.end ? 'done' : i === S.i ? 'cmp' : S.i != null && i < S.i ? 'done' : '');
-      g += `<text class="al-lbl" x="20" y="${y - 12}">stack (bawah → atas)</text><line class="al-floor" x1="16" x2="16" y1="${y - 2}" y2="${y + 42}"/>`;
-      S.st.forEach((e, k) => { g += alBox(mv, 'e' + e.id, e.c, 24 + k * 50, y, e.id === S.hi ? 'cmp' : '', 44); });
+      g += `<text class="al-lbl" x="20" y="${y - 12}">stack (bawah → atas)</text><line class="al-floor" x1="16" x2="16" y1="${y - 2}" y2="${y + (S.st.length > 8 ? 88 : 42)}"/>`;
+      // Lebih dari 8 kurung buka bertumpuk: lanjut di baris kedua supaya tetap di dalam gambar
+      S.st.forEach((e, k) => { g += alBox(mv, 'e' + e.id, e.c, 24 + (k % 8) * 50, y + Math.floor(k / 8) * 46, e.id === S.hi ? 'cmp' : '', 44); });
       if (!S.st.length) g += `<text class="al-lbl al-muted" x="28" y="${y + 24}">kosong</text>`;
       if (S.out) g += alBox(mv, 'e' + S.out.id, S.out.c, 470, y, S.ok ? 'found' : 'bad', 44) + `<text class="al-lbl" x="470" y="${y - 12}">keluar</text>`;
-      if (S.end) g += `<text class="al-lbl" x="20" y="${y + 74}">${S.badEnd ? 'tidak seimbang' : 'seimbang'}</text>`;
-      return `<svg class="al-svg" viewBox="0 0 560 ${y + (S.end ? 88 : 56)}" role="img" aria-label="Teks ${esc(S.s.join(''))}. Isi stack: ${esc(S.st.map(e => e.c).join(' ') || 'kosong')}">${g}</svg>`;
+      const y2 = y + (S.st.length > 8 ? 46 : 0);
+      if (S.end) g += `<text class="al-lbl" x="20" y="${y2 + 74}">${S.badEnd ? 'tidak seimbang' : 'seimbang'}</text>`;
+      return `<svg class="al-svg" viewBox="0 0 560 ${y2 + (S.end ? 88 : 56)}" role="img" aria-label="Teks ${esc(S.s.join(''))}. Isi stack: ${esc(S.st.map(e => e.c).join(' ') || 'kosong')}">${g}</svg>`;
     },
     program(s) {
       const txt = s.data.join(''), F = this.run(s.data), last = F[F.length - 1];
