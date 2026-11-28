@@ -21,6 +21,49 @@ const SDA = {
   ket: 'Pelajaran mandiri di luar jadwal kuliah. Tiap algoritma bisa dijalankan langkah demi langkah: batang bergerak, baris kode C++ yang sedang jalan menyala, dan isi variabel terlihat.',
   meetings: [
     // ======================= DASAR =======================
+    L(0, 'perulangan', 'Dasar', 'Perulangan (for, while, do-while)', 'Hitung putaran, dari satu loop sampai bersarang', [
+      A('Tiga bentuk perulangan', `<p><b>Perulangan</b> (loop, disebut juga pengulangan) menjalankan sekelompok perintah berkali-kali selama sebuah <b>kondisi</b> bernilai true. Hampir semua algoritma di section ini dibangun dari perulangan, jadi yang paling penting adalah bisa menghitung <b>berapa kali</b> badannya dijalankan.</p>
+<ul><li><b>for</b>: nilai awal, kondisi, dan step ditulis dalam satu baris: <code>for (int i = 0; i &lt; n; i++)</code>. Dipakai saat banyak putaran sudah diketahui, misalnya mengunjungi semua isi array.</li>
+<li><b>while</b>: kondisi dicek <b>sebelum</b> badan. Dipakai saat berhentinya bergantung pada keadaan, misalnya membaca input sampai pengguna mengetik 0, atau pencarian biner yang mengulang selama <code>low &lt;= high</code>.</li>
+<li><b>do-while</b>: kondisi dicek <b>sesudah</b> badan, jadi badan pasti dijalankan minimal sekali. Dipakai untuk menu atau validasi input: tampilkan dulu, baru tanya apakah perlu diulang.</li></ul>
+<p><b>Menghitung putaran:</b> pada <code>for (int i = 1; i &lt;= n; i++)</code> badan dijalankan n kali, sedangkan kondisinya dicek n + 1 kali. Cek terakhir yang bernilai false itulah yang menghentikan perulangan. <code>for (int i = 0; i &lt; n; i++)</code> juga n kali. Yang menentukan adalah pasangan nilai awal dan tanda pembandingnya.</p>
+<p>Sintaks dasar, break, continue, dan latihan menelusuri ada di <a href="#/c/algoritma-pemrograman/m/p6">Algoritma P6 (for)</a> dan <a href="#/c/algoritma-pemrograman/m/p7">Algoritma P7 (while dan do-while)</a>. Pelajaran ini melanjutkan ke cara menghitung putaran dan kaitannya dengan kecepatan algoritma.</p>`, 'Satu perulangan'),
+      lab('perulangan', [4], undefined, 'Tekan Lanjut atau tombol panah. Ketiga perulangan menjumlah 1 sampai n. Bandingkan banyak putaran dan banyak cek kondisinya. Isi n = 0 di bawah untuk melihat kapan do-while memberi hasil yang berbeda.'),
+      tbl('Berapa kali badan dijalankan?', ['Kode', 'Badan dijalankan', 'Kondisi dicek'], [
+        ['<code>for (int i = 0; i &lt; n; i++)</code>', 'n', 'n + 1'],
+        ['<code>for (int i = 1; i &lt;= n; i++)</code>', 'n', 'n + 1'],
+        ['<code>for (int i = 0; i &lt;= n; i++)</code>', 'n + 1 (sering tidak disengaja)', 'n + 2'],
+        ['<code>for (int i = n; i &gt; 0; i--)</code>', 'n', 'n + 1'],
+        ['<code>for (int i = 1; i &lt; n; i *= 2)</code>', 'sekitar log₂ n', 'satu lebih banyak'],
+        ['<code>do { … } while (i &lt;= n);</code> dengan n = 0', '1 (minimal sekali)', '1']
+      ], 'Menghitung putaran'),
+      A('Perulangan bersarang dan Big-O', `<p><b>Perulangan bersarang</b> adalah perulangan di dalam badan perulangan lain. Untuk <b>setiap</b> putaran luar, perulangan dalam berjalan dari awal sampai selesai. Karena itu banyak langkahnya <b>dikalikan</b>, bukan dijumlah.</p>
+<ul><li>Luar n kali, dalam n kali: n × n = n² langkah, jadi <b>O(n²)</b>.</li>
+<li>Dalam dimulai dari <code>j = i + 1</code>, seperti saat membandingkan setiap pasangan: (n - 1) + (n - 2) + … + 1 = n(n-1)/2 langkah. Tetap <b>O(n²)</b>, karena konstanta dan suku yang lebih kecil dibuang.</li>
+<li>Dua perulangan <b>berurutan</b> (yang satu selesai, baru yang lain mulai): n + n = 2n, tetap <b>O(n)</b>. Berurutan dijumlah, bersarang dikali.</li>
+<li>Luar n kali, dalam m kali, misalnya baris × kolom matriks: n × m langkah.</li></ul>
+<p>Bubble sort, selection sort, dan insertion sort memakai dua perulangan bersarang, makanya ketiganya O(n²) untuk data acak. Perhatikan batas perulangan dalamnya: kalau perulangan dalam bisa berhenti lebih awal, langkahnya bisa jauh lebih sedikit. Insertion sort pada data yang sudah urut hanya butuh n - 1 perbandingan, jadi O(n), karena perulangan <code>while</code>-nya langsung berhenti. Cara membaca notasinya ada di pelajaran <a href="#/c/struktur-data-algoritma/m/big-o">Big-O</a>, dan contoh baris × kolom ada di <a href="#/c/struktur-data-algoritma/m/array-2d">Array Dua Dimensi</a>.</p>`, 'Bersarang'),
+      lab('kembar', [4, 7, 2, 7, 9, 4], undefined, 'Tekan Lanjut atau tombol panah. Grid pasangan terisi satu per satu: setiap baris grid adalah satu putaran luar. Isi angkamu sendiri di bawah, tulis angka yang sama lebih dari sekali supaya ada yang kembar.'),
+      tbl('Dari bentuk perulangan ke Big-O', ['Bentuk perulangan', 'Banyak langkah', 'Big-O'], [
+        ['Satu perulangan sampai n', 'n', 'O(n)'],
+        ['Dua perulangan berurutan, masing-masing sampai n', 'n + n = 2n', 'O(n)'],
+        ['Perulangan di dalam perulangan, keduanya sampai n', 'n × n = n²', 'O(n²)'],
+        ['Dalam dimulai dari i + 1 (setiap pasangan)', 'n(n-1)/2', 'O(n²)'],
+        ['Nilai i dikali atau dibagi 2 setiap putaran', 'sekitar log₂ n', 'O(log n)'],
+        ['Tiga perulangan bersarang, semuanya sampai n', 'n³', 'O(n³)']
+      ], 'Bandingkan'),
+      salah(`<ul><li><b>Kelebihan atau kekurangan satu putaran (off-by-one).</b> Mulai dari 0 pasangannya <code>&lt; n</code>, mulai dari 1 pasangannya <code>&lt;= n</code>. <code>for (int i = 0; i &lt;= n; i++)</code> berjalan n + 1 kali, dan pada array a[n] sudah di luar batas.</li>
+<li><b>Titik koma setelah kondisi.</b> <code>while (i &lt;= n);</code> membuat perulangan kosong: badan di bawahnya tidak ikut diulang, dan karena i tidak pernah berubah, programnya macet (infinite loop).</li>
+<li><b>Lupa mengubah variabel kondisi di while.</b> Tanpa <code>i++</code>, kondisi selalu true dan perulangan tidak berhenti.</li>
+<li><b>Memakai do-while untuk kasus yang bisa nol kali.</b> Badannya tetap jalan sekali, sehingga hasilnya salah. Coba lab pertama dengan n = 0.</li>
+<li><b>Perulangan dalam mulai dari 0 saat membandingkan pasangan.</b> Setiap pasangan dihitung dua kali dan setiap angka dianggap kembar dengan dirinya sendiri. Mulai dari <code>j = i + 1</code>.</li></ul>`)
+    ], [
+      { q: 'Berapa kali badan for (int i = 0; i <= 5; i++) dijalankan?', opts: ['4', '5', '6', '7'], ans: 2, exp: 'i bernilai 0, 1, 2, 3, 4, 5: enam putaran. Untuk tepat 5 kali, tulis i < 5.' },
+      { q: 'Perulangan yang badannya pasti dijalankan minimal sekali adalah…', opts: ['for', 'while', 'do-while', 'Semuanya'], ans: 2, exp: 'do-while mengecek kondisi setelah badan, jadi putaran pertama selalu berjalan.' },
+      { q: 'for (i = 0; i < n; i++) { for (j = 0; j < n; j++) { … } } dengan n = 10. Badan perulangan dalam dijalankan berapa kali?', opts: ['10', '20', '55', '100'], ans: 3, exp: 'Untuk setiap i (10 kali), j berjalan 10 kali: 10 × 10 = 100.' },
+      { q: 'Dua perulangan berurutan (bukan bersarang), masing-masing dari 0 sampai n-1. Big-O-nya adalah…', opts: ['O(1)', 'O(n)', 'O(n²)', 'O(log n)'], ans: 1, exp: 'Berurutan dijumlah: n + n = 2n. Konstanta 2 dibuang, jadi O(n).' },
+      { q: 'Membandingkan setiap pasangan dari 5 data dengan j mulai dari i + 1 membutuhkan berapa perbandingan?', opts: ['5', '10', '20', '25'], ans: 1, exp: '4 + 3 + 2 + 1 = 10, atau n(n-1)/2 = 5 × 4 / 2 = 10.' }
+    ]),
     L(0, 'big-o', 'Dasar', 'Big-O: Mengukur Kecepatan Algoritma', 'Hitung langkah saat data bertambah', [
       A('Apa itu Big-O?', `<p><b>Big-O</b> adalah cara menyatakan <b>seberapa cepat banyak langkah bertambah</b> ketika banyak data (n) bertambah. Yang dibandingkan bukan detik, karena detik bergantung pada komputernya, melainkan pola pertumbuhannya.</p>
 <ul><li><b>O(1)</b>: langkahnya tetap, berapa pun n. Contoh: mengambil <code>a[0]</code>.</li>

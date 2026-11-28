@@ -118,7 +118,28 @@ for (let t = 0; t < 400; t++) {
   no.forEach(t => { if (!AL[k].input.parse(t).err) bad(k, 'input salah diterima', t); });
   for (let i = 0; i < 200; i++) { const r = AL[k].input.acak(), f = AL[k].input.fmt ? AL[k].input.fmt(r.data) : r.data.join(', '); if (AL[k].input.parse(f).err) bad(k, 'acak tidak sah', f); }
 });
-console.log(`dasar: ${dasar} jejak Big-O/array/rekursi diperiksa`);
+// Perulangan: total, banyak putaran, dan cek kondisi tiap bentuk loop dicocokkan dengan hitungan langsung
+for (let n = 0; n <= 6; n++) {
+  const F = AL.perulangan.run([n]), L = F[F.length - 1].S.L, sum = n * (n + 1) / 2;
+  [['f', sum, n, n + 1], ['w', sum, n, n + 1], ['d', n ? sum : 1, Math.max(n, 1), Math.max(n, 1)]].forEach(([k, tot, put, cek]) => {
+    if (L[k].ret !== tot || L[k].put.length !== put || L[k].cek !== cek) bad('perulangan', 'hitungan salah', n, k, JSON.stringify(L[k]));
+  });
+  ['fret', 'wret', 'dret'].forEach(ln => { const f = F.find(x => x.ln === ln); if (!f || f.cnt.Putaran !== (ln === 'dret' ? Math.max(n, 1) : n)) bad('perulangan', 'penghitung putaran', n, ln); });
+  frameOk('perulangan', F, { data: [n] }); dasar++;
+}
+for (let t = 0; t < 400; t++) {
+  const a = Array.from({ length: 3 + rnd(6) }, () => rnd(t % 2 ? 6 : 100)), F = AL.kembar.run(a), n = a.length;
+  let k = 0; for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) if (a[i] === a[j]) k++;
+  const last = F[F.length - 1];
+  if (last.vars.kembar !== k || last.cnt.Perbandingan !== n * (n - 1) / 2 || last.S.seen.length !== n * (n - 1) / 2) bad('kembar', 'hasil salah', a.join(','), JSON.stringify(last.vars));
+  if (last.S.seen.some(([i, j]) => j <= i)) bad('kembar', 'pasangan di bawah diagonal', a.join(','));
+  if (t < 150) frameOk('kembar', F, { data: a });
+  dasar++;
+}
+for (let i = 0; i < 300; i++) { const d = AL.kembar.input.acak().data; if (d.length < 3 || d.length > 8 || d.some(v => !Number.isInteger(v) || v < 0 || v > 99) || new Set(d).size === d.length) bad('kembar', 'acak tidak sah atau tanpa kembar', d.join(',')); }
+[['0', '6', '3'], ['7', '-1', '2, 3', 'x', '']].forEach((list, bad0) => list.forEach(t => { const r = AL.perulangan.input.parse(t); if (!!r.err !== !!bad0) bad('perulangan', bad0 ? 'input salah diterima' : 'input sah ditolak', t); }));
+for (let i = 0; i < 100; i++) { const r = AL.perulangan.input.acak(); if (AL.perulangan.input.parse(r.data.join(', ')).err) bad('perulangan', 'acak tidak sah', r.data); }
+console.log(`dasar: ${dasar} jejak perulangan/Big-O/array/rekursi diperiksa`);
 
 // ---------- 1a''. Bab Bercabang ----------
 let cab = 0;
@@ -168,7 +189,7 @@ console.log(`bercabang: ${cab} jejak BST/hash/BFS/DFS cocok dengan simulasi`);
     let runs = 0;
     const OWN = { stack: [['5, 3, -, 8', ''], ['1, 2, 3, 4, 5, 6, -, -', ''], ['-, 4, -, -', '']], queue: [['4, 9, -, 2', ''], ['1, 2, 3, 4, 5, 6, -, 7, 8', ''], ['-, 4, -, -', '']],
       linked: [['12, 7, 25', '7'], ['12, 7', '12'], ['3, 3, 9', '42'], ['8, 1', '1']],
-      bigo: [['1, 2, 64', ''], ['4, 8, 16, 32', '']], array2d: [['3 5 1; 2 8 4', ''], ['0 99; 99 0; 5 5; 1 2', ''], ['1 2 3 4 5; 6 7 8 9 10', '']], rekursi: [['1', ''], ['7', ''], ['4', '']],
+      bigo: [['1, 2, 64', ''], ['4, 8, 16, 32', '']], perulangan: [['0', ''], ['1', ''], ['6', '']], array2d: [['3 5 1; 2 8 4', ''], ['0 99; 99 0; 5 5; 1 2', ''], ['1 2 3 4 5; 6 7 8 9 10', '']], rekursi: [['1', ''], ['7', ''], ['4', '']],
       bst: [['50, 30, 70, 20, 40, 60, 80', '60'], ['10, 20, 30', '5'], ['5, 5, 3', '5']], hash: [['25, 35, 41, 15, 9, 19', '15'], ['25, 35, 5', '45'], ['9, 19, 29, 39', '39']],
       bfs: [['A-B, A-C, B-D, C-D, C-E, D-F, E-F', 'A'], ['H-A, G-H, B-C', 'B']], dfs: [['A-B, A-C, B-D, C-D, C-E, D-F, E-F', 'A'], ['A-H, H-B, B-G', 'G']] };
     for (const k of Object.keys(AL)) {
@@ -243,7 +264,8 @@ try {
         if (!(await page.$eval('.al [data-act="next"]', e => e.disabled))) bad(m.id, 'Lanjut tidak terkunci saat menebak');
         // Rel juga terkunci: tombol kelompok setelah langkah ini tidak bisa dipakai melompat
         const cur = +(await step()).match(/Langkah (\d+)/)[1] - 1;
-        const rails = await page.$$eval('.al .al-rail', l => l.map(e => ({ i: +e.dataset.arg, off: e.disabled })));
+        // Satu pelajaran bisa punya lebih dari satu lab: rel yang diperiksa hanya milik lab pertama
+        const rails = await page.$eval('.al', el => [...el.querySelectorAll('.al-rail')].map(e => ({ i: +e.dataset.arg, off: e.disabled })));
         if (rails.some(r => r.i > cur && !r.off)) bad(m.id, 'rel bisa melompati tebakan', JSON.stringify(rails));
         if (rails.some(r => r.i <= cur && r.off)) bad(m.id, 'rel ke belakang ikut terkunci');
         const later = rails.filter(r => r.i > cur).pop();
@@ -266,6 +288,7 @@ try {
     const algo = (m.materi.find(b => b.type === 'algo-lab') || {}).algo;
     const OWNS = {
       bigo: ['4, 8, 16', '', ['daftarN[] = {4, 8, 16}'], '5'],
+      perulangan: ['5', '', ['int n = 5;'], '9'],
       array2d: ['3 5 1; 2 8 4', '', ['{3, 5, 1}', '{2, 8, 4}'], '1 2 3'],
       rekursi: ['5', '', ['int n = 5;'], '9'],
       bst: ['9, 4, 7, 1', '7', ['akar = sisip(akar, 9);', 'cari(akar, 7)'], '9'],
@@ -298,6 +321,42 @@ try {
     if (await page.$('.al [role="alert"]') || !/Langkah 1 dari/.test(await step())) bad(m.id, 'Acak gagal');
     // Sampai selesai
     for (let i = 0; i < 400 && !(await page.$eval('.al [data-act="next"]', e => e.disabled)); i++) await page.click('.al [data-act="next"]');
+  }
+  // Pelajaran dengan dua lab (Perulangan): lab kedua juga harus bisa dipakai, dan tautan internal ke ALP P6/P7 tampil sebagai tautan
+  {
+    const m = sda.meetings.find(x => x.materi.filter(b => b.type === 'algo-lab').length > 1);
+    if (!m) bad('tidak ada pelajaran dengan dua lab');
+    else {
+      await page.goto(URL0 + `#/c/${sda.id}/m/${m.id}`); await page.waitForSelector('.al');
+      const labs = page.locator('.al');
+      if (await labs.count() !== 2) bad(m.id, 'jumlah lab', await labs.count());
+      const L2 = labs.nth(1), step2 = () => L2.locator('.tabular-nums').textContent();
+      await L2.locator('[data-act="next"]').click();
+      if (!/Langkah 2 dari/.test(await step2())) bad(m.id, 'lab kedua: Lanjut', await step2());
+      if (!/Langkah 1 dari/.test(await labs.nth(0).locator('.tabular-nums').textContent())) bad(m.id, 'lab pertama ikut bergerak');
+      await L2.locator('[data-act="mode"][data-arg="tebak"]').click();
+      for (let i = 0; i < 20 && !(await L2.locator('.al-guess [data-act="ans"]:not([disabled])').count()); i++) await L2.locator('[data-act="next"]').click();
+      if (!(await L2.locator('[data-act="next"]').isDisabled())) bad(m.id, 'lab kedua: Lanjut tidak terkunci saat menebak');
+      await L2.locator('.al-guess [data-act="ans"]').first().click();
+      if (await L2.locator('[data-act="next"]').isDisabled()) bad(m.id, 'lab kedua: Lanjut tetap terkunci setelah menjawab');
+      await L2.locator('input[data-key="data"]').fill('3, 3, 1');
+      await L2.locator('button[type="submit"]').click();
+      await L2.locator('[data-act="full"]').click();
+      const t = await L2.locator('.al-full').textContent();
+      if (!t.includes('{3, 3, 1}') || !t.includes('Pasangan kembar: 1') || !t.includes('Perbandingan: 3')) bad(m.id, 'lab kedua: program lengkap tidak ikut data sendiri', t.slice(-200));
+      await L2.locator('[data-act="acak"]').click();
+      if (await L2.locator('[role="alert"]').count()) bad(m.id, 'lab kedua: Acak gagal');
+      const hrefs = await page.$$eval('.article a[href^="#/c/"]', l => l.map(a => a.getAttribute('href')));
+      for (const h of ['#/c/algoritma-pemrograman/m/p6', '#/c/algoritma-pemrograman/m/p7', '#/c/struktur-data-algoritma/m/big-o']) if (!hrefs.includes(h)) bad(m.id, 'tautan internal tidak tampil', h);
+      await page.click('.article a[href="#/c/algoritma-pemrograman/m/p6"]');
+      await page.waitForFunction(() => location.hash.includes('/m/p6'));
+    }
+    // Arah sebaliknya: ALP P6 dan P7 menautkan ke pelajaran Perulangan
+    for (const p of ['p6', 'p7']) {
+      await page.goto(URL0 + `#/c/algoritma-pemrograman/m/${p}`); await page.waitForSelector('main');
+      await page.waitForTimeout(300);
+      if (!(await page.$('a[href="#/c/struktur-data-algoritma/m/perulangan"]'))) bad('ALP', p, 'tidak menautkan ke pelajaran Perulangan');
+    }
   }
   const hp = await browser.newPage({ viewport: { width: 375, height: 800 } });
   hp.on('pageerror', e => errs.push(e.message));

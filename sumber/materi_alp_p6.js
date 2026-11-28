@@ -96,5 +96,6 @@ int main() {
     { prompt: "for (int i = 0; i < 3; i++); cout << i; Mengapa error?", answer: "Titik koma setelah for membuat badan kosong, dan i hanya dikenal di dalam for", reason: "Hapus ; dan pindahkan cout ke dalam { }." },
     { prompt: "Berapa kali kondisi dicek pada for (i = 1; i <= 4; i++)?", answer: "5 kali", reason: "4 kali true, 1 kali false." },
     { prompt: "Mengapa loop luar disebut “baris” pada pola segitiga?", answer: "cout << endl ada di loop luar, sesudah loop dalam", reason: "Setiap putaran luar mengakhiri satu baris." }
-  ])
+  ]),
+  tip("➕ Lanjutan: menghitung putaran", `<p>Pelajaran ini sudah mencakup for dan for bersarang. Lanjutannya ada di section Struktur Data &amp; Algoritma: <a href="#/c/struktur-data-algoritma/m/perulangan">Perulangan</a> membandingkan for, while, dan do-while langkah demi langkah, lalu menghitung banyak putaran perulangan bersarang dan kaitannya dengan Big-O (satu perulangan O(n), dua bersarang O(n²)).</p>`)
 ];

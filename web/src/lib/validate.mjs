@@ -46,7 +46,7 @@ const Block = z.lazy(() => z.looseObject({
     });
   }
   if (b.type === 'algo-lab') {
-    const ALGO = { linear: 'cari', biner: 'cari-urut', bubble: '', selection: '', insertion: '', merge: '', quick: '', stack: 'ops:pop', queue: 'ops:deq', linked: 'list', bigo: 'n', array1d: '', array2d: 'matriks', rekursi: 'satu', bst: 'kunci', hash: 'kunci', bfs: 'graf', dfs: 'graf' };
+    const ALGO = { linear: 'cari', biner: 'cari-urut', bubble: '', selection: '', insertion: '', merge: '', quick: '', stack: 'ops:pop', queue: 'ops:deq', linked: 'list', bigo: 'n', array1d: '', array2d: 'matriks', rekursi: 'satu', perulangan: 'n0', kembar: '', bst: 'kunci', hash: 'kunci', bfs: 'graf', dfs: 'graf' };
     const d = b.data, int = v => Number.isInteger(v) && v >= 0 && v <= 99, kind = ALGO[b.algo] || '';
     if (!(b.algo in ALGO)) ctx.addIssue({ code: 'custom', path: ['algo'], message: `algo "${b.algo}" tidak dikenal (yang ada: ${Object.keys(ALGO).join(', ')})` });
     if (kind.startsWith('ops:')) {
@@ -58,6 +58,8 @@ const Block = z.lazy(() => z.looseObject({
       if (!Array.isArray(d) || d.length < 2 || d.length > 4 || !d.every(r => Array.isArray(r) && r.length === d[0].length && r.length >= 2 && r.length <= 5 && r.every(int))) ctx.addIssue({ code: 'custom', path: ['data'], message: 'array2d butuh 2–4 baris, tiap baris 2–5 bilangan 0–99 dengan panjang sama' });
     } else if (kind === 'satu') {
       if (!Array.isArray(d) || d.length !== 1 || !Number.isInteger(d[0]) || d[0] < 1 || d[0] > 7) ctx.addIssue({ code: 'custom', path: ['data'], message: 'rekursi butuh data [n] dengan n 1–7' });
+    } else if (kind === 'n0') {
+      if (!Array.isArray(d) || d.length !== 1 || !Number.isInteger(d[0]) || d[0] < 0 || d[0] > 6) ctx.addIssue({ code: 'custom', path: ['data'], message: 'perulangan butuh data [n] dengan n 0–6' });
     } else if (kind === 'kunci') {
       if (!Array.isArray(d) || d.length < 3 || d.length > 8 || !d.every(int)) ctx.addIssue({ code: 'custom', path: ['data'], message: `${b.algo} butuh 3–8 bilangan bulat 0–99` });
       if (!int(b.target)) ctx.addIssue({ code: 'custom', path: ['target'], message: `${b.algo} butuh target (angka yang dicari, 0–99)` });
