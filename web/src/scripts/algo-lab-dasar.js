@@ -653,7 +653,7 @@ Object.assign(AL_ALGO, {
         const txt = fr.ret != null ? `faktorial(${fr.n}) = ${fr.ret}` : fr.wait ? `faktorial(${fr.n}): ${fr.n} × ?` : `faktorial(${fr.n})`;
         g += `<g class="al-box al-mv${c ? ' al-' + c : ''}" ${mv('f' + fr.n, cx, base - (k + 1) * (h + 4))}><rect width="${w}" height="${h}" rx="6"/><text x="${w / 2}" y="${h / 2}">${txt}</text></g>`;
       });
-      if (S.got != null) g += `<text class="al-lbl" x="${cx + w + 16}" y="${base - S.st.length * (h + 4) + h / 2 + 4}">← terima ${S.got}</text>`;
+      if (S.got != null) g += `<text class="al-lbl" x="${cx + w + 16}" y="${base - S.st.length * (h + 4) + h / 2 + 4}">← ${S.got}</text>`;
       const H = 340, top = Math.min(base - 4 * (h + 4), base - Math.max(1, s.data[0] || 1) * (h + 4)) - 16;
       return `<svg class="al-svg" viewBox="0 ${top} 560 ${H - top}" role="img" aria-label="Call stack: ${esc(S.st.map(x => 'faktorial(' + x.n + ')').join(', ') || 'kosong')}">${g}</svg>`;
     },
