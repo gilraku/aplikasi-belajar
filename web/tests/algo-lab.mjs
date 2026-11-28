@@ -61,6 +61,12 @@ const frameOk = (name, F, s) => F.forEach((f, i) => {
   if (/undefined|NaN|null/.test(f.title + f.body + (f.note ? f.note.join('') : ''))) bad(name, 'teks berisi undefined/NaN', i, f.title);
   const svg = (AL[name].view || ctx.alSvg)(AL[name], s, f); s.anim = true;
   if (/undefined|NaN/.test(svg)) bad(name, 'gambar berisi undefined/NaN', i, f.title);
+  // Setiap kotak/node (posisi tujuan + lebar) harus di dalam viewBox, termasuk untuk data terpanjang yang diterima
+  { const vb = /viewBox="(-?[\d.]+) (-?[\d.]+) ([\d.]+) ([\d.]+)"/.exec(svg), x0 = +vb[1], W = +vb[3], y0 = +vb[2], H = +vb[4];
+    for (const m of svg.matchAll(/(?:data-tx="(-?[\d.]+)" data-ty="(-?[\d.]+)"|transform="translate\((-?[\d.]+),(-?[\d.]+)\)")>\s*<(rect|circle) (?:width="([\d.]+)" height="([\d.]+)"|r="([\d.]+)")/g)) {
+      const x = +(m[1] ?? m[3]), y = +(m[2] ?? m[4]), r = m[8] ? +m[8] : 0, w = m[6] ? +m[6] : r, h = m[7] ? +m[7] : r;
+      const [l, rr, t, b] = r ? [x - r, x + r, y - r, y + r] : [x, x + w, y, y + h];
+      if (l < x0 - 1 || rr > x0 + W + 1 || t < y0 - 1 || b > y0 + H + 1) { bad(name, 'kotak keluar gambar', i, f.title, JSON.stringify(s.data).slice(0, 80), [l, rr, t, b].map(Math.round).join(',')); break; } } }
   Object.values(f.vars || {}).forEach(v => { if (typeof v === 'number' && !Number.isFinite(v)) bad(name, 'variabel NaN', i); });
 });
 let linCases = 0;
@@ -203,6 +209,59 @@ for (let t = 0; t < 500; t++) {
 });
 console.log(`bercabang: ${cab} jejak BST/hash/BFS/DFS cocok dengan simulasi`);
 
+// ---------- Lanjutan pohon dan stack: traversal, hapus BST, cek kurung, postfix ----------
+{
+  let n = 0;
+  // Pohon pembanding dibuat terpisah dari kode lab
+  const build = keys => { let root = null; const ins = (p, v) => p ? (v < p.v ? (p.l = ins(p.l, v), p) : (p.r = ins(p.r, v), p)) : { v, l: null, r: null }; keys.forEach(v => { root = ins(root, v); }); return root; };
+  const walk = (p, k, o = []) => { if (!p) return o; if (k === 'pre') o.push(p.v); walk(p.l, k, o); if (k === 'in') o.push(p.v); walk(p.r, k, o); if (k === 'post') o.push(p.v); return o; };
+  const del = (p, x) => { if (!p) return null; if (x < p.v) p.l = del(p.l, x); else if (x > p.v) p.r = del(p.r, x); else { if (!p.l) return p.r; if (!p.r) return p.l; let s = p.r; while (s.l) s = s.l; p.v = s.v; p.r = del(p.r, s.v); } return p; };
+  const distinct = len => { const d = []; while (d.length < len) { const v = rnd(100); if (!d.includes(v)) d.push(v); } return d; };
+  const snapPre = (nodes, root) => { const by = {}; nodes.forEach(t => { by[t.id] = t; }); const o = []; (function w(i) { if (i == null) return; o.push(by[i].v); w(by[i].l); w(by[i].r); })(root); return o; };
+  const isBst = (nodes, root) => { const by = {}; nodes.forEach(t => { by[t.id] = t; }); let ok = true, cnt = 0; (function w(i, lo, hi) { if (i == null) return; cnt++; const v = by[i].v; if (v < lo || v > hi) ok = false; w(by[i].l, lo, v); w(by[i].r, v, hi); })(root, -1, 100); return ok && cnt === nodes.length; };
+  for (let t = 0; t < 600; t++) {
+    const keys = distinct(3 + rnd(6)), ref = build(keys);
+    const F = AL.traversal.run(keys), last = F[F.length - 1].S, T = last.T;
+    ['pre', 'in', 'post'].forEach(k => { if (JSON.stringify(last.out[k].map(i => T[i].v)) !== JSON.stringify(walk(ref, k))) bad('traversal', k + 'order salah', keys.join(',')); });
+    if (F.filter(f => f.kind === 'Cetak').length !== keys.length * 3) bad('traversal', 'jumlah langkah cetak salah', keys.join(','));
+    if (t < 120) frameOk('traversal', F, { data: keys });
+    const x = rnd(4) ? keys[rnd(keys.length)] : rnd(100), Fh = AL.bsthapus.run(keys, x), lh = Fh[Fh.length - 1].S, want = del(build(keys), x);
+    if (JSON.stringify(snapPre(lh.nodes, lh.root)) !== JSON.stringify(walk(want, 'pre'))) bad('bsthapus', 'pohon akhir salah', keys.join(','), x);
+    Fh.forEach(f => { if (f.kind !== 'Salin' && !isBst(f.S.nodes, f.S.root)) bad('bsthapus', 'aturan BST rusak di langkah', f.title, keys.join(','), x); });
+    if (t < 120) frameOk('bsthapus', Fh, { data: keys, target: x });
+    n += 2;
+  }
+  const P = { ')': '(', ']': '[', '}': '{' }, CH = '()[]{}a+';
+  const seimbang = s => { const st = []; for (const c of s) { if ('([{'.includes(c)) st.push(c); else if (P[c]) { if (!st.length || st.pop() !== P[c]) return false; } } return !st.length; };
+  for (let t = 0; t < 1500; t++) {
+    let s = Array.from({ length: 2 + rnd(15) }, () => CH[rnd(CH.length)]); if (!s.some(c => '()[]{}'.includes(c))) s[0] = '(';
+    if (t % 3 === 0) s = AL.kurung.input.acak().data;
+    const F = AL.kurung.run(s);
+    if (!!F[F.length - 1].S.badEnd === seimbang(s)) bad('kurung', 'hasil salah', s.join(''));
+    if (t < 150) frameOk('kurung', F, { data: s });
+    n++;
+  }
+  const evalPf = t => { const st = []; for (const x of t) { if (typeof x === 'number') st.push(x); else { const b = st.pop(), a = st.pop(); st.push(x === '+' ? a + b : x === '-' ? a - b : x === '*' ? a * b : Math.trunc(a / b)); } } return st; };
+  for (let t = 0; t < 1500; t++) {
+    const d = AL.postfix.input.acak().data, F = AL.postfix.run(d), st = F[F.length - 1].S.st, want = evalPf(d);
+    if (st.length !== 1 || st[0].v !== want[0]) bad('postfix', 'hasil salah', d.join(' '), st.map(e => e.v));
+    if (t < 150) frameOk('postfix', F, { data: d });
+    n++;
+  }
+  // Data terpanjang yang masih diterima
+  for (const [k, d] of [['kurung', '(((((((((((((((('], ['kurung', '{[({[({[({[({[(a'], ['postfix', '1 2 3 4 5 6 + + + + +'], ['traversal', '1, 2, 3, 4, 5, 6, 7, 8'], ['bsthapus', '8, 7, 6, 5, 4, 3, 2, 1']]) {
+    const r = AL[k].input.parse(d, '1'); if (r.err) { bad(k, 'data ekstrem ditolak', d, r.err); continue; } frameOk(k, AL[k].run(r.data, r.target), { data: r.data, target: r.target }); }
+  console.log(`lanjutan pohon & stack: ${n} jejak traversal/hapus/kurung/postfix cocok dengan simulasi`);
+}
+[['traversal', [['50, 30, 70', ''], ['0 99 50 1 2 3 4 5', '']], [['50, 30', ''], ['5, 5, 3', ''], ['1,2,3,4,5,6,7,8,9', ''], ['a, b, c', '']]],
+ ['bsthapus', [['50, 30, 70', '30'], ['50, 30, 70', '45']], [['50, 30, 70', ''], ['50, 50, 70', '50'], ['50, 30', '30'], ['1, 2, 3', '100']]],
+ ['kurung', [['{[(a+b)*c]}', ''], ['( ] ', ''], ['((((((((((((((((', '']], [['(', ''], ['abc', ''], ['(a=b)', ''], ['(((((((((((((((((', '']]],
+ ['postfix', [['5 3 + 2 *', ''], ['9 4 -', ''], ['8, 2, /', ''], ['2 3 x', '']], [['5 +', ''], ['5 3', ''], ['5 3 + +', ''], ['5 0 /', ''], ['53+', ''], ['99 99 * 99 *', ''], ['1 2 + 3 + 4 + 5 + 6 + 7', '']]]].forEach(([k, ok, no]) => {
+  ok.forEach(([d, t]) => { const r = AL[k].input.parse(d, t); if (r.err) bad(k, 'input sah ditolak', d, t, r.err); else { const f = AL[k].input.fmt ? AL[k].input.fmt(r.data) : r.data.join(', '); const r2 = AL[k].input.parse(f, String(r.target)); if (JSON.stringify(r2.data) !== JSON.stringify(r.data)) bad(k, 'fmt tidak bisa dibaca ulang', d); } });
+  no.forEach(([d, t]) => { if (!AL[k].input.parse(d, t).err) bad(k, 'input salah diterima', d, t); });
+  for (let i = 0; i < 200; i++) { const r = AL[k].input.acak(), f = AL[k].input.fmt ? AL[k].input.fmt(r.data) : r.data.join(', '); if (AL[k].input.parse(f, String(r.target)).err) bad(k, 'acak tidak sah', f, r.target); }
+});
+
 // ---------- 1b. Program lengkap: dikompilasi g++ dan output-nya dicocokkan ----------
 {
   const { execFileSync } = await import('node:child_process');
@@ -216,7 +275,11 @@ console.log(`bercabang: ${cab} jejak BST/hash/BFS/DFS cocok dengan simulasi`);
       linked: [['12, 7, 25', '7'], ['12, 7', '12'], ['3, 3, 9', '42'], ['8, 1', '1']],
       bigo: [['1, 2, 64', ''], ['4, 8, 16, 32', '']], perulangan: [['0', ''], ['1', ''], ['6', '']], array2d: [['3 5 1; 2 8 4', ''], ['0 99; 99 0; 5 5; 1 2', ''], ['1 2 3 4 5; 6 7 8 9 10', '']], rekursi: [['1', ''], ['7', ''], ['4', '']], pointer: [['7, 3', ''], ['0, 98', ''], ['5, 5', '']], structsort: [['72, 90, 65, 88, 79', ''], ['50, 50, 50', ''], ['0, 100, 7, 7, 3, 99', '']],
       bst: [['50, 30, 70, 20, 40, 60, 80', '60'], ['10, 20, 30', '5'], ['5, 5, 3', '5']], hash: [['25, 35, 41, 15, 9, 19', '15'], ['25, 35, 5', '45'], ['9, 19, 29, 39', '39']],
-      bfs: [['A-B, A-C, B-D, C-D, C-E, D-F, E-F', 'A'], ['H-A, G-H, B-C', 'B']], dfs: [['A-B, A-C, B-D, C-D, C-E, D-F, E-F', 'A'], ['A-H, H-B, B-G', 'G']] };
+      bfs: [['A-B, A-C, B-D, C-D, C-E, D-F, E-F', 'A'], ['H-A, G-H, B-C', 'B']],
+      traversal: [['50, 30, 70, 20, 40, 60, 80', ''], ['10, 20, 30', ''], ['5, 3, 8, 1', '']],
+      bsthapus: [['50, 30, 70, 20, 40, 60, 80', '50'], ['50, 30, 70, 20, 40, 60, 80', '20'], ['50, 30, 70, 60', '70'], ['50, 30, 70', '45'], ['50, 70, 60', '50'], ['5, 3, 8', '5']],
+      kurung: [['{[(a+b)*c]}', ''], ['([)]', ''], ['(()', ''], ['())', ''], [')(', '']],
+      postfix: [['5 3 + 2 *', ''], ['9 4 - 7 2 / *', ''], ['2 9 - 4 /', ''], ['3 7 -', ''], ['2 3 4 * +', '']], dfs: [['A-B, A-C, B-D, C-D, C-E, D-F, E-F', 'A'], ['A-H, H-B, B-G', 'G']] };
     for (const k of Object.keys(AL)) {
       const sample = OWN[k] ? OWN[k].map(([d, t]) => AL[k].input.parse(d, t)) : [[5, 1, 4, 2, 8], [7, 7, 3], [0, 99, 0, 99, 50, 1, 2, 3], [3, 1, 2]].flatMap(d0 => {
         const data = AL[k].sorted ? d0.slice().sort((p, q) => p - q) : d0;
@@ -335,7 +398,10 @@ try {
       dfs: ['A-B, B-C, C-D', 'B', ["sambung('C', 'D');", "dfs('B' - 'A');"], 'A-B'],
       stack: ['9, 4, pop, 1', '', ['push(9);', 'push(4);', 'x = pop();', 'push(1);'], 'pop, pop, pop'],
       queue: ['9, 4, deq, 1', '', ['enqueue(9);', 'enqueue(4);', 'x = dequeue();', 'enqueue(1);'], '9, abc, 1'],
-      linked: ['9, 4, 7, 1', '7', ['tambahBelakang(9);', 'hapus(7);'], '9']
+      linked: ['9, 4, 7, 1', '7', ['tambahBelakang(9);', 'hapus(7);'], '9'],
+      traversal: ['9, 4, 7, 1', '', ['akar = sisip(akar, 9);', 'postorder(akar);'], '9, 9, 1'],
+      bsthapus: ['9, 4, 7, 1', '4', ['akar = sisip(akar, 7);', 'akar = hapus(akar, 4);'], '9, 4'],
+      kurung: ['(a[b]{c})', '', ['string s = "(a[b]{c})";'], 'a+b']
     }, OWN = OWNS[algo] || ['9, 4, 7, 1', '7', [m.id === 'pencarian-biner' ? '{1, 4, 7, 9}' : '{9, 4, 7, 1}'], '1, 2'];
     // Keyboard HP harus bisa mengetik isi yang sah: ada huruf → inputmode wajib text
     for (const [key, val] of [['data', OWN[0]], ['target', OWN[1]]]) {
