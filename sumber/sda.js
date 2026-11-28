@@ -647,7 +647,113 @@ const SDA = {
       { q: 'Dengan hash(k) = k % 10, angka 47 disimpan di indeks…', opts: ['4', '7', '47', '0'], ans: 1, exp: '47 % 10 = 7.' },
       { q: 'Tabel M = 10 berisi 25 di indeks 5. Dengan linear probing, angka 35 disimpan di…', opts: ['Indeks 5, menimpa 25', 'Indeks 6', 'Indeks 3', 'Tidak bisa disimpan'], ans: 1, exp: '35 % 10 = 5 sudah terisi (tabrakan), jadi coba (5 + 1) % 10 = 6.' },
       { q: 'Keunggulan utama hash table adalah…', opts: ['Data selalu urut', 'Pencarian rata-rata O(1)', 'Tidak pernah terjadi tabrakan', 'Tidak butuh array'], ans: 1, exp: 'Posisi data dihitung langsung dari kuncinya, jadi rata-rata cukup satu pemeriksaan.' }
+    ]),
+    // ======================= TEKNIK LANJUT =======================
+    L(0, 'greedy', 'Teknik lanjut', 'Greedy: Uang Kembalian', 'Ambil pilihan terbaik saat ini, tanpa menoleh ke belakang', [
+      A('Apa itu greedy?', `<p><b>Greedy</b> (rakus) adalah strategi yang di setiap langkah mengambil pilihan yang <b>terlihat paling bagus saat itu</b>, lalu tidak pernah membatalkannya. Greedy tidak mencoba semua kemungkinan, jadi biasanya cepat dan kodenya pendek.</p>
+<p>Contoh klasiknya <b>uang kembalian</b>: bentuk sejumlah uang dengan koin sesedikit mungkin. Caranya, ambil koin <b>terbesar</b> yang tidak melebihi sisa uang, kurangi sisanya, lalu ulangi. Untuk kembalian 40 dengan koin 25, 10, 5, 1: ambil 25 (sisa 15), 10 (sisa 5), 5 (sisa 0). Hasilnya 3 koin, dan itu memang yang terbaik.</p>
+<ul><li><b>Syarat</b>: koin harus diurutkan dari yang terbesar, supaya yang dicoba lebih dulu adalah pilihan "paling rakus".</li>
+<li><b>Kelemahan</b>: pilihan terbaik saat ini belum tentu membawa ke hasil terbaik secara keseluruhan. Greedy hanya benar untuk soal yang terbukti punya sifat ini.</li></ul>`),
+      lab('greedy', [25, 10, 5, 1], 40, 'Tekan Lanjut atau tombol panah. Lihat sisa uang berkurang setiap kali koin diambil, dan hitungan di bawah tiap koin bertambah. Isi koin dan jumlahmu sendiri di bawah.'),
+      A('Saat greedy salah', `<p>Dengan koin 4, 3, 1 dan jumlah 6, greedy mengambil 4 dulu (sisa 2), lalu 1 dan 1. Hasilnya <b>3 koin</b>, padahal 3 + 3 cukup <b>2 koin</b>. Mengambil 4 terlihat bagus di awal, tapi justru membuat sisanya sulit.</p>
+<p>Lebih parah lagi, dengan koin 5 dan 2 untuk jumlah 6, greedy mengambil 5 lalu terjebak dengan sisa 1, padahal 2 + 2 + 2 pas. Untuk soal seperti ini dipakai <a href="#/c/struktur-data-algoritma/m/pemrograman-dinamis">pemrograman dinamis</a>, yang mencoba semua kemungkinan tanpa menghitung ulang.</p>`, 'Kelemahan'),
+      lab('greedy', [4, 3, 1], 6, 'Pecahan koin yang tidak biasa. Ikuti pilihan greedy, lalu bandingkan dengan cara terbaik di langkah terakhir.'),
+      tbl('Contoh soal greedy', ['Soal', 'Pilihan rakusnya', 'Selalu benar?'], [
+        ['Uang kembalian pecahan rupiah', 'koin/uang kertas terbesar yang muat', 'ya, untuk pecahan uang sungguhan'],
+        ['Uang kembalian pecahan sembarang', 'koin terbesar yang muat', 'tidak (contoh 4, 3, 1 untuk 6)'],
+        ['Penjadwalan kegiatan (activity selection)', 'kegiatan yang selesai paling awal', 'ya'],
+        ['Fractional knapsack (barang boleh dipotong)', 'nilai per berat tertinggi', 'ya'],
+        ['Knapsack 0/1 (barang utuh)', 'nilai per berat tertinggi', 'tidak, pakai DP'],
+        ['Jalur terpendek', 'simpul dengan jarak terkecil (Dijkstra)', 'ya, jika bobot tidak negatif']
+      ], 'Contoh'),
+      salah(`<ul><li><b>Lupa mengurutkan koin dari besar ke kecil.</b> Kalau koin 1 dicoba lebih dulu, semua uang habis dibentuk dari koin 1.</li>
+<li><b>Menganggap greedy pasti optimal.</b> Greedy harus dibuktikan benar untuk soalnya. Untuk pecahan sembarang, cek dengan contoh seperti 4, 3, 1 untuk jumlah 6.</li>
+<li><b>Lupa mengecek sisa di akhir.</b> Kalau tidak ada koin 1, sisa uang bisa tidak nol. Fungsi harus memberi tanda gagal, bukan mengembalikan banyak koin yang salah.</li></ul>`)
+    ], [
+      { q: 'Dengan koin 50, 20, 10, 5, greedy membentuk 85 dengan…', opts: ['50 + 20 + 10 + 5', '50 + 10 + 10 + 10 + 5', '20 + 20 + 20 + 20 + 5', '50 + 20 + 5 + 5 + 5'], ans: 0, exp: 'Ambil 50 (sisa 35), 20 (sisa 15), 10 (sisa 5), 5 (sisa 0): 4 koin.' },
+      { q: 'Koin 4, 3, 1 dan jumlah 6. Berapa koin yang dipakai greedy, dan berapa yang terbaik?', opts: ['2 dan 2', '3 dan 2', '3 dan 3', '6 dan 2'], ans: 1, exp: 'Greedy: 4 + 1 + 1 = 3 koin. Terbaik: 3 + 3 = 2 koin.' },
+      { q: 'Ciri utama algoritma greedy adalah…', opts: ['Mencoba semua kemungkinan', 'Mengambil pilihan terbaik saat ini dan tidak membatalkannya', 'Membagi masalah menjadi dua sama besar', 'Menyimpan semua jawaban di tabel'], ans: 1, exp: 'Greedy memutuskan berdasarkan keadaan saat itu saja. Menyimpan jawaban di tabel adalah ciri pemrograman dinamis.' },
+      { q: 'Algoritma berikut yang termasuk greedy adalah…', opts: ['Bubble sort', 'Dijkstra', 'Pencarian biner', 'DFS'], ans: 1, exp: 'Di setiap putaran Dijkstra langsung mengunci simpul dengan jarak terkecil tanpa mempertimbangkan ulang.' }
+    ]),
+    L(0, 'pemrograman-dinamis', 'Teknik lanjut', 'Pemrograman Dinamis (DP): Koin Minimum', 'Simpan jawaban kecil, pakai lagi untuk jawaban besar', [
+      A('Apa itu pemrograman dinamis?', `<p><b>Pemrograman dinamis</b> (dynamic programming, DP) memecah masalah menjadi <b>submasalah</b> yang lebih kecil, menyelesaikan setiap submasalah <b>sekali saja</b>, lalu menyimpan jawabannya di tabel supaya bisa dipakai lagi. DP cocok jika masalahnya punya dua sifat:</p>
+<ul><li><b>Submasalah tumpang tindih</b>: submasalah yang sama muncul berkali-kali. Contohnya <code>fib(5)</code> memanggil <code>fib(3)</code> dua kali dan <code>fib(2)</code> tiga kali.</li>
+<li><b>Struktur optimal</b>: jawaban terbaik untuk masalah besar tersusun dari jawaban terbaik submasalahnya.</li></ul>
+<p>Ada dua cara menulisnya:</p>
+<ul><li><b>Memoization</b> (atas ke bawah): fungsi rekursif biasa, tapi hasilnya dicatat di array. Sebelum menghitung, cek dulu apakah jawabannya sudah ada.</li>
+<li><b>Tabulasi</b> (bawah ke atas): isi tabel dari kasus terkecil secara berurutan memakai perulangan. Lab di bawah memakai cara ini.</li></ul>
+<p>Rekursi Fibonacci tanpa catatan butuh O(2<sup>n</sup>) langkah (lihat <a href="#/c/struktur-data-algoritma/m/fungsi-rekursi">Fungsi dan Rekursi</a>). Dengan DP cukup O(n), karena setiap <code>fib(k)</code> dihitung satu kali.</p>`, 'Konsep'),
+      A('Koin minimum dengan DP', `<p>Soalnya sama dengan <a href="#/c/struktur-data-algoritma/m/greedy">greedy uang kembalian</a>, tapi sekarang jawabannya dijamin benar untuk pecahan apa pun. Tabel <code>dp[x]</code> menyimpan banyak koin paling sedikit untuk membentuk uang x.</p>
+<ul><li><code>dp[0] = 0</code>, karena uang 0 tidak butuh koin.</li>
+<li>Untuk x = 1, 2, 3, …: coba setiap koin c sebagai koin <b>terakhir</b>. Sisanya x − c sudah dihitung sebelumnya, jadi kandidatnya <code>dp[x − c] + 1</code>. Ambil yang paling kecil.</li>
+<li>Kalau tidak ada koin yang bisa dipakai, dp[x] tetap ∞ (tidak bisa dibentuk).</li></ul>`, 'Koin minimum'),
+      lab('koindp', [4, 3, 1], 6, 'Tekan Lanjut atau tombol panah. Tabel dp diisi dari kiri. Setiap sel baru memakai sel yang sudah terisi, ditandai hijau muda. Data ini sama dengan contoh saat greedy salah. Isi koin dan jumlahmu sendiri di bawah.'),
+      tbl('Isi tabel untuk koin 4, 3, 1', ['x', '0', '1', '2', '3', '4', '5', '6'], [
+        ['dp[x]', '0', '1', '2', '1', '1', '2', '<b>2</b>'],
+        ['koin terakhir', '–', '1', '1', '3', '4', '4 (atau 1)', '3']
+      ], 'Contoh tabel'),
+      tbl('Greedy dan DP', ['', 'Greedy', 'Pemrograman dinamis'], [
+        ['Cara memilih', 'pilihan terbaik saat ini, tidak dibatalkan', 'semua pilihan dicoba, jawaban kecil disimpan'],
+        ['Hasil', 'cepat, tapi belum tentu optimal', 'selalu optimal'],
+        ['Memori tambahan', 'hampir tidak ada', 'tabel jawaban'],
+        ['Koin minimum', 'O(banyak koin + banyak koin diambil)', 'O(jumlah × banyak koin)']
+      ], 'Bandingkan'),
+      salah(`<ul><li><b>Lupa mengisi kasus dasar</b> <code>dp[0] = 0</code>. Semua isi tabel dibangun dari sel ini.</li>
+<li><b>Mengisi tabel tidak berurutan.</b> dp[x] memakai dp[x − c] yang lebih kecil, jadi x harus naik dari 1. Kalau urutannya terbalik, sel yang dipakai belum terisi.</li>
+<li><b>Menganggap ∞ seperti angka biasa.</b> Di kode, INF dibuat cukup besar (9999) dan <code>dp[x - c] + 1 &lt; dp[x]</code> tetap aman. Jangan pakai nilai maksimum int, karena INF + 1 akan meluap menjadi negatif.</li></ul>`)
+    ], [
+      { q: 'Dua sifat masalah yang cocok diselesaikan dengan DP adalah…', opts: ['Data urut dan tidak ada duplikat', 'Submasalah tumpang tindih dan struktur optimal', 'Graf tanpa siklus dan berbobot', 'Rekursi dan perulangan'], ans: 1, exp: 'Submasalah yang sama muncul berulang (sehingga layak disimpan), dan jawaban terbaik tersusun dari jawaban terbaik submasalahnya.' },
+      { q: 'Koin 5, 2 dan dp[0..6] = 0, ∞, 1, ∞, 2, 1, ?. Nilai dp[6] adalah…', opts: ['2', '3', '∞', '1'], ans: 1, exp: 'Koin 5: dp[1] + 1 = ∞. Koin 2: dp[4] + 1 = 3. Jadi dp[6] = 3 (2 + 2 + 2).' },
+      { q: 'Memoization berbeda dari tabulasi karena…', opts: ['Memoization tidak menyimpan jawaban', 'Memoization memakai rekursi dan mencatat hasilnya, tabulasi mengisi tabel dari kasus terkecil dengan perulangan', 'Tabulasi selalu lebih lambat', 'Tabulasi hanya untuk Fibonacci'], ans: 1, exp: 'Keduanya menyimpan jawaban. Bedanya arah pengerjaan: atas ke bawah (rekursi) atau bawah ke atas (perulangan).' },
+      { q: 'Fibonacci rekursif biasa butuh O(2ⁿ) langkah. Dengan DP menjadi…', opts: ['O(1)', 'O(log n)', 'O(n)', 'O(n²)'], ans: 2, exp: 'Setiap fib(k) dari 0 sampai n dihitung tepat sekali.' }
+    ]),
+    L(0, 'knapsack', 'Teknik lanjut', 'Knapsack 0/1', 'Isi tas dengan nilai terbesar tanpa melebihi kapasitas', [
+      A('Masalah knapsack 0/1', `<p>Ada sebuah tas (knapsack) dengan kapasitas berat W dan beberapa barang yang masing-masing punya <b>berat</b> dan <b>nilai</b>. Pilih barang supaya total nilainya paling besar tanpa melebihi W. Disebut <b>0/1</b> karena setiap barang diambil utuh (1) atau tidak sama sekali (0), tidak bisa dipotong.</p>
+<p>Mencoba semua kombinasi butuh 2<sup>n</sup> percobaan. DP mengisi tabel <code>dp[i][w]</code> = nilai terbaik kalau hanya boleh memakai barang 1 sampai i dengan kapasitas w. Untuk setiap sel, barang ke-i punya dua kemungkinan:</p>
+<ul><li><b>Tidak diambil</b>: nilainya sama dengan sel tepat di atasnya, <code>dp[i − 1][w]</code>.</li>
+<li><b>Diambil</b> (jika beratnya b ≤ w): <code>dp[i − 1][w − b] + nilai</code>, yaitu nilai barang ini ditambah cara terbaik mengisi sisa kapasitas dengan barang sebelumnya.</li></ul>
+<p>Isi sel dengan yang lebih besar. Jawabannya di sel kanan bawah, <code>dp[n][W]</code>. Barang yang diambil dilacak mundur: jika sebuah sel berbeda dari sel di atasnya, barang di baris itu diambil.</p>`),
+      lab('ransel', ['1:1', '3:4', '4:5', '5:7'], 7, 'Tekan Lanjut atau tombol panah. Sel yang sedang diisi berwarna kuning, dan dua sel yang dibandingkan (di atasnya dan di baris atas sejauh beratnya ke kiri) berwarna hijau muda. Di akhir, pilihan dilacak mundur dari kanan bawah. Tulis barangmu sendiri sebagai berat:nilai.'),
+      tbl('Tiga cara memilih untuk contoh lab (kapasitas 7)', ['Cara', 'Barang dipilih', 'Berat', 'Nilai'], [
+        ['Greedy: nilai per berat tertinggi dulu', 'barang 4 (7/5 = 1,4), lalu barang 1', '6', '8'],
+        ['Greedy: nilai terbesar dulu', 'barang 4, lalu barang 1', '6', '8'],
+        ['DP (pasti optimal)', 'barang 2 dan barang 3', '7', '<b>9</b>']
+      ], 'Greedy vs DP'),
+      salah(`<ul><li><b>Memakai baris yang sama</b> saat mengambil barang: <code>dp[i][w - b]</code> alih-alih <code>dp[i - 1][w - b]</code>. Itu berarti barang yang sama boleh diambil berkali-kali, dan menjadi soal lain (unbounded knapsack).</li>
+<li><b>Lupa mengecek b ≤ w</b> sebelum membaca <code>dp[i - 1][w - b]</code>. Indeks w − b bisa negatif.</li>
+<li><b>Mengira greedy nilai per berat pasti benar.</b> Itu hanya benar untuk fractional knapsack, saat barang boleh dipotong. Contoh di atas: greedy mendapat 8, DP mendapat 9.</li></ul>`)
+    ], [
+      { q: 'Pada knapsack 0/1, dp[i][w] berisi…', opts: ['Berat total barang 1 sampai i', 'Nilai terbaik dengan barang 1 sampai i dan kapasitas w', 'Banyak barang yang muat', 'Nilai barang ke-i'], ans: 1, exp: 'Setiap sel adalah jawaban untuk versi kecil soalnya: barang terbatas sampai i dan kapasitas w.' },
+      { q: 'dp[i − 1][w] = 6, berat barang i = 2, nilainya 5, dan dp[i − 1][w − 2] = 3. Nilai dp[i][w] adalah…', opts: ['6', '8', '5', '11'], ans: 1, exp: 'Tidak diambil: 6. Diambil: 3 + 5 = 8. Ambil yang lebih besar, 8.' },
+      { q: 'Saat melacak pilihan, barang i dinyatakan diambil jika…', opts: ['dp[i][w] sama dengan dp[i − 1][w]', 'dp[i][w] berbeda dari dp[i − 1][w]', 'beratnya paling kecil', 'nilainya paling besar'], ans: 1, exp: 'Kalau nilainya berubah dibanding baris atas, perubahan itu hanya mungkin karena barang i ikut dibawa.' },
+      { q: 'Kompleksitas waktu knapsack 0/1 dengan DP untuk n barang dan kapasitas W adalah…', opts: ['O(2ⁿ)', 'O(n + W)', 'O(n × W)', 'O(n log n)'], ans: 2, exp: 'Tabelnya (n + 1) × (W + 1) sel, dan setiap sel dihitung dengan dua pembacaan.' }
+    ]),
+    L(0, 'pencocokan-string', 'Teknik lanjut', 'Pencocokan String (String Matching)', 'Cari letak sebuah kata di dalam teks', [
+      A('Mencari pola di dalam teks', `<p><b>Pencocokan string</b> mencari di mana saja sebuah <b>pola</b> (misalnya kata) muncul di dalam <b>teks</b>. Contohnya fitur Ctrl+F di browser, mencari kata di dokumen, atau mencari urutan DNA.</p>
+<p>Cara paling sederhana adalah <b>brute force</b> (naif):</p>
+<ul><li>Taruh pola di bawah teks mulai indeks s = 0.</li>
+<li>Cocokkan huruf demi huruf: <code>teks[s + j]</code> dengan <code>pola[j]</code> untuk j = 0, 1, 2, …</li>
+<li>Kalau semua huruf pola cocok, pola <b>ketemu</b> di indeks s. Kalau ada yang beda, berhenti di situ.</li>
+<li>Geser pola satu langkah (s + 1) dan ulangi, sampai s = n − m (n = panjang teks, m = panjang pola).</li></ul>
+<p>Di C++ sudah ada <code>teks.find(pola)</code> yang mengembalikan indeks kemunculan pertama, atau <code>string::npos</code> jika tidak ada.</p>`),
+      lab('cocok', 'ABABCABAB'.split(''), 'ABAB', 'Tekan Lanjut atau tombol panah. Pola di bawah teks bergeser ke kanan setiap kali ada huruf yang tidak cocok. Perhatikan bahwa pola bisa ketemu lebih dari sekali. Isi teks dan pola sendiri di bawah.'),
+      tbl('Algoritma pencocokan string', ['Algoritma', 'Idenya', 'Waktu'], [
+        ['Brute force (naif)', 'coba setiap posisi, cocokkan dari kiri', 'O(n × m)'],
+        ['KMP (Knuth-Morris-Pratt)', 'setelah gagal, pakai bagian pola yang sudah cocok supaya tidak mundur di teks', 'O(n + m)'],
+        ['Boyer-Moore', 'cocokkan dari kanan, lompati beberapa posisi sekaligus', 'dalam praktik sering hanya membaca sebagian teks; terburuk O(n × m)'],
+        ['Rabin-Karp', 'bandingkan nilai hash pola dan potongan teks dulu', 'rata-rata O(n + m)']
+      ], 'Bandingkan'),
+      salah(`<ul><li><b>Batas perulangan s salah.</b> Posisi terakhir adalah <code>n - m</code>, jadi kondisinya <code>s &lt;= n - m</code>. Kalau sampai n − 1, <code>teks[s + j]</code> membaca di luar teks.</li>
+<li><b>Lupa mengulang j dari 0</b> setiap kali pola digeser. Pencocokan harus dimulai lagi dari huruf pertama pola.</li>
+<li><b>Lupa bahwa huruf besar dan kecil berbeda.</b> <code>'A' == 'a'</code> bernilai false di C++. Ubah keduanya ke huruf kecil dulu jika pencarian tidak membedakan huruf.</li>
+<li><b>Berhenti di kemunculan pertama</b> padahal yang diminta semua posisi. Pada teks ABABCABAB, pola ABAB ada di indeks 0 dan 5.</li></ul>`)
+    ], [
+      { q: 'Teks berisi 10 huruf dan pola 4 huruf. Berapa posisi s yang dicoba oleh brute force?', opts: ['4', '6', '7', '10'], ans: 2, exp: 's = 0 sampai 10 − 4 = 6, jadi 7 posisi.' },
+      { q: 'Pola "ABA" dicari di teks "ABABA". Pola ketemu di indeks…', opts: ['0 saja', '0 dan 2', '0, 2, dan 4', '2 saja'], ans: 1, exp: 'ABA ada di indeks 0 (ABA) dan indeks 2 (ABA). Kemunculannya boleh tumpang tindih.' },
+      { q: 'Kompleksitas waktu terburuk pencocokan string brute force adalah…', opts: ['O(n)', 'O(n + m)', 'O(n × m)', 'O(log n)'], ans: 2, exp: 'Ada sekitar n posisi, dan di setiap posisi bisa dicek sampai m huruf.' },
+      { q: 'Keunggulan KMP dibanding brute force adalah…', opts: ['Tidak perlu membaca teks', 'Setelah gagal, tidak mengulang dari huruf yang sudah dicocokkan, sehingga O(n + m)', 'Hanya bisa untuk huruf kapital', 'Memakai stack'], ans: 1, exp: 'KMP memanfaatkan informasi bagian pola yang sudah cocok untuk menentukan geseran berikutnya.' }
     ])
+
   ]
 };
 // Nomor pelajaran mengikuti urutan di atas (Dasar dulu), supaya menyisipkan pelajaran baru tidak perlu menomori ulang.
