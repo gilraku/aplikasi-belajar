@@ -121,7 +121,7 @@ Object.assign(AL_ALGO, {
           const done = ln && p < ln.put.length, cur = on && S.at === p;
           g += `<g class="al-box${cur ? ' al-cmp' : done ? ' al-done' : ' al-dim'}" transform="translate(${x0 + p * (bw + gap)},${y})"><rect width="${bw}" height="36" rx="6"/><text x="${bw / 2}" y="18">${done ? '+' + ln.put[p] : ''}</text></g>`;
         }
-        g += `<text class="al-lbl${ln ? '' : ' al-muted'}" x="${x0}" y="${y + 58}">${ln ? `${ln.put.length} putaran · cek ${ln.cek} kali · total ${ln.total}${ln.ret !== '' ? ` → return ${ln.ret}` : ''}` : 'belum dijalankan'}</text>`;
+        g += `<text class="al-lbl${ln ? '' : ' al-muted'}" x="${x0}" y="${y + 58}">${ln ? `${ln.put.length} putaran · cek ${ln.cek}× · total ${ln.total}` : 'belum dijalankan'}</text>`;
       });
       const desc = ['f', 'w', 'd'].map(k => S.L[k] ? `${S.L[k].put.length} putaran` : 'belum').join(', ');
       return `<svg class="al-svg" viewBox="0 0 ${W} 270" role="img" aria-label="Putaran for, while, do-while untuk n = ${n}: ${esc(desc)}">${g}</svg>`;
@@ -188,21 +188,21 @@ Object.assign(AL_ALGO, {
     },
     view(A, s, f) {
       const S = f.S, a = S.a, n = a.length, W = 560, gap = 8, bw = Math.min(52, (W - 40 - gap * (n - 1)) / n), ax = (W - (bw * n + gap * (n - 1))) / 2;
-      const cs = n <= 6 ? 34 : 28, gx = (W - n * cs) / 2 + 12, gy = 150, has = (L, i, j) => L.some(p => p[0] === i && p[1] === j);
+      const cs = n <= 6 ? 34 : 28, gx = (W - n * cs) / 2 + 12, gy = 160, has = (L, i, j) => L.some(p => p[0] === i && p[1] === j);
       let g = '';
       a.forEach((v, p) => {
         const c = S.end ? (S.hits.some(h => h[0] === p || h[1] === p) ? ' al-found' : ' al-done') : p === S.i || p === S.j ? ' al-cmp' : '';
         const x = ax + p * (bw + gap), t = [p === S.i ? 'i' : '', p === S.j ? 'j' : ''].filter(Boolean).join(',');
-        g += `<g class="al-box${c}" transform="translate(${x},16)"><rect width="${bw}" height="40" rx="6"/><text x="${bw / 2}" y="20">${v}</text></g><text class="al-idx" x="${x + bw / 2}" y="74">[${p}]</text>${t ? `<text class="al-lbl" x="${x + bw / 2}" y="94" text-anchor="middle">↑ ${t}</text>` : ''}`;
+        g += `<g class="al-box${c}" transform="translate(${x},16)"><rect width="${bw}" height="40" rx="6"/><text x="${bw / 2}" y="20">${v}</text></g><text class="al-idx" x="${x + bw / 2}" y="74">[${p}]</text>${t ? `<text class="al-lbl" x="${x + bw / 2}" y="98" text-anchor="middle">↑ ${t}</text>` : ''}`;
       });
-      g += `<text class="al-lbl al-muted" x="${gx - 30}" y="${gy - 26}">grid pasangan: baris i, kolom j</text>`;
+      g += `<text class="al-lbl al-muted" x="${gx - 30}" y="${gy - 32}">grid pasangan: baris i, kolom j</text>`;
       for (let k = 0; k < n; k++) g += `<text class="al-idx" x="${gx + k * cs + cs / 2}" y="${gy - 8}">${k}</text><text class="al-idx" x="${gx - 14}" y="${gy + k * cs + cs / 2 + 4}">${k}</text>`;
       for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
         const c = j <= i ? ' al-dim' : S.i === i && S.j === j ? ' al-cmp' : has(S.hits, i, j) ? ' al-found' : has(S.seen, i, j) ? ' al-done' : '';
         g += `<g class="al-box${c}" transform="translate(${gx + j * cs + 2},${gy + i * cs + 2})"><rect width="${cs - 4}" height="${cs - 4}" rx="4"/></g>`;
       }
       const H = gy + n * cs + 30;
-      g += `<text class="al-lbl al-muted" x="${gx - 30}" y="${H - 8}">${S.seen.length} dari ${n * (n - 1) / 2} pasangan dibandingkan${S.hits.length ? ' · hijau = kembar' : ''}</text>`;
+      g += `<text class="al-lbl al-muted" x="${gx - 30}" y="${H - 8}">${S.seen.length}/${n * (n - 1) / 2} dicek${S.hits.length ? ' · hijau = kembar' : ''}</text>`;
       return `<svg class="al-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Isi array: ${esc(a.join(', '))}. ${S.seen.length} dari ${n * (n - 1) / 2} pasangan sudah dibandingkan.">${g}</svg>`;
     },
     program(s) {
@@ -270,12 +270,12 @@ Object.assign(AL_ALGO, {
         FN.forEach((fn, r) => { const y = 72 + r * 52;
           g += `<text class="al-lbl" x="20" y="${y + 4}">${fn.o}</text>` + ns.map((n, i) => { const v = fn.c(n), max = ns[ns.length - 1] ** 2, w = Math.max(3, (cw - 12) * Math.log2(v + 1) / Math.log2(max + 1));
             return `<rect class="al-heat" x="${x0 + i * cw + 6}" y="${y - 16}" width="${w}" height="10" rx="3"/><text class="al-lbl" x="${x0 + i * cw + 6}" y="${y + 14}">${v}</text>`; }).join(''); });
-        return `<svg class="al-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Tabel banyak langkah untuk n = ${esc(ns.join(', '))}">${g}<text class="al-lbl al-muted" x="20" y="${H - 12}">Panjang garis memakai skala log supaya O(n²) tetap muat.</text></svg>`;
+        return `<svg class="al-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Tabel banyak langkah untuk n = ${esc(ns.join(', '))}">${g}<text class="al-lbl al-muted" x="20" y="${H - 12}">Skala log, supaya O(n²) tetap muat.</text></svg>`;
       }
       const fn = FN.find(x => x.k === S.cur) || FN[0], vals = ns.map(fn.c), max = Math.max(...vals, 1), bw = Math.min(70, 380 / ns.length), gap = 18, x0 = (W - ns.length * (bw + gap)) / 2, base = 240;
       let g = `<text class="al-lbl" x="20" y="30">${fn.o} · ${fn.f}(n)</text><line class="al-floor" x1="${x0 - 8}" x2="${x0 + ns.length * (bw + gap) - gap + 8}" y1="${base + .5}" y2="${base + .5}"/>`;
       ns.forEach((n, i) => { const h = S.hide ? 0 : Math.max(4, (vals[i] / max) * 170), x = x0 + i * (bw + gap);
-        g += `<rect class="al-col${S.hide ? '' : ' is-on'}" x="${x}" y="${base - h}" width="${bw}" height="${h}" rx="4"/><text class="al-lbl" x="${x + bw / 2}" y="${base - h - 8}" text-anchor="middle">${S.hide ? '?' : vals[i]}</text><text class="al-idx" x="${x + bw / 2}" y="${base + 18}">n = ${n}</text>`; });
+        g += `<rect class="al-bigo${S.hide ? '' : ' is-on'}" x="${x}" y="${base - h}" width="${bw}" height="${h}" rx="4"/><text class="al-lbl" x="${x + bw / 2}" y="${base - h - 8}" text-anchor="middle">${S.hide ? '?' : vals[i]}</text><text class="al-idx" x="${x + bw / 2}" y="${base + 18}">n = ${n}</text>`; });
       return `<svg class="al-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Banyak langkah ${esc(fn.o)}: ${esc(S.hide ? 'belum dibuka' : vals.join(', '))}">${g}</svg>`;
     },
     program(s) {
@@ -402,6 +402,201 @@ Object.assign(AL_ALGO, {
   },
 
   // ---------------- Fungsi rekursif: faktorial ----------------
+  // ---------------- Pointer dan referensi ----------------
+  // main punya a dan b. Pointer p menunjuk a, lalu a dan b ditukar dengan tiga cara: salinan, referensi, pointer.
+  pointer: {
+    counters: ['Pemanggilan fungsi'],
+    vars: ['a', 'b', 'p', '*p', 'x', 'y', 't'],
+    code: {
+      cpp: ['void tukarNilai(int x, int y) {      // x, y salinan', '    int t = x;', '    x = y;', '    y = t;', '}',
+        'void tukarRef(int &x, int &y) {      // x, y nama lain', '    int t = x;', '    x = y;', '    y = t;', '}',
+        'void tukarPtr(int *x, int *y) {      // x, y berisi alamat', '    int t = *x;', '    *x = *y;', '    *y = t;', '}',
+        '', 'int main() {', '    int a, b;', '    cin >> a >> b;', '    int *p = &a;          // p menyimpan alamat a', '    *p = *p + 1;          // ubah a lewat p',
+        '    tukarNilai(a, b);', '    tukarRef(a, b);', '    tukarPtr(&a, &b);', '}'],
+      ps: ['tukarNilai(x, y):                 x dan y salinan', '    t = x', '    x = y', '    y = t',
+        'tukarRef(x, y):                   x dan y nama lain dari a dan b', '    t = x', '    x = y', '    y = t',
+        'tukarPtr(x, y):                   x dan y berisi alamat', '    t = isi alamat x', '    isi alamat x = isi alamat y', '    isi alamat y = t',
+        'utama:', '    baca a dan b', '    p = alamat a', '    isi alamat p = isi alamat p + 1',
+        '    tukarNilai(a, b)', '    tukarRef(a, b)', '    tukarPtr(alamat a, alamat b)']
+    },
+    lines: {
+      cpp: { decl: [18, 19], p: [20], deref: [21], callV: [22, 1], v1: [2], v2: [3], v3: [4], retV: [5, 22], callR: [23, 6], r1: [7], r2: [8], r3: [9], retR: [10, 23], callP: [24, 11], p1: [12], p2: [13], p3: [14], retP: [15, 24], end: [25] },
+      ps: { decl: [14], p: [15], deref: [16], callV: [17, 1], v1: [2], v2: [3], v3: [4], retV: [17], callR: [18, 5], r1: [6], r2: [7], r3: [8], retR: [18], callP: [19, 9], p1: [10], p2: [11], p3: [12], retP: [19], end: [13] }
+    },
+    input: {
+      aria: 'Nilai awal a dan b', hint: 'Dua bilangan bulat 0–98 untuk a dan b, dipisah koma. Contoh: 7, 3',
+      fmt: d => (d || []).join(', '),
+      parse(raw) { const r = alNums(raw, 2, 2, 0, 98, '7, 3'); if (r.err) return r; if (r.data[0] + 1 === r.data[1]) return { err: 'Pilih b yang bukan a + 1, supaya pertukarannya terlihat. Contoh: 7, 3' }; return r; },
+      acak() { let a, b; do { a = alRnd(1, 30); b = alRnd(1, 30); } while (b === a + 1); return { data: [a, b] }; }
+    },
+    run(data) {
+      const r = alRec2(), A0 = data[0], B0 = data[1], AD = '0x10', BD = '0x14', PD = '0x18';
+      let a = A0, b = B0;
+      r.cnt['Pemanggilan fungsi'] = 0;
+      const S = o => Object.assign({ a, b, AD, BD, PD }, o);
+      const yn = (t, yes) => ({ t, o: ['Ya', 'Tidak'], a: yes ? 0 : 1 });
+      const num = (t, right, ...wrong) => { const o = [...new Set([right, ...wrong])].sort((p, q) => p - q).map(String); return { t, o, a: o.indexOf(String(right)) }; };
+      r.push({ grp: 'Mulai', kind: 'Konsep', ln: 'decl', vars: { a, b }, S: S({}), title: 'Setiap variabel punya alamat',
+        body: `a dan b dibaca dari input: ${a} dan ${b}. Keduanya disimpan di memori. Setiap tempat di memori punya <b>alamat</b>, di sini kita sebut ${AD} dan ${BD}.`,
+        note: ['Alamat', 'Alamat asli di komputer berupa angka panjang seperti 0x7ffd5e8c. Di sini dipendekkan supaya mudah dibaca. Operator <code>&amp;a</code> artinya "alamat a".'] });
+      r.push({ grp: 'Pointer', kind: 'Buat', ln: 'p', vars: { a, b, p: AD, '*p': a }, S: S({ p: true }), title: 'p = &a',
+        body: `<code>int *p</code> adalah <b>pointer</b>: variabel yang isinya alamat, bukan angka biasa. <code>p = &amp;a</code> mengisi p dengan ${AD}, jadi p "menunjuk" a. <code>*p</code> artinya "isi di alamat yang disimpan p", yaitu ${a}.`,
+        q: { t: 'Apa isi p setelah p = &a?', o: [String(a), AD, BD], a: 1 } });
+      a = a + 1;
+      r.push({ grp: 'Pointer', kind: 'Ubah', ln: 'deref', vars: { a, b, p: AD, '*p': a }, S: S({ p: true, hiA: true }), title: `*p = *p + 1 → a menjadi ${a}`,
+        body: `<code>*p</code> adalah a itu sendiri, jadi menambah <code>*p</code> berarti menambah a. a berubah dari ${a - 1} menjadi ${a} tanpa menulis nama a.`,
+        q: num('Berapa nilai a setelah *p = *p + 1?', a, a - 1, A0 + 2) });
+      // --- 1. Salinan ---
+      r.cnt['Pemanggilan fungsi']++;
+      let x = a, y = b, t;
+      const F = (mode, o) => S(Object.assign({ p: true, fr: { mode, x, y, t } }, o));
+      r.push({ grp: 'tukarNilai', kind: 'Panggil', ln: 'callV', vars: { a, b, p: AD, '*p': a, x, y }, S: F('nilai', {}), title: 'tukarNilai(a, b): x dan y salinan',
+        body: `Parameter biasa menerima <b>salinan</b>. x mendapat kotak sendiri berisi ${x}, y berisi ${y}. Kotak a dan b di main tidak tersambung dengan x dan y.` });
+      t = x; r.push({ grp: 'tukarNilai', kind: 'Langkah', ln: 'v1', vars: { a, b, p: AD, '*p': a, x, y, t }, S: F('nilai', {}), title: `t = x = ${t}`, body: 'Simpan isi x dulu supaya tidak hilang saat x ditimpa.' });
+      x = y; r.push({ grp: 'tukarNilai', kind: 'Langkah', ln: 'v2', vars: { a, b, p: AD, '*p': a, x, y, t }, S: F('nilai', { hi: 'x' }), title: `x = y = ${x}`, body: `Yang berubah hanya kotak x milik fungsi. a di main tetap ${a}.` });
+      y = t; r.push({ grp: 'tukarNilai', kind: 'Langkah', ln: 'v3', vars: { a, b, p: AD, '*p': a, x, y, t }, S: F('nilai', { hi: 'y' }), title: `y = t = ${y}`, body: `x dan y sudah tertukar (${x} dan ${y}), tetapi hanya di dalam fungsi.`,
+        q: yn('Apakah a dan b di main ikut tertukar?', false) });
+      r.push({ grp: 'tukarNilai', kind: 'Hasil', ln: 'retV', vars: { a, b, p: AD, '*p': a }, S: S({ p: true }), title: 'Fungsi selesai: a dan b tidak berubah',
+        body: `Saat fungsi selesai, kotak x, y, dan t dibuang. a tetap ${a} dan b tetap ${b}. Inilah kenapa fungsi tukar dengan parameter biasa <b>tidak bekerja</b>.`,
+        note: ['Pass by value', 'Parameter biasa disebut <i>pass by value</i>: yang dikirim hanya nilainya. Cocok kalau fungsi cukup membaca data, misalnya menghitung rata-rata.'] });
+      // --- 2. Referensi ---
+      r.cnt['Pemanggilan fungsi']++;
+      const R = o => S(Object.assign({ p: true, fr: { mode: 'ref', t } }, o));
+      t = undefined;
+      r.push({ grp: 'tukarRef', kind: 'Panggil', ln: 'callR', vars: { a, b, p: AD, '*p': a, x: a, y: b }, S: R({}), title: 'tukarRef(a, b): x dan y nama lain',
+        body: '<code>int &amp;x</code> adalah <b>referensi</b>: x tidak punya kotak sendiri, x hanyalah nama lain untuk a. Begitu juga y untuk b. Mengubah x sama dengan mengubah a.' });
+      t = a; r.push({ grp: 'tukarRef', kind: 'Langkah', ln: 'r1', vars: { a, b, p: AD, '*p': a, x: a, y: b, t }, S: R({}), title: `t = x = ${t}`, body: `x adalah a, jadi t mendapat ${t}.` });
+      a = b; r.push({ grp: 'tukarRef', kind: 'Langkah', ln: 'r2', vars: { a, b, p: AD, '*p': a, x: a, y: b, t }, S: R({ hiA: true }), title: `x = y → a menjadi ${a}`, body: `Menulis ke x berarti menulis ke a. a di main langsung berubah menjadi ${a}.`,
+        q: num('Berapa nilai a di main sekarang?', a, t) });
+      b = t; r.push({ grp: 'tukarRef', kind: 'Langkah', ln: 'r3', vars: { a, b, p: AD, '*p': a, x: a, y: b, t }, S: R({ hiB: true }), title: `y = t → b menjadi ${b}`, body: `b di main ikut berubah menjadi ${b}.` });
+      r.push({ grp: 'tukarRef', kind: 'Hasil', ln: 'retR', vars: { a, b, p: AD, '*p': a }, S: S({ p: true }), title: `a dan b tertukar: a = ${a}, b = ${b}`,
+        body: 'Karena x dan y hanya nama lain, perubahan di dalam fungsi tetap ada setelah fungsi selesai.',
+        note: ['Pass by reference', 'Tanda <code>&amp;</code> di parameter artinya referensi. Dipakai kalau fungsi harus mengubah variabel pemanggil, atau untuk mengirim data besar (struct) tanpa menyalin.'] });
+      // --- 3. Pointer ---
+      r.cnt['Pemanggilan fungsi']++;
+      t = undefined;
+      const P = o => S(Object.assign({ p: true, fr: { mode: 'ptr', t } }, o));
+      r.push({ grp: 'tukarPtr', kind: 'Panggil', ln: 'callP', vars: { a, b, p: AD, '*p': a, x: AD, y: BD }, S: P({}), title: 'tukarPtr(&a, &b): x dan y berisi alamat',
+        body: `Yang dikirim adalah <b>alamat</b>: x berisi ${AD} (alamat a) dan y berisi ${BD} (alamat b). Lewat alamat itu, fungsi bisa mengubah a dan b.`,
+        q: { t: 'Apa isi x di dalam tukarPtr?', o: [String(a), AD, BD], a: 1 } });
+      t = a; r.push({ grp: 'tukarPtr', kind: 'Langkah', ln: 'p1', vars: { a, b, p: AD, '*p': a, x: AD, y: BD, t }, S: P({}), title: `t = *x = ${t}`, body: `<code>*x</code> artinya isi di alamat ${AD}, yaitu a = ${t}.` });
+      a = b; r.push({ grp: 'tukarPtr', kind: 'Langkah', ln: 'p2', vars: { a, b, p: AD, '*p': a, x: AD, y: BD, t }, S: P({ hiA: true }), title: `*x = *y → a menjadi ${a}`, body: `Isi di alamat ${AD} (a) diganti dengan isi di alamat ${BD} (b).` });
+      b = t; r.push({ grp: 'tukarPtr', kind: 'Langkah', ln: 'p3', vars: { a, b, p: AD, '*p': a, x: AD, y: BD, t }, S: P({ hiB: true }), title: `*y = t → b menjadi ${b}`, body: `Isi di alamat ${BD} (b) diganti dengan t.`,
+        q: num('Berapa nilai b di main sekarang?', b, a) });
+      r.push({ grp: 'tukarPtr', kind: 'Hasil', ln: 'retP', vars: { a, b, p: AD, '*p': a }, S: S({ p: true }), title: `Tertukar lagi: a = ${a}, b = ${b}`,
+        body: 'Hasilnya sama dengan referensi. Bedanya cara menulis: referensi memakai <code>&amp;</code> di parameter, pointer memakai <code>*</code> di parameter dan <code>&amp;</code> saat memanggil.' });
+      r.push({ grp: 'Hasil', kind: 'Hasil', ln: 'end', vars: { a, b, p: AD, '*p': a }, S: S({ p: true }), title: 'Tiga cara mengirim data ke fungsi',
+        body: `Salinan (<code>int x</code>) tidak mengubah a dan b. Referensi (<code>int &amp;x</code>) dan pointer (<code>int *x</code>) mengubahnya. p masih menunjuk a, jadi <code>*p</code> = ${a}.`,
+        note: ['Pointer di struktur data', 'Linked list dan pohon (BST) dibangun dari pointer: setiap node menyimpan alamat node berikutnya di <code>next</code>, <code>kiri</code>, atau <code>kanan</code>.'] });
+      return r.F;
+    },
+    view(A, s, f) {
+      const S = f.S, col = [80, 240, 400], bw = 110, bh = 48, y1 = 46, y2 = 206;
+      const box = (x, y, v, c, dash) => `<g class="al-box${c ? ' al-' + c : ''}" transform="translate(${x},${y})"><rect width="${bw}" height="${bh}" rx="6"${dash ? ' style="stroke-dasharray:5 4"' : ''}/><text x="${bw / 2}" y="${bh / 2}">${v}</text></g>`;
+      const name = (x, y, nm, ad) => `<text class="al-lbl" x="${x + bw / 2}" y="${y + bh + 22}" text-anchor="middle">${nm}</text>` + (ad ? `<text class="al-idx" x="${x + bw / 2}" y="${y + bh + 46}">${ad}</text>` : '');
+      const up = (x) => `<path class="al-arw" d="M${x + bw / 2} ${y2 - 6} V${y1 + bh + 56} M${x + bw / 2 - 6} ${y1 + bh + 64} L${x + bw / 2} ${y1 + bh + 56} L${x + bw / 2 + 6} ${y1 + bh + 64}"/>`;
+      let g = `<text class="al-lbl" x="12" y="24">main</text>`;
+      g += box(col[0], y1, S.a, S.hiA ? 'cmp' : '') + name(col[0], y1, 'a', S.AD);
+      g += box(col[1], y1, S.b, S.hiB ? 'cmp' : '') + name(col[1], y1, 'b', S.BD);
+      if (S.p) { g += box(col[2], y1, S.AD, 'line') + name(col[2], y1, 'p', S.PD);
+        const xa = col[0] + bw / 2, xp = col[2] + bw / 2;
+        g += `<path class="al-arw" d="M${xp} ${y1} V${y1 - 18} H${xa} V${y1 - 4} M${xa - 6} ${y1 - 12} L${xa} ${y1 - 4} L${xa + 6} ${y1 - 12}"/>`; }
+      const fr = S.fr;
+      if (fr) {
+        const title = fr.mode === 'nilai' ? 'tukarNilai(int x, int y)' : fr.mode === 'ref' ? 'tukarRef(int &x, int &y)' : 'tukarPtr(int *x, int *y)';
+        g += `<line class="al-floor" x1="12" x2="548" y1="${y2 - 34}" y2="${y2 - 34}" style="stroke-dasharray:4 4"/><text class="al-lbl" x="12" y="${y2 + 14 + bh + 56}">fungsi ${esc(title)}</text>`;
+        if (fr.mode === 'nilai') { g += box(col[0], y2 + 14, fr.x, S.hi === 'x' ? 'cmp' : '') + name(col[0], y2 + 14, 'x (salinan)') + box(col[1], y2 + 14, fr.y, S.hi === 'y' ? 'cmp' : '') + name(col[1], y2 + 14, 'y (salinan)'); }
+        else if (fr.mode === 'ref') { g += box(col[0], y2 + 14, 'x = a', 'line', true) + box(col[1], y2 + 14, 'y = b', 'line', true) + up(col[0]) + up(col[1]); }
+        else { g += box(col[0], y2 + 14, S.AD, 'line') + name(col[0], y2 + 14, 'x') + box(col[1], y2 + 14, S.BD, 'line') + name(col[1], y2 + 14, 'y') + up(col[0]) + up(col[1]); }
+        g += box(col[2], y2 + 14, fr.t === undefined ? '–' : fr.t, '') + name(col[2], y2 + 14, 't');
+      }
+      return `<svg class="al-svg" viewBox="0 0 560 ${fr ? y2 + 14 + bh + 66 : y1 + bh + 56}" role="img" aria-label="a = ${S.a}, b = ${S.b}${S.p ? ', p menunjuk a' : ''}">${g}</svg>`;
+    },
+    program(s) {
+      const [A0, B0] = s.data, code = this.code.cpp.slice(0, 15);
+      const L = ['#include <iostream>', 'using namespace std;', '', ...code, '', 'int main() {', `    int a = ${A0}, b = ${B0};`, '    int *p = &a;', '    *p = *p + 1;',
+        '    cout << "a = " << a << ", b = " << b << endl;', '    tukarNilai(a, b);', '    cout << "Sesudah tukarNilai: a = " << a << ", b = " << b << endl;',
+        '    tukarRef(a, b);', '    cout << "Sesudah tukarRef:   a = " << a << ", b = " << b << endl;', '    tukarPtr(&a, &b);', '    cout << "Sesudah tukarPtr:   a = " << a << ", b = " << b << endl;', '    return 0;', '}'];
+      const a1 = A0 + 1;
+      return { code: L.join('\n'), out: [`a = ${a1}, b = ${B0}`, `Sesudah tukarNilai: a = ${a1}, b = ${B0}`, `Sesudah tukarRef:   a = ${B0}, b = ${a1}`, `Sesudah tukarPtr:   a = ${a1}, b = ${B0}`].join('\n') };
+    }
+  },
+
+  // ---------------- Mengurutkan array of struct ----------------
+  // Bubble sort array Mahasiswa berdasarkan nilai, dari terbesar. Yang ditukar seluruh struct, jadi nama ikut pindah.
+  structsort: {
+    counters: ['Perbandingan', 'Pertukaran'],
+    vars: ['n', 'i', 'j', 'm[j].nilai', 'm[j+1].nilai'],
+    code: {
+      cpp: ['struct Mahasiswa {', '    string nama;', '    int nilai;', '};', '',
+        'void urutNilai(Mahasiswa m[], int n) {', '    for (int i = 0; i < n - 1; i++) {', '        for (int j = 0; j < n - 1 - i; j++) {',
+        '            if (m[j].nilai < m[j + 1].nilai) {', '                Mahasiswa tmp = m[j];    // seluruh struct', '                m[j] = m[j + 1];', '                m[j + 1] = tmp;',
+        '            }', '        }', '    }', '}'],
+      ps: ['Mahasiswa: nama (teks), nilai (bilangan)', 'urutNilai(m, n):', '    untuk i = 0 sampai n - 2:', '        untuk j = 0 sampai n - 2 - i:',
+        '            jika m[j].nilai < m[j+1].nilai:', '                tukar m[j] dan m[j+1]   (seluruh data, bukan hanya nilai)']
+    },
+    lines: { cpp: { def: [1, 2, 3, 4], sig: [6], pass: [7], cmp: [8, 9], swap: [10, 11, 12], end: [6] }, ps: { def: [1], sig: [2], pass: [3], cmp: [4, 5], swap: [6], end: [2] } },
+    NAMA: ['Ani', 'Budi', 'Citra', 'Dedi', 'Eka', 'Fajar'],
+    input: {
+      aria: 'Nilai tiap mahasiswa, dipisah koma', hint: '3 sampai 6 nilai 0–100, dipisah koma. Nama dipasang berurutan: Ani, Budi, Citra, Dedi, Eka, Fajar. Contoh: 72, 90, 65, 88',
+      parse(raw) { return alNums(raw, 3, 6, 0, 100, '72, 90, 65, 88'); },
+      acak() { const n = alRnd(4, 6); return { data: Array.from({ length: n }, () => alRnd(40, 100)) }; }
+    },
+    run(data) {
+      const r = alRec2(), NM = this.NAMA, m = data.map((v, k) => ({ id: k, nama: NM[k], nilai: v })), n = m.length;
+      r.cnt.Perbandingan = 0; r.cnt.Pertukaran = 0;
+      const S = o => Object.assign({ m: m.map(x => Object.assign({}, x)) }, o);
+      r.push({ grp: 'Mulai', kind: 'Konsep', ln: 'def', vars: { n }, S: S({}), title: 'Satu struct = satu baris data',
+        body: `<code>struct Mahasiswa</code> menggabungkan <b>nama</b> dan <b>nilai</b> menjadi satu data. Array <code>m</code> berisi ${n} mahasiswa. Kita urutkan dari nilai <b>terbesar</b> (peringkat), memakai bubble sort.`,
+        note: ['Kunci pengurutan', 'Yang dibandingkan hanya satu field, yaitu <code>nilai</code>. Field itu disebut kunci pengurutan. Bisa juga mengurutkan berdasarkan nama (urut abjad).'] });
+      for (let i = 0; i < n - 1; i++) {
+        const g = `Putaran ${i + 1}`;
+        r.push({ grp: g, kind: 'Putaran', ln: 'pass', vars: { n, i }, S: S({ done: n - i }), title: `Putaran ${i + 1}`,
+          body: `Setiap putaran, nilai terkecil yang tersisa "tenggelam" ke bawah. Setelah putaran ini, baris ke-${n - i} (indeks ${n - 1 - i}) sudah di tempatnya.` });
+        let tukar = false;
+        for (let j = 0; j < n - 1 - i; j++) {
+          r.cnt.Perbandingan++;
+          const lt = m[j].nilai < m[j + 1].nilai;
+          r.push({ grp: g, kind: 'Bandingkan', ln: 'cmp', vars: { n, i, j, 'm[j].nilai': m[j].nilai, 'm[j+1].nilai': m[j + 1].nilai }, S: S({ cmp: [j, j + 1], done: n - i }),
+            title: `${m[j].nama} (${m[j].nilai}) dan ${m[j + 1].nama} (${m[j + 1].nilai})`,
+            body: `${m[j].nilai} < ${m[j + 1].nilai}? ${lt ? '<b>Ya</b>, jadi kedua mahasiswa ditukar.' : 'Tidak, urutannya sudah benar.'}`,
+            q: { t: `Apakah ${m[j].nama} dan ${m[j + 1].nama} ditukar?`, o: ['Ya, ditukar', 'Tidak'], a: lt ? 0 : 1 } });
+          if (lt) {
+            [m[j], m[j + 1]] = [m[j + 1], m[j]]; r.cnt.Pertukaran++; tukar = true;
+            r.push({ grp: g, kind: 'Tukar', ln: 'swap', vars: { n, i, j, 'm[j].nilai': m[j].nilai, 'm[j+1].nilai': m[j + 1].nilai }, S: S({ swp: [j, j + 1], done: n - i }),
+              title: `${m[j].nama} naik, ${m[j + 1].nama} turun`,
+              body: `<code>tmp</code> bertipe <code>Mahasiswa</code>, jadi yang dipindahkan satu baris utuh: nama <b>dan</b> nilai.`,
+              note: r.cnt.Pertukaran === 1 ? ['Jangan hanya menukar nilai', `Kalau yang ditukar hanya <code>m[j].nilai</code>, nilai ${m[j].nilai} pindah tetapi nama ${m[j].nama} tertinggal, sehingga nilai tercatat milik orang yang salah.`] : undefined });
+          }
+        }
+        if (!tukar) r.push({ grp: g, kind: 'Catatan', ln: 'pass', vars: { n, i }, S: S({ done: n - i }), title: 'Tidak ada pertukaran', body: 'Seluruh putaran tanpa pertukaran berarti data sebenarnya sudah urut. Versi yang lebih cepat bisa berhenti di sini.' });
+      }
+      r.push({ grp: 'Hasil', kind: 'Hasil', ln: 'end', vars: { n }, S: S({ done: 0, end: true }), title: `Peringkat 1: ${m[0].nama} (${m[0].nilai})`,
+        body: `Urutan akhir: ${m.map(x => `${x.nama} ${x.nilai}`).join(', ')}. ${r.cnt.Perbandingan} perbandingan dan ${r.cnt.Pertukaran} pertukaran, sama seperti bubble sort pada array angka biasa.` });
+      return r.F;
+    },
+    view(A, s, f) {
+      const S = f.S, mv = alMover(s), n = S.m.length, x0 = 70, rh = 46, y0 = 40, bx = 250, bw = 280;
+      let g = `<text class="al-lbl al-muted" x="${x0 + 10}" y="24">nama</text><text class="al-lbl al-muted" x="${bx}" y="24">nilai</text>`;
+      for (let k = 0; k < n; k++) g += `<text class="al-idx" x="34" y="${y0 + k * rh + rh / 2 + 4}">[${k}]</text>`;
+      S.m.forEach((e, k) => {
+        const c = S.end || k >= S.done ? 'done' : S.swp && S.swp.includes(k) ? 'found' : S.cmp && S.cmp.includes(k) ? 'cmp' : '';
+        const w = Math.max(30, Math.round(bw * e.nilai / 100));
+        g += `<g class="al-box al-mv${c ? ' al-' + c : ''}" ${mv('r' + e.id, x0, y0 + k * rh)}><rect width="${bx - x0 - 12}" height="${rh - 8}" rx="6"/><text x="${(bx - x0 - 12) / 2}" y="${(rh - 8) / 2}">${esc(e.nama)}</text>` +
+          `<rect x="${bx - x0}" width="${w}" height="${rh - 8}" rx="6"/><text x="${bx - x0 + w / 2}" y="${(rh - 8) / 2}">${e.nilai}</text></g>`;
+      });
+      return `<svg class="al-svg" viewBox="0 0 560 ${y0 + n * rh + 6}" role="img" aria-label="Urutan mahasiswa: ${esc(S.m.map(e => e.nama + ' ' + e.nilai).join(', '))}">${g}</svg>`;
+    },
+    program(s) {
+      const NM = this.NAMA, d = s.data, m = d.map((v, k) => ({ nama: NM[k], nilai: v }));
+      for (let i = 0; i < m.length - 1; i++) for (let j = 0; j < m.length - 1 - i; j++) if (m[j].nilai < m[j + 1].nilai) [m[j], m[j + 1]] = [m[j + 1], m[j]];
+      const L = ['#include <iostream>', '#include <string>', 'using namespace std;', '', ...this.code.cpp, '', 'int main() {',
+        `    Mahasiswa m[] = {${d.map((v, k) => `{"${NM[k]}", ${v}}`).join(', ')}};`, '    int n = sizeof(m) / sizeof(m[0]);', '', '    urutNilai(m, n);', '    for (int i = 0; i < n; i++)',
+        '        cout << i + 1 << ". " << m[i].nama << " " << m[i].nilai << endl;', '    return 0;', '}'];
+      return { code: L.join('\n'), out: m.map((x, i) => `${i + 1}. ${x.nama} ${x.nilai}`).join('\n') };
+    }
+  },
+
   rekursi: {
     counters: ['Pemanggilan'],
     vars: ['n', 'hasil'],
@@ -451,8 +646,8 @@ Object.assign(AL_ALGO, {
       return r.F;
     },
     view(A, s, f) {
-      const S = f.S, mv = alMover(s), base = 300, h = 40, cx = 130, w = 300;
-      let g = `<text class="al-lbl" x="${cx}" y="${base + 26}">call stack (bawah = yang pertama dipanggil)</text><line class="al-floor" x1="${cx - 10}" x2="${cx + w + 10}" y1="${base + .5}" y2="${base + .5}"/>`;
+      const S = f.S, mv = alMover(s), base = 300, h = 40, cx = 110, w = 300;
+      let g = `<text class="al-lbl" x="${cx + w / 2}" y="${base + 26}" style="text-anchor:middle">call stack · bawah = pertama</text><line class="al-floor" x1="${cx - 10}" x2="${cx + w + 10}" y1="${base + .5}" y2="${base + .5}"/>`;
       S.st.forEach((fr, k) => {
         const top = k === S.st.length - 1, c = fr.ret != null ? 'found' : top && S.top ? 'cmp' : '';
         const txt = fr.ret != null ? `faktorial(${fr.n}) = ${fr.ret}` : fr.wait ? `faktorial(${fr.n}): ${fr.n} × ?` : `faktorial(${fr.n})`;

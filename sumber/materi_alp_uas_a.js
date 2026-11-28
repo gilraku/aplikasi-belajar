@@ -229,7 +229,8 @@ int main() {
     { prompt: "siswa s = {7, \"Ani\"}; Isi s.nilai (float)?", answer: "0", reason: "Member paling kanan yang tidak diisi bernilai 0." },
     { prompt: "Akses bawaan member struct vs class?", answer: "struct public, class private", reason: "Bisa diubah dengan kata kunci public/private." },
     { prompt: "Inisialisasi mana yang tidak memakai tanda = ?", answer: "Uniform initialization", reason: "siswa tono{2, \"Tono\", 89.9}; berasal dari C++11." }
-  ])
+  ]),
+  tip("➕ Lanjutan: mengurutkan array of struct", `<p>Soal praktik sering meminta data struct diurutkan, misalnya mahasiswa dari nilai tertinggi. Caranya ada di <a href="#/c/struktur-data-algoritma/m/urut-struct">Mengurutkan Array of Struct</a> (section Struktur Data &amp; Algoritma): bubble sort langkah demi langkah yang membandingkan field nilai lalu menukar seluruh struct, supaya nama ikut pindah bersama nilainya.</p>`)
 ];
 
 // ───────────────────────────── P11 FUNGSI & REKURSI ─────────────────────────────
@@ -471,7 +472,8 @@ int main() {
     { prompt: "c = jumlah(a, b); a dan b disebut?", answer: "Parameter aktual", reason: "Yang dipakai saat memanggil. x dan y di definisi = parameter formal." },
     { prompt: "Variabel yang nilainya tetap bertahan setelah fungsi selesai?", answer: "Variabel static", reason: "Inisialisasinya hanya sekali." },
     { prompt: "toupper('b') menghasilkan?", answer: "'B'", reason: "Huruf kecil menjadi kapital." }
-  ])
+  ]),
+  tip("➕ Lanjutan: parameter referensi dan pointer", `<p>Parameter di pertemuan ini dikirim sebagai salinan (pass by value), jadi fungsi tidak bisa mengubah variabel pemanggil. Dua cara lain, referensi (<code>int &amp;x</code>) dan pointer (<code>int *x</code>), ada di <a href="#/c/struktur-data-algoritma/m/pointer-referensi">Pointer dan Referensi</a> (section Struktur Data &amp; Algoritma), lengkap dengan fungsi tukar yang bisa dijalankan langkah demi langkah.</p>`)
 ];
 
 module.exports = M;

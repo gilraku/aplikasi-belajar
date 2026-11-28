@@ -152,6 +152,36 @@ const SDA = {
       { q: 'void ubah(int x) { x = 10; } dipanggil dengan ubah(a) saat a = 3. Nilai a setelahnya adalah…', opts: ['3', '10', '0', 'Error'], ans: 0, exp: 'x hanya salinan dari a. Untuk mengubah a, parameternya harus referensi: int &x.' }
     ]),
 
+    L(0, 'pointer-referensi', 'Dasar', 'Pointer dan Referensi', 'Alamat memori, *, &, dan tiga cara mengirim parameter', [
+      A('Alamat dan pointer', `<p>Setiap variabel disimpan di memori, dan setiap tempat di memori punya <b>alamat</b>. Dua operator yang perlu dikenal:</p>
+<ul><li><code>&amp;a</code> (operator alamat): menghasilkan alamat variabel a.</li>
+<li><code>*p</code> (operator dereferensi): isi yang ada di alamat yang disimpan p.</li></ul>
+<p><b>Pointer</b> adalah variabel yang isinya alamat. Deklarasinya memakai tanda bintang: <code>int *p = &amp;a;</code> artinya "p adalah pointer ke int, isinya alamat a". Setelah itu <code>*p</code> sama dengan a: membaca <code>*p</code> berarti membaca a, dan <code>*p = 9;</code> mengubah a menjadi 9.</p>
+<p>Tanda <code>*</code> punya dua arti tergantung tempatnya. Saat <b>deklarasi</b> (<code>int *p</code>) artinya "p adalah pointer". Saat <b>dipakai</b> (<code>*p = 9</code>) artinya "isi di alamat p".</p>
+<p><b>Kapan dipakai:</b> mengubah variabel pemanggil dari dalam fungsi, dan membangun struktur data yang saling menyambung seperti <a href="#/c/struktur-data-algoritma/m/linked-list">Linked List</a> dan <a href="#/c/struktur-data-algoritma/m/binary-search-tree">Binary Search Tree</a>, yang setiap node-nya menyimpan alamat node lain.</p>`, 'Pointer'),
+      A('Tiga cara mengirim parameter', `<ul><li><b>Pass by value</b> (<code>int x</code>): fungsi menerima <b>salinan</b>. Mengubah x tidak mengubah variabel pemanggil. Ini yang dipakai di <a href="#/c/algoritma-pemrograman/m/p12">Algoritma P12</a> (parameter formal dan aktual).</li>
+<li><b>Pass by reference</b> (<code>int &amp;x</code>): x adalah <b>nama lain</b> dari variabel pemanggil. Mengubah x langsung mengubah variabel aslinya. Cara memanggilnya biasa: <code>tukarRef(a, b)</code>.</li>
+<li><b>Pass by pointer</b> (<code>int *x</code>): fungsi menerima <b>alamat</b>. Isinya diubah lewat <code>*x</code>. Saat memanggil, kirim alamatnya: <code>tukarPtr(&amp;a, &amp;b)</code>.</li></ul>
+<p>Array sebagai parameter (<code>int a[]</code>) sebenarnya dikirim sebagai alamat elemen pertama. Karena itu fungsi pengurutan seperti <code>bubbleSort(a, n)</code> bisa mengubah isi array pemanggil tanpa tanda &amp;.</p>`, 'Parameter'),
+      lab('pointer', [7, 3], undefined, 'Tekan Lanjut atau tombol panah. Bagian atas adalah variabel di main, bagian bawah adalah variabel milik fungsi yang sedang jalan. Panah menunjukkan alamat yang disimpan. Isi a dan b sendiri di bawah.'),
+      tbl('Membandingkan ketiganya', ['', 'Pass by value', 'Pass by reference', 'Pass by pointer'], [
+        ['Parameter', '<code>int x</code>', '<code>int &amp;x</code>', '<code>int *x</code>'],
+        ['Cara memanggil', '<code>f(a)</code>', '<code>f(a)</code>', '<code>f(&amp;a)</code>'],
+        ['Isi x', 'salinan nilai a', 'a itu sendiri (nama lain)', 'alamat a'],
+        ['Mengubah a di dalam fungsi', 'tidak bisa', '<code>x = 5;</code>', '<code>*x = 5;</code>'],
+        ['Cocok untuk', 'fungsi yang hanya membaca, misalnya menghitung rata-rata', 'fungsi tukar, mengembalikan lebih dari satu hasil, struct besar', 'struktur data dengan node (linked list, pohon)']
+      ], 'Bandingkan'),
+      salah(`<ul><li><b>Lupa &amp; saat memanggil versi pointer.</b> <code>tukarPtr(a, b)</code> mengirim angka, bukan alamat, dan tidak bisa dikompilasi. Yang benar <code>tukarPtr(&amp;a, &amp;b)</code>.</li>
+<li><b>Lupa * saat mengubah isi.</b> Di dalam <code>tukarPtr</code>, menulis <code>x = y;</code> hanya menukar alamat yang disimpan x, bukan isi a. Yang benar <code>*x = *y;</code>.</li>
+<li><b>Memakai pointer yang belum diisi.</b> <code>int *p; *p = 5;</code> menulis ke alamat acak dan bisa membuat program berhenti. Isi dulu dengan alamat yang sah (<code>p = &amp;a;</code>) atau <code>NULL</code>, dan periksa <code>p != NULL</code> sebelum memakai <code>*p</code>.</li>
+<li><b>Menukar dengan parameter biasa.</b> <code>void tukar(int x, int y)</code> hanya menukar salinan. Tambahkan &amp; di parameter.</li></ul>`)
+    ], [
+      { q: 'int a = 5; int *p = &a; *p = 8; Berapa nilai a sekarang?', opts: ['5', '8', 'alamat a', 'Error'], ans: 1, exp: '*p adalah isi di alamat a, yaitu a itu sendiri. Mengubah *p berarti mengubah a.' },
+      { q: 'Fungsi void tambah(int &x) { x++; } dipanggil tambah(n) saat n = 4. Nilai n setelahnya adalah…', opts: ['4', '5', '0', 'Error'], ans: 1, exp: 'int &x adalah referensi, jadi x adalah n itu sendiri dan n ikut bertambah.' },
+      { q: 'Cara memanggil void tukar(int *x, int *y) yang benar adalah…', opts: ['tukar(a, b)', 'tukar(*a, *b)', 'tukar(&a, &b)', 'tukar(&x, &y)'], ans: 2, exp: 'Parameternya pointer, jadi yang dikirim alamat a dan b: &a dan &b.' },
+      { q: 'Apa arti tanda * pada int *p?', opts: ['p dikali sesuatu', 'p adalah pointer ke int', 'p bernilai negatif', 'p adalah array'], ans: 1, exp: 'Pada deklarasi, * menandai bahwa p adalah pointer. Saat dipakai (*p), artinya isi di alamat p.' }
+    ]),
+
     // ======================= PENCARIAN =======================
     L(1, 'pencarian-linear', 'Pencarian', 'Pencarian Linear (Sequential Search)', 'Periksa satu per satu dari kiri', [
       A('Apa itu pencarian linear?', `<p><b>Pencarian linear</b> (disebut juga <i>sequential search</i>) mencari sebuah nilai dengan memeriksa data <b>satu per satu</b>, mulai dari indeks 0, sampai nilainya ketemu atau data habis.</p>
@@ -289,6 +319,30 @@ const SDA = {
       { q: 'Partisi data 7, 2, 9, 4 dengan pivot = data terakhir (4). Di indeks berapa pivot berakhir?', opts: ['0', '1', '2', '3'], ans: 1, exp: 'Hanya 2 yang lebih kecil dari 4, jadi kelompok kiri berisi 1 data dan pivot masuk ke indeks 1.' },
       { q: 'Setelah partisi selesai, yang pasti benar tentang pivot adalah…', opts: ['Pivot berada di indeks 0', 'Pivot sudah di posisi akhirnya', 'Pivot adalah nilai terkecil', 'Pivot berada di tengah array'], ans: 1, exp: 'Semua di kiri lebih kecil dan semua di kanan tidak lebih kecil, jadi pivot tidak akan berpindah lagi.' },
       { q: 'Kapan quick sort (pivot = data terakhir) berjalan paling lambat?', opts: ['Data acak', 'Data sudah urut', 'Data berisi 2 angka', 'Data semuanya berbeda'], ans: 1, exp: 'Pivot selalu yang terbesar, jadi setiap partisi hanya memisahkan satu data dan totalnya O(n²).' }
+    ]),
+
+    L(0, 'urut-struct', 'Pengurutan', 'Mengurutkan Array of Struct', 'Urutkan data mahasiswa berdasarkan nilai', [
+      A('Array of struct', `<p><b>Struct</b> menggabungkan beberapa data yang berbeda tipe menjadi satu, misalnya nama (string) dan nilai (int) milik satu mahasiswa. Dasarnya ada di <a href="#/c/algoritma-pemrograman/m/p10">Algoritma P10</a>.</p>
+<p><b>Array of struct</b> adalah array yang setiap elemennya satu struct: <code>Mahasiswa m[5];</code> berisi lima mahasiswa, dan <code>m[2].nilai</code> adalah nilai mahasiswa ketiga. Bentuk ini seperti tabel: satu elemen = satu baris, satu field = satu kolom.</p>
+<p><b>Mengurutkannya</b> memakai algoritma yang sama dengan array angka (bubble, selection, insertion). Ada dua perbedaan:</p>
+<ul><li>Yang <b>dibandingkan</b> hanya satu field, disebut <b>kunci pengurutan</b>: <code>m[j].nilai &lt; m[j + 1].nilai</code>.</li>
+<li>Yang <b>ditukar</b> seluruh struct, memakai variabel sementara bertipe struct: <code>Mahasiswa tmp = m[j];</code>. Dengan begitu nama tetap bersama nilainya.</li></ul>
+<p>Bentuk soal seperti ini sering muncul di ujian praktik: "urutkan data mahasiswa dari nilai tertinggi lalu tampilkan peringkatnya".</p>`),
+      lab('structsort', [72, 90, 65, 88, 79], undefined, 'Tekan Lanjut atau tombol panah. Setiap baris adalah satu struct Mahasiswa. Saat ditukar, nama dan nilai pindah bersama. Isi nilaimu sendiri di bawah (nama dipasang berurutan).'),
+      tbl('Mengganti arah atau kunci pengurutan', ['Ingin urut…', 'Kondisi tukar'], [
+        ['Nilai terbesar dulu (peringkat)', '<code>m[j].nilai &lt; m[j + 1].nilai</code>'],
+        ['Nilai terkecil dulu', '<code>m[j].nilai &gt; m[j + 1].nilai</code>'],
+        ['Nama urut abjad A–Z', '<code>m[j].nama &gt; m[j + 1].nama</code> (string bisa dibandingkan langsung)'],
+        ['Nilai terbesar dulu, kalau sama urut nama', '<code>m[j].nilai &lt; m[j + 1].nilai || (m[j].nilai == m[j + 1].nilai &amp;&amp; m[j].nama &gt; m[j + 1].nama)</code>']
+      ], 'Variasi'),
+      salah(`<ul><li><b>Hanya menukar nilainya.</b> <code>int tmp = m[j].nilai; m[j].nilai = m[j + 1].nilai; …</code> membuat nilai pindah tetapi nama tertinggal. Tukar seluruh struct dengan <code>Mahasiswa tmp</code>.</li>
+<li><b>Membandingkan struct secara langsung.</b> <code>if (m[j] &lt; m[j + 1])</code> tidak bisa dikompilasi, karena C++ tidak tahu field mana yang dibandingkan. Sebutkan field-nya: <code>m[j].nilai</code>.</li>
+<li><b>Tanda pembanding terbalik.</b> <code>&lt;</code> menghasilkan urutan dari terbesar, <code>&gt;</code> dari terkecil. Cek dengan dua data dulu sebelum menjalankan semuanya.</li>
+<li><b>Lupa titik koma setelah kurung tutup struct.</b> <code>struct Mahasiswa { … };</code> wajib diakhiri <code>;</code>.</li></ul>`)
+    ], [
+      { q: 'Kenapa variabel sementara saat menukar dibuat bertipe Mahasiswa, bukan int?', opts: ['Supaya lebih cepat', 'Supaya nama dan nilai pindah bersama', 'Karena int tidak bisa ditukar', 'Supaya hemat memori'], ans: 1, exp: 'Yang ditukar seluruh struct. Kalau hanya nilainya yang ditukar, nama tertinggal di tempat lama.' },
+      { q: 'Untuk mengurutkan dari nilai terkecil dengan bubble sort, kondisi tukarnya adalah…', opts: ['m[j].nilai < m[j + 1].nilai', 'm[j].nilai > m[j + 1].nilai', 'm[j] > m[j + 1]', 'm[j].nama > m[j + 1].nama'], ans: 1, exp: 'Tukar kalau yang di depan lebih besar, sehingga yang besar bergeser ke belakang.' },
+      { q: 'Mahasiswa m[3]; Bagaimana menulis nilai mahasiswa kedua?', opts: ['m.nilai[1]', 'm[2].nilai', 'm[1].nilai', 'nilai.m[1]'], ans: 2, exp: 'Indeks dimulai dari 0, jadi mahasiswa kedua adalah m[1], dan field-nya diakses dengan titik.' }
     ]),
 
     // ======================= STRUKTUR LINEAR =======================

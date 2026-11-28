@@ -139,7 +139,32 @@ for (let t = 0; t < 400; t++) {
 for (let i = 0; i < 300; i++) { const d = AL.kembar.input.acak().data; if (d.length < 3 || d.length > 8 || d.some(v => !Number.isInteger(v) || v < 0 || v > 99) || new Set(d).size === d.length) bad('kembar', 'acak tidak sah atau tanpa kembar', d.join(',')); }
 [['0', '6', '3'], ['7', '-1', '2, 3', 'x', '']].forEach((list, bad0) => list.forEach(t => { const r = AL.perulangan.input.parse(t); if (!!r.err !== !!bad0) bad('perulangan', bad0 ? 'input salah diterima' : 'input sah ditolak', t); }));
 for (let i = 0; i < 100; i++) { const r = AL.perulangan.input.acak(); if (AL.perulangan.input.parse(r.data.join(', ')).err) bad('perulangan', 'acak tidak sah', r.data); }
-console.log(`dasar: ${dasar} jejak perulangan/Big-O/array/rekursi diperiksa`);
+// Pointer: nilai a dan b di setiap langkah cocok dengan simulasi tiga fungsi tukar
+for (let t = 0; t < 300; t++) {
+  let A0 = rnd(99), B0 = rnd(99); if (B0 === A0 + 1) B0 = (B0 + 2) % 99;
+  const F = AL.pointer.run([A0, B0]), last = F[F.length - 1], a1 = A0 + 1;
+  const at = ln => F.find(f => f.ln === ln).vars;
+  if (at('retV').a !== a1 || at('retV').b !== B0) bad('pointer', 'tukarNilai mengubah a/b', A0, B0);
+  if (at('retR').a !== B0 || at('retR').b !== a1) bad('pointer', 'tukarRef tidak menukar', A0, B0);
+  if (last.vars.a !== a1 || last.vars.b !== B0 || last.vars['*p'] !== a1) bad('pointer', 'hasil akhir salah', A0, B0, JSON.stringify(last.vars));
+  if (t < 100) frameOk('pointer', F, { data: [A0, B0] });
+  dasar++;
+}
+// Array of struct: hasil urut dari nilai terbesar, nama selalu ikut nilainya, dan pengurutannya stabil (bubble sort)
+for (let t = 0; t < 600; t++) {
+  const d = Array.from({ length: 3 + rnd(4) }, () => rnd(t % 2 ? 5 : 101)), F = AL.structsort.run(d), m = F[F.length - 1].S.m;
+  const want = d.map((v, k) => ({ v, k })).sort((p, q) => q.v - p.v || p.k - q.k);
+  if (JSON.stringify(m.map(e => [e.nilai, e.id])) !== JSON.stringify(want.map(e => [e.v, e.k]))) bad('structsort', 'hasil salah', d.join(','));
+  F.forEach(f => f.S.m.forEach(e => { if (e.nama !== AL.structsort.NAMA[e.id] || e.nilai !== d[e.id]) bad('structsort', 'nama terpisah dari nilainya', d.join(',')); }));
+  if (t < 150) frameOk('structsort', F, { data: d });
+  dasar++;
+}
+[['pointer', ['7, 3', '0 98', '5, 5'], ['7', '7, 8', '99, 1', '1, 2, 3', 'x, y']], ['structsort', ['72, 90, 65', '0 100 50 50 1 2'], ['1, 2', '1, 2, 3, 4, 5, 6, 7', '101, 2, 3', 'a, b, c']]].forEach(([k, ok, no]) => {
+  ok.forEach(t => { const r = AL[k].input.parse(t); if (r.err) bad(k, 'input sah ditolak', t, r.err); });
+  no.forEach(t => { if (!AL[k].input.parse(t).err) bad(k, 'input salah diterima', t); });
+  for (let i = 0; i < 200; i++) { const r = AL[k].input.acak(), f = AL[k].input.fmt ? AL[k].input.fmt(r.data) : r.data.join(', '); if (AL[k].input.parse(f).err) bad(k, 'acak tidak sah', f); }
+});
+console.log(`dasar: ${dasar} jejak perulangan/Big-O/array/rekursi/pointer/struct diperiksa`);
 
 // ---------- 1a''. Bab Bercabang ----------
 let cab = 0;
@@ -189,7 +214,7 @@ console.log(`bercabang: ${cab} jejak BST/hash/BFS/DFS cocok dengan simulasi`);
     let runs = 0;
     const OWN = { stack: [['5, 3, -, 8', ''], ['1, 2, 3, 4, 5, 6, -, -', ''], ['-, 4, -, -', '']], queue: [['4, 9, -, 2', ''], ['1, 2, 3, 4, 5, 6, -, 7, 8', ''], ['-, 4, -, -', '']],
       linked: [['12, 7, 25', '7'], ['12, 7', '12'], ['3, 3, 9', '42'], ['8, 1', '1']],
-      bigo: [['1, 2, 64', ''], ['4, 8, 16, 32', '']], perulangan: [['0', ''], ['1', ''], ['6', '']], array2d: [['3 5 1; 2 8 4', ''], ['0 99; 99 0; 5 5; 1 2', ''], ['1 2 3 4 5; 6 7 8 9 10', '']], rekursi: [['1', ''], ['7', ''], ['4', '']],
+      bigo: [['1, 2, 64', ''], ['4, 8, 16, 32', '']], perulangan: [['0', ''], ['1', ''], ['6', '']], array2d: [['3 5 1; 2 8 4', ''], ['0 99; 99 0; 5 5; 1 2', ''], ['1 2 3 4 5; 6 7 8 9 10', '']], rekursi: [['1', ''], ['7', ''], ['4', '']], pointer: [['7, 3', ''], ['0, 98', ''], ['5, 5', '']], structsort: [['72, 90, 65, 88, 79', ''], ['50, 50, 50', ''], ['0, 100, 7, 7, 3, 99', '']],
       bst: [['50, 30, 70, 20, 40, 60, 80', '60'], ['10, 20, 30', '5'], ['5, 5, 3', '5']], hash: [['25, 35, 41, 15, 9, 19', '15'], ['25, 35, 5', '45'], ['9, 19, 29, 39', '39']],
       bfs: [['A-B, A-C, B-D, C-D, C-E, D-F, E-F', 'A'], ['H-A, G-H, B-C', 'B']], dfs: [['A-B, A-C, B-D, C-D, C-E, D-F, E-F', 'A'], ['A-H, H-B, B-G', 'G']] };
     for (const k of Object.keys(AL)) {
@@ -216,6 +241,17 @@ console.log(`bercabang: ${cab} jejak BST/hash/BFS/DFS cocok dengan simulasi`);
     fs.rmSync(dir, { recursive: true, force: true });
     console.log(`program lengkap: ${runs} program dikompilasi g++ dan output-nya cocok`);
   }
+}
+
+// ---------- 1b. Graf contoh BFS/DFS: simpul di lingkaran disusun tanpa sisi bersilang ----------
+{
+  const O = vm.runInContext('alGraphOrder', ctx);
+  const silang = (ord, E) => { const pos = {}; ord.forEach((n, i) => { pos[n] = i; }); let c = 0;
+    for (let i = 0; i < E.length; i++) for (let j = i + 1; j < E.length; j++) { let [a, b] = E[i].split('-').map(v => pos[v]), [p, q] = E[j].split('-').map(v => pos[v]);
+      if (a > b) [a, b] = [b, a]; if (p > q) [p, q] = [q, p]; if (new Set([a, b, p, q]).size < 4) continue; if ((a < p && p < b) !== (a < q && q < b)) c++; } return c; };
+  const E = ['A-B', 'A-C', 'B-D', 'C-D', 'C-E', 'D-F', 'E-F'], ord = O([...'ABCDEF'], E);
+  if (silang(ord, E)) bad('graf contoh masih punya sisi bersilang', ord.join(''));
+  if (ord.length !== 6 || new Set(ord).size !== 6 || ord[0] !== 'A') bad('urutan simpul graf rusak', ord.join(''));
 }
 
 // ---------- 2. Browser ----------
@@ -291,6 +327,8 @@ try {
       perulangan: ['5', '', ['int n = 5;'], '9'],
       array2d: ['3 5 1; 2 8 4', '', ['{3, 5, 1}', '{2, 8, 4}'], '1 2 3'],
       rekursi: ['5', '', ['int n = 5;'], '9'],
+      pointer: ['9, 4', '', ['int a = 9, b = 4;'], '9, 10'],
+      structsort: ['81, 64, 93', '', ['{"Ani", 81}', '{"Citra", 93}'], '1, 2'],
       bst: ['9, 4, 7, 1', '7', ['akar = sisip(akar, 9);', 'cari(akar, 7)'], '9'],
       hash: ['9, 4, 7, 1', '7', ['sisip(9);', 'cari(7)'], '9'],
       bfs: ['A-B, B-C, C-D', 'B', ["sambung('A', 'B');", "bfs('B' - 'A');"], 'A-A, B-C'],
@@ -358,12 +396,48 @@ try {
       if (!(await page.$('a[href="#/c/struktur-data-algoritma/m/perulangan"]'))) bad('ALP', p, 'tidak menautkan ke pelajaran Perulangan');
     }
   }
-  const hp = await browser.newPage({ viewport: { width: 375, height: 800 } });
-  hp.on('pageerror', e => errs.push(e.message));
-  for (const m of sda.meetings) {
-    await hp.goto(URL0 + `#/c/${sda.id}/m/${m.id}`); await hp.waitForSelector('.al');
-    const w = await hp.evaluate(() => document.documentElement.scrollWidth);
-    if (w > 375) bad(m.id, 'HP melebar', w);
+  // Keterbacaan gambar: teks tidak bergaris tepi (tebal menggumpal), tidak terlalu kecil, tidak keluar gambar,
+  // dan tidak saling menumpuk. Diperiksa di setiap langkah, di HP (gambar mengecil) dan di desktop.
+  const gambar = () => [...document.querySelectorAll('.al-stage svg')].flatMap((s, li) => {
+    const o = [], sb = s.getBoundingClientRect(), sc = sb.width / s.viewBox.baseVal.width;
+    const ts = [...s.querySelectorAll('text')].filter(t => t.textContent.trim() && t.getBoundingClientRect().width)
+      .map(t => ({ t: t.textContent.trim(), b: t.getBoundingClientRect(), px: parseFloat(getComputedStyle(t).fontSize) * sc, st: getComputedStyle(t).stroke }));
+    ts.forEach(x => {
+      if (x.st !== 'none') o.push(`teks bergaris tepi "${x.t}"`);
+      if (x.px < 8.9) o.push(`teks terlalu kecil ${x.px.toFixed(1)}px "${x.t}"`);
+      if (x.b.left < sb.left - 1 || x.b.right > sb.right + 1 || x.b.top < sb.top - 1 || x.b.bottom > sb.bottom + 1) o.push(`teks keluar gambar "${x.t}"`);
+    });
+    for (let i = 0; i < ts.length; i++) for (let j = i + 1; j < ts.length; j++) { const p = ts[i].b, q = ts[j].b;
+      if (Math.min(p.right, q.right) - Math.max(p.left, q.left) > 2 && Math.min(p.bottom, q.bottom) - Math.max(p.top, q.top) > 2) o.push(`teks menumpuk "${ts[i].t}" / "${ts[j].t}"`); }
+    return o.map(x => `lab ${li + 1}: ${x}`);
+  });
+  for (const [nama, vp] of [['HP', { width: 360, height: 800 }], ['desktop', { width: 1280, height: 900 }]]) {
+    const ctxG = await browser.newContext({ viewport: vp, reducedMotion: 'reduce' }), pg = await ctxG.newPage();
+    pg.on('pageerror', e => errs.push(e.message));
+    for (const m of sda.meetings) {
+      await pg.goto(URL0 + `#/c/${sda.id}/m/${m.id}`); await pg.waitForSelector('.al'); await pg.evaluate(() => document.fonts.ready);
+      if (nama === 'HP') { const w = await pg.evaluate(() => document.documentElement.scrollWidth); if (w > vp.width) bad(m.id, 'HP melebar', w); }
+      const temu = new Set(), labs = pg.locator('.al');
+      for (let li = 0; li < await labs.count(); li++) {
+        const L = labs.nth(li);
+        for (let k = 0; k < 400; k++) {
+          await pg.waitForTimeout(40); (await pg.evaluate(gambar)).forEach(x => temu.add(x));
+          // Nama dan isi kartu variabel tidak terpotong
+          (await pg.evaluate(() => [...document.querySelectorAll('.al-var-k, .al-var-v')].filter(e => e.scrollWidth > e.clientWidth + 1).map(e => e.textContent))).forEach(x => temu.add(`kartu variabel terpotong: ${x}`));
+          if (nama === 'desktop') {
+            // Panel kode yang dibatasi tingginya harus memperlihatkan (baris pertama dari) baris yang sedang jalan
+            const ok = await L.locator('.al-code').evaluate(pre => { const on = pre.querySelector('.trc-cur'); if (!on) return true; const a = pre.getBoundingClientRect(), b = on.getBoundingClientRect(); return b.top >= a.top - 1 && b.bottom <= a.bottom + 1; });
+            if (!ok) temu.add(`lab ${li + 1}: baris kode yang jalan tersembunyi di panel kode`);
+          }
+          const nx = L.locator('[data-act="next"]'); if (await nx.isDisabled()) break; await nx.click();
+        }
+      }
+      // Catatan: hanya judulnya yang huruf besar dan berdiri sendiri; teks tebal di isinya tetap sebaris.
+      const nb = await pg.evaluate(() => [...document.querySelectorAll('.al-note .rich b')].filter(b => getComputedStyle(b).display !== 'inline').length);
+      if (nb) temu.add(`${nb} teks tebal di catatan tidak sebaris`);
+      [...temu].slice(0, 6).forEach(x => bad(m.id, nama, x));
+    }
+    await ctxG.close();
   }
   if (errs.length) bad('galat di browser', errs.slice(0, 5));
 } finally { await browser.close(); server.close(); }

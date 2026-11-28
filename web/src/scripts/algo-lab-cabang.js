@@ -52,9 +52,32 @@ function alAdj(edges) {
   return { nodes, nb };
 }
 const alEdgeKey = (a, b) => [a, b].sort().join('-');
+// Urutan simpul di lingkaran dengan sisi bersilang paling sedikit (simpul pertama tetap di atas).
+// Simpul paling banyak 8, jadi semua urutan (7! = 5040) bisa dicoba; hasilnya disimpan per graf.
+const AL_GRAPH_ORDER = {};
+function alGraphOrder(nodes, edges) {
+  const key = nodes.join('') + '|' + edges.join(',');
+  if (AL_GRAPH_ORDER[key]) return AL_GRAPH_ORDER[key];
+  const E = edges.map(e => e.split('-')), k = nodes.length;
+  // Dua tali busur di lingkaran bersilang jika ujung-ujungnya berselang-seling.
+  const cross = pos => { let c = 0; for (let i = 0; i < E.length; i++) for (let j = i + 1; j < E.length; j++) {
+    let [a, b] = [pos[E[i][0]], pos[E[i][1]]], [p, q] = [pos[E[j][0]], pos[E[j][1]]];
+    if (a > b) [a, b] = [b, a]; if (p > q) [p, q] = [q, p];
+    if (a === p || a === q || b === p || b === q) continue;
+    if ((a < p && p < b) !== (a < q && q < b)) c++; } return c; };
+  let best = nodes, bestC = Infinity;
+  const rest = nodes.slice(1), used = new Array(rest.length).fill(false), cur = [nodes[0]];
+  const walk = () => {
+    if (bestC === 0) return;
+    if (cur.length === k) { const pos = {}; cur.forEach((n, i) => { pos[n] = i; }); const c = cross(pos); if (c < bestC) { bestC = c; best = cur.slice(); } return; }
+    for (let i = 0; i < rest.length; i++) if (!used[i]) { used[i] = true; cur.push(rest[i]); walk(); cur.pop(); used[i] = false; }
+  };
+  if (k > 3) walk();
+  return (AL_GRAPH_ORDER[key] = best);
+}
 function alGraphView(s, f, strip) {
   const S = f.S, mv = alMover(s), { nodes } = alAdj(s.data), k = nodes.length, cx = 280, cy = 128, rx = 200, ry = 100;
-  const P = {}; nodes.forEach((n, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / k; P[n] = [cx + rx * Math.cos(a), cy + ry * Math.sin(a)]; });
+  const P = {}; alGraphOrder(nodes, s.data).forEach((n, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / k; P[n] = [cx + rx * Math.cos(a), cy + ry * Math.sin(a)]; });
   let g = '';
   s.data.forEach(e => { const [a, b] = e.split('-'), key = alEdgeKey(a, b), on = S.chk && alEdgeKey(S.cur, S.chk) === key, tree = (S.tree || []).includes(key);
     g += `<line class="al-edge${on ? ' is-on' : tree ? ' is-tree' : ''}" x1="${P[a][0]}" y1="${P[a][1]}" x2="${P[b][0]}" y2="${P[b][1]}"/>`; });
@@ -64,7 +87,7 @@ function alGraphView(s, f, strip) {
   g += `<text class="al-lbl" x="20" y="${y}">${strip.label}</text>`;
   strip.items.forEach((it, i) => { g += alBox(mv, 'q' + it, it, 20 + i * 46, y + 10, '', 40); });
   if (!strip.items.length) g += `<text class="al-lbl al-muted" x="20" y="${y + 32}">kosong</text>`;
-  g += `<text class="al-lbl" x="320" y="${y}">Urutan kunjungan</text><text class="al-ord" x="320" y="${y + 32}">${(S.ord || []).join(' → ') || '–'}</text>`;
+  g += `<text class="al-lbl" x="290" y="${y}">Urutan kunjungan</text><text class="al-ord" x="290" y="${y + 32}">${(S.ord || []).join(' → ') || '–'}</text>`;
   return `<svg class="al-svg" viewBox="0 0 560 ${y + 58}" role="img" aria-label="Graf ${esc(s.data.join(', '))}. Urutan kunjungan: ${esc((S.ord || []).join(', ') || 'belum ada')}">${g}</svg>`;
 }
 function alGraphProgram(A, s, call, label) {
@@ -208,7 +231,7 @@ Object.assign(AL_ALGO, {
         note: ['Kapan memakai BFS', 'Mencari jalur terpendek pada graf tanpa bobot, misalnya jumlah transit paling sedikit atau "teman dari teman" di media sosial.'] });
       return r.F;
     },
-    view(A, s, f) { return alGraphView(s, f, { label: 'Antrian (depan → belakang)', items: f.S.wait || [] }); },
+    view(A, s, f) { return alGraphView(s, f, { label: 'Antrian (depan di kiri)', items: f.S.wait || [] }); },
     program(s) { return alGraphProgram(this, s, 'bfs', 'Urutan BFS'); }
   },
 
@@ -254,7 +277,7 @@ Object.assign(AL_ALGO, {
         note: ['Kapan memakai DFS', 'Mengecek apakah dua simpul terhubung, mencari jalan keluar labirin, mendeteksi siklus, dan menelusuri semua kemungkinan (backtracking).'] });
       return r.F;
     },
-    view(A, s, f) { return alGraphView(s, f, { label: 'Call stack (bawah → atas)', items: f.S.stack || [] }); },
+    view(A, s, f) { return alGraphView(s, f, { label: 'Call stack (kiri=bawah)', items: f.S.stack || [] }); },
     program(s) { return alGraphProgram(this, s, 'dfs', 'Urutan DFS'); }
   },
 

@@ -384,8 +384,42 @@ function alSvg(A, s, f) {
   const row2 = two ? `<line class="al-floor" x1="${x0 - 6}" x2="${X(n - 1) + bw + 6}" y1="${G.base[1] + 0.5}" y2="${G.base[1] + 0.5}"/><text class="al-tmp" x="${x0 - 6}" y="${G.base[1] + 18}">tmp</text>` : '';
   return `<svg class="al-svg" viewBox="0 0 ${W} ${G.H}" role="img" aria-label="Isi array: ${esc(f.bars.filter(b => !b.row && !b.lift).sort((p, q) => p.x - q.x).map(b => b.v).join(', '))}"><line class="al-floor" x1="${x0 - 6}" x2="${X(n - 1) + bw + 6}" y1="${G.base[0] + 0.5}" y2="${G.base[0] + 0.5}"/>${row2}${bars}${idx}${ptrs}</svg>`;
 }
+// Teks keterangan yang diam (bukan bagian yang bergerak) dikecilkan kalau melewati tepi gambar.
+// Di HP ukuran huruf gambar dinaikkan lewat CSS, sehingga keterangan yang panjang bisa melebihi lebar gambar.
+function alFitText() {
+  document.querySelectorAll('.al-svg').forEach(svg => {
+    const vb = svg.viewBox && svg.viewBox.baseVal; if (!vb || !vb.width || !svg.getCTM()) return;
+    const inv = svg.getCTM().inverse();
+    svg.querySelectorAll('text').forEach(t => {
+      if (t.closest('.al-mv')) return;
+      t.style.fontSize = '';
+      const bb = t.getBBox(), m = inv.multiply(t.getCTM()), left = m.a * bb.x + m.e, right = m.a * (bb.x + bb.width) + m.e;
+      const lim = [vb.x + 4, vb.x + vb.width - 4];
+      if (left >= lim[0] && right <= lim[1]) return;
+      const anchor = getComputedStyle(t).textAnchor, w = right - left;
+      const room = anchor === 'middle' ? 2 * Math.min((left + right) / 2 - lim[0], lim[1] - (left + right) / 2) : anchor === 'end' ? right - lim[0] : lim[1] - left;
+      if (room > 0 && w > 0) t.style.fontSize = (parseFloat(getComputedStyle(t).fontSize) * room / w).toFixed(1) + 'px';
+    });
+  });
+}
+if (typeof window !== 'undefined') { let rt = 0; const refit = () => { clearTimeout(rt); rt = setTimeout(alFitText, 150); }; window.addEventListener('resize', refit);
+  // Ukuran teks bergantung pada font: hitung ulang setelah font web selesai dimuat (sebelumnya terukur dengan font cadangan).
+  if (document.fonts) { document.fonts.addEventListener('loadingdone', refit); document.fonts.ready.then(refit); } }
+// Panel kode yang panjang dibatasi tingginya (desktop) dan digulir sendiri ke baris yang sedang jalan.
+let alCodeQueued = false;
+function alCodeFocus() {
+  if (alCodeQueued) return; alCodeQueued = true;
+  requestAnimationFrame(() => { alCodeQueued = false; alFitText();
+    document.querySelectorAll('.al-code').forEach(pre => { if (pre.scrollHeight <= pre.clientHeight + 1) return;
+      const on = pre.querySelectorAll('.trc-cur'); if (!on.length) return;
+      const top = on[0].offsetTop, bot = on[on.length - 1].offsetTop + on[on.length - 1].offsetHeight;
+      // Semua baris yang menyala muat: taruh di tengah. Kalau tidak muat (menyala di beberapa fungsi), baris pertama di atas.
+      pre.scrollTop = Math.max(0, bot - top <= pre.clientHeight - 24 ? (top + bot) / 2 - pre.clientHeight / 2 : top - 12); });
+  });
+}
 function alCode(A, s, f) {
   const lang = s.lang === 'ps' ? 'ps' : 'cpp', src = A.code[lang], on = (A.lines[lang] || {})[f.ln] || [];
+  if (typeof requestAnimationFrame === 'function') alCodeFocus();
   return `<pre class="trc-code al-code bg-slate-900 text-slate-100 rounded-xl py-2 text-[12px] sm:text-[13px] leading-6 font-mono overflow-x-auto" aria-label="Kode ${lang === 'cpp' ? 'C++' : 'pseudocode'}">${src.map((line, i) => {
     const cur = on.includes(i + 1);
     return `<div class="trc-line${cur ? ' trc-cur' : ''}"><span class="trc-no">${i + 1}</span><span>${(lang === 'cpp' ? hlCpp(line) : esc(line)) || ' '}</span></div>`;
