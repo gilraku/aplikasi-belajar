@@ -364,7 +364,7 @@ function alFrames(d, s) {
 function alSvg(A, s, f) {
   const n = s.data.length, two = A.rows === 2;
   const W = 560, gap = n > 6 ? 8 : 12, bw = Math.min(56, (W - 40 - gap * (n - 1)) / n), x0 = (W - (bw * n + gap * (n - 1))) / 2;
-  const G = two ? { base: [150, 320], hmax: 90, H: 350 } : { base: [200], hmax: 120, H: 268 };
+  const G = two ? { base: [150, 344], hmax: 90, H: 374 } : { base: [200], hmax: 120, H: 268 };
   const max = Math.max(...s.data, 1), hOf = v => Math.round(22 + (v / max) * (G.hmax - 22));
   const X = x => x0 + x * (bw + gap);
   const prev = s.anim ? s.pos : null; s.anim = false;

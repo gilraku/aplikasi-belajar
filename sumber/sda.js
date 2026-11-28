@@ -525,6 +525,33 @@ const SDA = {
       { q: 'Node yang dihapus punya satu anak. Yang terjadi adalah…', opts: ['Anak ikut terhapus', 'Anak beserta subpohonnya naik menggantikan node itu', 'Pohon disusun ulang dari awal', 'Node tidak bisa dihapus'], ans: 1, exp: 'Induk langsung disambungkan ke satu-satunya anak itu.' },
       { q: 'Successor dari sebuah node yang punya dua anak dicari dengan cara…', opts: ['Ambil anak kiri', 'Ambil anak kanan, lalu terus turun ke kiri', 'Ambil anak kiri, lalu terus turun ke kanan', 'Ambil akar'], ans: 1, exp: 'Angka terkecil di subpohon kanan ada di ujung paling kiri subpohon itu. Pilihan ketiga adalah predecessor.' }
     ]),
+    L(0, 'heap-priority-queue', 'Bercabang', 'Heap dan Priority Queue', 'Yang terbesar selalu di atas', [
+      A('Apa itu heap?', `<p><b>Heap</b> adalah pohon biner yang punya dua sifat:</p>
+<ul><li><b>Lengkap</b>: setiap tingkat terisi penuh dari kiri ke kanan, kecuali tingkat terakhir. Karena itu heap bisa disimpan rapat di array tanpa pointer: anak dari <code>h[i]</code> ada di <code>h[2i + 1]</code> dan <code>h[2i + 2]</code>, induknya di <code>h[(i - 1) / 2]</code>.</li>
+<li><b>Sifat heap</b>: pada <b>max-heap</b>, setiap induk lebih besar atau sama dengan anak-anaknya, sehingga yang terbesar selalu di <code>h[0]</code>. Pada <b>min-heap</b> kebalikannya, yang terkecil di atas.</li></ul>
+<p>Berbeda dengan BST, heap <b>tidak</b> mengatur kiri lebih kecil dari kanan. Yang dijamin hanya hubungan induk dan anak.</p>
+<ul><li><b>Sisip</b>: taruh di akhir array, lalu <b>naikkan</b> (tukar dengan induk) selama lebih besar dari induknya.</li>
+<li><b>Ambil</b>: ambil <code>h[0]</code>, pindahkan isi terakhir ke <code>h[0]</code>, lalu <b>turunkan</b> (tukar dengan anak yang paling besar) selama lebih kecil dari salah satu anaknya.</li></ul>
+<p>Keduanya hanya menyusuri satu jalur dari akar ke daun, jadi <b>O(log n)</b>.</p>`),
+      lab('heap', [40, 25, 60, 'ambil', 50, 10, 'ambil', 'ambil'], undefined, 'Tekan Lanjut atau tombol panah. Lihat angka baru naik ke posisinya, dan akar baru turun setelah yang terbesar diambil. Pohon dan array di bawahnya adalah data yang sama.'),
+      A('Priority queue dan heap sort', `<p><b>Priority queue</b> (antrian prioritas) adalah antrian yang selalu melayani <b>prioritas tertinggi</b> lebih dulu, bukan yang datang lebih dulu. Contohnya antrean IGD (pasien paling darurat lebih dulu), penjadwalan proses di sistem operasi, dan algoritma Dijkstra. Heap adalah cara paling umum membuatnya: masuk = sisip, keluar = ambil.</p>
+<p><b>Heap sort</b> memakai heap untuk mengurutkan: susun semua data menjadi max-heap, lalu ambil yang terbesar berulang kali dan taruh di belakang array. Waktunya O(n log n) dalam kasus apa pun, tanpa array tambahan.</p>
+<p>Di C++ sudah ada <code>priority_queue</code> di <code>&lt;queue&gt;</code>, yang secara bawaan adalah max-heap: <code>push(x)</code>, <code>top()</code> untuk melihat yang terbesar, dan <code>pop()</code> untuk membuangnya.</p>`),
+      tbl('Queue, priority queue, dan stack', ['', 'Yang keluar duluan', 'Dibuat dengan', 'Masuk / keluar'], [
+        ['Queue', 'yang datang paling awal', 'array melingkar atau linked list', 'O(1) / O(1)'],
+        ['Stack', 'yang datang paling akhir', 'array atau linked list', 'O(1) / O(1)'],
+        ['Priority queue', 'prioritas tertinggi', 'heap', 'O(log n) / O(log n)'],
+        ['Array biasa (cari yang terbesar)', 'prioritas tertinggi', 'array tanpa aturan', 'O(1) / O(n)']
+      ], 'Bandingkan'),
+      salah(`<ul><li><b>Mengira heap sudah urut.</b> Array heap seperti [60, 50, 40, 25, 10] kebetulan urut, tapi [60, 25, 50, 10] juga heap yang sah. Yang dijamin hanya isi <code>h[0]</code>.</li>
+<li><b>Saat turun, menukar dengan anak yang pertama lebih besar.</b> Harus dengan anak yang <b>paling besar</b>. Kalau ditukar dengan anak yang lebih kecil, anak itu menjadi induk dari saudaranya yang lebih besar dan aturan heap rusak.</li>
+<li><b>Salah rumus indeks.</b> Dengan indeks mulai dari 0, anak adalah 2i + 1 dan 2i + 2. Rumus 2i dan 2i + 1 hanya untuk array yang mulai dari indeks 1.</li></ul>`)
+    ], [
+      { q: 'Max-heap disimpan di array: [70, 40, 60, 10, 30]. Anak dari 40 (indeks 1) adalah…', opts: ['60 dan 10', '10 dan 30', '70 dan 60', 'tidak punya anak'], ans: 1, exp: 'Anak dari indeks 1 ada di indeks 2·1 + 1 = 3 dan 2·1 + 2 = 4, yaitu 10 dan 30.' },
+      { q: 'Angka 80 disisipkan ke max-heap [70, 40, 60, 10, 30]. Posisi akhirnya…', opts: ['h[5]', 'h[2]', 'h[0]', 'h[1]'], ans: 2, exp: '80 ditaruh di h[5], induknya h[2] = 60, naik. Induk berikutnya h[0] = 70, naik lagi menjadi akar.' },
+      { q: 'Priority queue paling cocok untuk…', opts: ['Antrean kasir biasa', 'Antrean IGD berdasarkan tingkat darurat', 'Tombol Undo', 'Mencari data di array urut'], ans: 1, exp: 'Pasien yang paling darurat dilayani lebih dulu walaupun datang belakangan.' },
+      { q: 'Kompleksitas mengambil yang terbesar dari max-heap berisi n data adalah…', opts: ['O(1)', 'O(log n)', 'O(n)', 'O(n²)'], ans: 1, exp: 'Melihatnya O(1), tapi mengambilnya perlu menurunkan akar baru sepanjang satu jalur, yaitu O(log n).' }
+    ]),
     L(0, 'bfs', 'Bercabang', 'Graf dan BFS (Breadth-First Search)', 'Telusuri melebar memakai antrian', [
       A('Apa itu graf?', `<p><b>Graf</b> terdiri dari <b>simpul</b> (vertex/node) dan <b>sisi</b> (edge) yang menghubungkan dua simpul. Contohnya peta kota (kota dan jalan), jaringan pertemanan, atau jaringan komputer. Berbeda dengan pohon, graf boleh punya siklus dan tidak punya akar.</p>
 <p>Cara paling sederhana menyimpan graf di C++ adalah <b>matriks ketetanggaan</b>: <code>adj[u][v] = true</code> jika simpul u dan v terhubung. Untuk graf tak berarah, isi juga <code>adj[v][u]</code>.</p>`, 'Graf'),
@@ -570,6 +597,35 @@ const SDA = {
       { q: 'Graf: A-B, A-C, B-D, C-E. DFS dari A (tetangga dicek urut abjad) mengunjungi…', opts: ['A B C D E', 'A B D C E', 'A C E B D', 'A D B C E'], ans: 1, exp: 'A → B → D (buntu, mundur ke B, lalu ke A) → C → E.' },
       { q: 'Pada DFS rekursif, apa yang mengingat simpul tempat kembali saat buntu?', opts: ['Queue', 'Call stack', 'Array dikunjungi', 'Hash table'], ans: 1, exp: 'Setiap dfs(u) yang belum selesai menunggu di call stack, sehingga eksekusi otomatis kembali ke sana.' },
       { q: 'Untuk mencari rute dengan jumlah transit paling sedikit, algoritma yang tepat adalah…', opts: ['DFS', 'BFS', 'Bubble sort', 'Pencarian linear'], ans: 1, exp: 'BFS mengunjungi lapis demi lapis, jadi simpul tujuan pertama kali ditemukan lewat jumlah sisi paling sedikit.' }
+    ]),
+    L(0, 'dijkstra', 'Bercabang', 'Jalur Terpendek: Dijkstra', 'Graf berbobot dan jarak terkecil', [
+      A('Graf berbobot dan jalur terpendek', `<p>Pada <b>graf berbobot</b>, setiap sisi punya angka (<b>bobot</b>), misalnya jarak dalam km, waktu tempuh, atau biaya. <b>Jalur terpendek</b> dari A ke F adalah jalur yang <b>total bobotnya</b> paling kecil, bukan yang sisinya paling sedikit. BFS hanya menghitung banyak sisi, jadi tidak cukup untuk graf berbobot.</p>
+<p><b>Algoritma Dijkstra</b> mencari jarak terpendek dari satu simpul awal ke semua simpul lain:</p>
+<ul><li>Isi <code>jarak[awal] = 0</code> dan jarak lain ∞.</li>
+<li>Pilih simpul <b>belum selesai</b> dengan jarak <b>terkecil</b>, sebut u. Jaraknya sudah pasti, jadi tandai selesai.</li>
+<li>Untuk setiap tetangga v: kalau <code>jarak[u] + bobot(u, v) &lt; jarak[v]</code>, ganti jarak v. Langkah ini disebut <b>relaksasi</b>.</li>
+<li>Ulangi sampai semua simpul selesai, atau sisanya ∞ (tidak terjangkau).</li></ul>
+<p>Mengapa simpul terkecil sudah pasti? Semua jalur lain harus lewat simpul yang jaraknya sudah sama atau lebih besar, dan bobot tidak pernah negatif, jadi tidak mungkin menghasilkan jarak yang lebih kecil.</p>
+<p><b>Kapan dipakai:</b> rute tercepat di peta, routing paket di jaringan internet, dan perencanaan biaya termurah.</p>`),
+      lab('dijkstra', ['A-B:4', 'A-C:2', 'B-C:1', 'B-D:5', 'C-D:8', 'C-E:10', 'D-E:2', 'D-F:6', 'E-F:2'], 'A', 'Tekan Lanjut atau tombol panah. Tabel jarak di bawah graf berubah setiap kali ada jalur yang lebih pendek. Perhatikan B: awalnya 4 lewat sisi langsung, lalu menjadi 3 lewat C. Isi graf dan simpul awalmu sendiri di bawah.'),
+      tbl('Contoh tabel jarak (graf di lab, mulai dari A)', ['Dipilih', 'A', 'B', 'C', 'D', 'E', 'F'], [
+        ['awal', '0', '∞', '∞', '∞', '∞', '∞'],
+        ['A (0)', '<b>0</b>', '4', '2', '∞', '∞', '∞'],
+        ['C (2)', '0', '3', '<b>2</b>', '10', '12', '∞'],
+        ['B (3)', '0', '<b>3</b>', '2', '8', '12', '∞'],
+        ['D (8)', '0', '3', '2', '<b>8</b>', '10', '14'],
+        ['E (10)', '0', '3', '2', '8', '<b>10</b>', '12'],
+        ['F (12)', '0', '3', '2', '8', '10', '<b>12</b>']
+      ], 'Tabel jarak'),
+      salah(`<ul><li><b>Memilih tetangga terdekat dari simpul terakhir</b>, bukan simpul dengan jarak total terkecil dari awal. Dijkstra membandingkan <code>jarak[]</code> semua simpul yang belum selesai.</li>
+<li><b>Mengunci jarak saat pertama kali diisi.</b> Jarak simpul masih bisa diperbaiki sampai simpul itu sendiri dipilih. Di contoh, B awalnya 4 lalu menjadi 3.</li>
+<li><b>Memakai Dijkstra pada bobot negatif.</b> Hasilnya bisa salah. Untuk bobot negatif dipakai Bellman-Ford.</li>
+<li><b>Menjumlahkan INF dengan bobot.</b> Di kode, simpul yang masih INF tidak pernah dipilih sebagai u sebelum <code>break</code>, jadi <code>jarak[u] + w</code> tidak meluap.</li></ul>`)
+    ], [
+      { q: 'Graf: A-B:7, A-C:3, C-B:2. Jarak terpendek dari A ke B adalah…', opts: ['7', '5', '3', '2'], ans: 1, exp: 'Lewat C: 3 + 2 = 5, lebih kecil dari sisi langsung 7.' },
+      { q: 'Pada setiap putaran, Dijkstra memilih simpul…', opts: ['Yang paling dekat dengan simpul terakhir', 'Yang belum selesai dengan jarak terkecil dari awal', 'Berdasarkan urutan abjad', 'Yang punya tetangga terbanyak'], ans: 1, exp: 'Jarak simpul itu sudah pasti, karena semua jalur lain lewat simpul yang jaraknya sama atau lebih besar.' },
+      { q: 'jarak[u] = 6, bobot u–v = 3, jarak[v] = 10. Setelah relaksasi, jarak[v] menjadi…', opts: ['10', '9', '3', '13'], ans: 1, exp: '6 + 3 = 9 lebih kecil dari 10, jadi jarak[v] diganti 9.' },
+      { q: 'Dijkstra tidak cocok dipakai jika…', opts: ['Graf tidak berarah', 'Ada sisi berbobot negatif', 'Ada simpul yang tidak terjangkau', 'Bobotnya semua sama'], ans: 1, exp: 'Bobot negatif membuat simpul yang sudah "selesai" masih bisa diperpendek.' }
     ]),
     L(0, 'hash-table', 'Bercabang', 'Hash Table', 'Tempat dihitung dari datanya', [
       A('Apa itu hash table?', `<p><b>Hash table</b> menyimpan data di array, tetapi posisinya <b>dihitung</b> dari datanya sendiri memakai <b>fungsi hash</b>. Contoh paling sederhana: <code>hash(k) = k % M</code>, sisa bagi k dengan ukuran tabel M. Untuk mencari, posisi dihitung lagi dengan rumus yang sama, sehingga tidak perlu memeriksa satu per satu.</p>

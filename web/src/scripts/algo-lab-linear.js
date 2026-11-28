@@ -327,9 +327,9 @@ Object.assign(AL_ALGO, {
       return r.F;
     },
     view(A, s, f) {
-      const S = f.S, mv = alMover(s), x0 = 24, sw = 96, y0 = 84, yl = 196, X = k => x0 + k * sw;
+      const S = f.S, mv = alMover(s), x0 = 16, sw = 92, y0 = 84, yl = 196, X = k => x0 + k * sw;
       const node = (e, x, y, c, nul, arrow) => `<g class="al-box al-node al-mv${c ? ' al-' + c : ''}" ${mv('n' + e.id, x, y)}><rect width="44" height="40" rx="5"/><rect class="al-nx" x="44" width="26" height="40" rx="5"/><text x="22" y="20">${e.v}</text><circle class="al-dot" cx="57" cy="20" r="3"/>${
-        nul ? '<path class="al-arw" d="M57 20 H76"/><text class="al-null" x="80" y="20">NULL</text>' : arrow ? '<path class="al-arw" d="M57 20 H94 M88 15 L94 20 L88 25"/>' : ''}</g>`;
+        nul ? '<path class="al-arw" d="M57 20 H76"/><text class="al-null" x="80" y="20">NULL</text>' : arrow ? '<path class="al-arw" d="M57 20 H90 M84 15 L90 20 L84 25"/>' : ''}</g>`;
       let g = '';
       S.list.forEach((e, k) => { const c = e.id === S.cmp ? 'cmp' : e.id === S.hi ? 'found' : S.end ? 'done' : ''; g += node(e, X(k), y0, c, k === S.list.length - 1, k < S.list.length - 1); });
       if (S.list.length) g += `<g class="al-ptr al-mv" ${mv('head', X(0) + 22, y0 - 6)}><path d="M0 0 V-16 M-5 -6 L0 0 L5 -6"/><text x="0" y="-22">head</text></g>`;

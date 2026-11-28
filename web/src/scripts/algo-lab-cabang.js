@@ -87,8 +87,9 @@ function alGraphView(s, f, strip) {
   g += `<text class="al-lbl" x="20" y="${y}">${strip.label}</text>`;
   strip.items.forEach((it, i) => { g += alBox(mv, 'q' + it, it, 20 + i * 46, y + 10, '', 40); });
   if (!strip.items.length) g += `<text class="al-lbl al-muted" x="20" y="${y + 32}">kosong</text>`;
-  g += `<text class="al-lbl" x="290" y="${y}">Urutan kunjungan</text><text class="al-ord" x="290" y="${y + 32}">${(S.ord || []).join(' → ') || '–'}</text>`;
-  return `<svg class="al-svg" viewBox="0 0 560 ${y + 58}" role="img" aria-label="Graf ${esc(s.data.join(', '))}. Urutan kunjungan: ${esc((S.ord || []).join(', ') || 'belum ada')}">${g}</svg>`;
+  // Urutan kunjungan di baris sendiri: antrian/stack bisa berisi sampai 8 simpul dan memakai lebar penuh
+  g += `<text class="al-lbl" x="20" y="${y + 80}">Urutan kunjungan</text><text class="al-ord" x="20" y="${y + 112}">${(S.ord || []).join(' → ') || '–'}</text>`;
+  return `<svg class="al-svg" viewBox="0 0 560 ${y + 136}" role="img" aria-label="Graf ${esc(s.data.join(', '))}. Urutan kunjungan: ${esc((S.ord || []).join(', ') || 'belum ada')}">${g}</svg>`;
 }
 function alGraphProgram(A, s, call, label) {
   const L = ['#include <iostream>', 'using namespace std;', '', ...A.code.cpp, '', 'void sambung(char a, char b) {', "    adj[a - 'A'][b - 'A'] = true;", "    adj[b - 'A'][a - 'A'] = true;", '}', '', 'int main() {'];
@@ -175,13 +176,14 @@ Object.assign(AL_ALGO, {
     },
     view(A, s, f) {
       const S = f.S, T = S.T, n = S.n, depth = Math.max(...T.map(x => x.d));
-      const X = t => n === 1 ? 280 : 36 + t.rank * (488 / (n - 1)), Y = t => 52 + t.d * 58, on = new Set(S.on);
+      const X = t => n === 1 ? 280 : 36 + t.rank * (488 / (n - 1)), Y = t => 64 + t.d * 58, on = new Set(S.on);
       let g = `<text class="al-lbl" x="16" y="22">${esc(S.msg || '')}</text>`;
       T.forEach(t => { if (on.has(t.id) && t.par != null) g += `<line class="al-edge is-tree" x1="${X(T[t.par])}" y1="${Y(T[t.par])}" x2="${X(t)}" y2="${Y(t)}"/>`; });
       T.forEach(t => { if (!on.has(t.id)) return; const c = t.id === S.found ? 'found' : t.id === S.hi ? 'found' : t.id === S.p ? 'cmp' : S.end ? 'done' : '';
         g += `<g class="al-gn${c ? ' al-' + c : ''}" transform="translate(${X(t)},${Y(t)})"><circle r="19"/><text>${t.v}</text></g>`; });
-      if (S.p != null) { const t = T[S.p]; g += `<text class="al-lbl" x="${X(t) + 24}" y="${Y(t) - 16}">p</text>`; }
-      return `<svg class="al-svg" viewBox="0 0 560 ${52 + depth * 58 + 34}" role="img" aria-label="Pohon berisi ${esc(T.filter(t => on.has(t.id)).map(t => t.v).join(', ') || 'kosong')}">${g}</svg>`;
+      // Label p di kanan atas node; node paling kanan diberi label di kirinya supaya tidak keluar gambar
+      if (S.p != null) { const t = T[S.p], R = X(t) > 470; g += `<text class="al-lbl" x="${X(t) + (R ? -24 : 24)}" y="${Y(t) - 16}"${R ? ' style="text-anchor:end"' : ''}>p</text>`; }
+      return `<svg class="al-svg" viewBox="0 0 560 ${64 + depth * 58 + 34}" role="img" aria-label="Pohon berisi ${esc(T.filter(t => on.has(t.id)).map(t => t.v).join(', ') || 'kosong')}">${g}</svg>`;
     },
     program(s) {
       const L = ['#include <iostream>', 'using namespace std;', '', ...this.code.cpp, '', 'void inorder(Node* akar) {', '    if (akar == NULL) return;', '    inorder(akar->kiri);', '    cout << akar->data << " ";', '    inorder(akar->kanan);', '}', '', 'int main() {', '    Node* akar = NULL;'];
@@ -571,6 +573,251 @@ Object.assign(AL_ALGO, {
       L.push('    cout << "Sebelum: "; inorder(akar); cout << endl;', `    akar = hapus(akar, ${s.target});`, `    cout << "Sesudah hapus ${s.target}: "; inorder(akar); cout << endl;`, '    return 0;', '}');
       const F = this.run(s.data, s.target), last = F[F.length - 1].S, ino = this.ino(Object.fromEntries(last.nodes.map(t => [t.id, t])), last.root);
       return { code: L.join('\n'), out: alOutLines([`Sebelum: ${s.data.slice().sort((a, b) => a - b).join(' ')}`, `Sesudah hapus ${s.target}: ${ino.join(' ')}`]) };
+    }
+  }
+});
+
+// ---------- Heap (max-heap dari array) ----------
+// Perintah: angka = sisip, "ambil" = keluarkan yang terbesar.
+const alHeapInput = {
+  mode: 'text', aria: 'Perintah dipisah koma: angka berarti sisip, ambil berarti keluarkan yang terbesar',
+  hint: '3 sampai 10 perintah, dipisah koma. Angka 0–99 berarti <b>sisip</b>, kata <b>ambil</b> berarti keluarkan angka terbesar. Contoh: 40, 25, 60, ambil, 50',
+  fmt: d => (d || []).join(', '),
+  parse(raw) {
+    const t = String(raw).split(/[\s,;]+/).filter(Boolean);
+    if (t.length < 3 || t.length > 10) return { err: 'Isi 3 sampai 10 perintah, dipisah koma. Contoh: 40, 25, 60, ambil, 50' };
+    const data = [];
+    for (const x of t) {
+      if (/^\d+$/.test(x) && +x <= 99) data.push(+x);
+      else if (/^(ambil|-|pop|keluar|hapus)$/i.test(x)) data.push('ambil');
+      else return { err: `"${x}" tidak dikenal. Pakai angka 0–99 untuk menyisipkan dan "ambil" untuk mengeluarkan yang terbesar.` };
+    }
+    if (!data.some(alNum)) return { err: 'Minimal ada satu angka yang disisipkan.' };
+    return { data };
+  },
+  acak() {
+    const len = alRnd(6, 10), data = []; let size = 0;
+    while (data.length < len) { if (size < 2 || Math.random() < 0.7) { data.push(alRnd(1, 99)); size++; } else { data.push('ambil'); size--; } }
+    return { data };
+  }
+};
+Object.assign(AL_ALGO, {
+  heap: {
+    counters: ['Perbandingan', 'Pertukaran'],
+    vars: ['n', 'x', 'i', 'h[i]', 'induk / anak'],
+    code: {
+      cpp: ['const int MAX = 15;', 'int h[MAX];', 'int n = 0;', '', 'void sisip(int x) {', '    int i = n;', '    h[i] = x;', '    n++;', '    while (i > 0 && h[(i - 1) / 2] < h[i]) {', '        swap(h[i], h[(i - 1) / 2]);', '        i = (i - 1) / 2;', '    }', '}', '',
+        'int ambil() {', '    if (n == 0) return -1;', '    int akar = h[0];', '    n--;', '    h[0] = h[n];', '    int i = 0;', '    while (true) {', '        int kiri = 2 * i + 1, kanan = 2 * i + 2, besar = i;', '        if (kiri < n && h[kiri] > h[besar]) besar = kiri;', '        if (kanan < n && h[kanan] > h[besar]) besar = kanan;', '        if (besar == i) break;', '        swap(h[i], h[besar]);', '        i = besar;', '    }', '    return akar;', '}'],
+      ps: ['heap disimpan di array h, n = banyak isi', 'sisip(x):', '    taruh x di h[n], n = n + 1', '    selama x lebih besar dari induknya (indeks (i-1)/2):', '        tukar x dengan induknya, naik satu tingkat',
+        'ambil():', '    simpan h[0] (yang terbesar)', '    pindahkan isi terakhir ke h[0], n = n - 1', '    selama ada anak yang lebih besar:', '        tukar dengan anak yang paling besar, turun satu tingkat', '    kembalikan yang disimpan tadi']
+    },
+    lines: {
+      cpp: { decl: [1, 2, 3], put: [6, 7, 8], upCmp: [9], upSwap: [10, 11], upEnd: [9], empty: [16], take: [17, 18, 19], downCmp: [21, 22, 23, 24], downSwap: [26, 27], downEnd: [25], ret: [29], end: [3] },
+      ps: { decl: [1], put: [2, 3], upCmp: [4], upSwap: [5], upEnd: [4], empty: [6], take: [7, 8], downCmp: [9], downSwap: [10], downEnd: [9], ret: [11], end: [1] }
+    },
+    input: alHeapInput,
+    run(data) {
+      const r = alRec2(), h = [], out = [];
+      r.cnt.Perbandingan = 0; r.cnt.Pertukaran = 0;
+      const S = o => Object.assign({ h: h.slice(), out: out.slice() }, o);
+      const ops = data.map(v => alNum(v) ? `sisip(${v})` : 'ambil()');
+      r.push({ grp: 'Mulai', kind: 'Konsep', ln: 'decl', vars: { n: 0 }, S: S({}), title: 'Induk selalu lebih besar dari anaknya',
+        body: '<b>Max-heap</b> adalah pohon biner lengkap yang disimpan di array. Aturannya: setiap induk <b>lebih besar atau sama</b> dengan anak-anaknya, jadi angka terbesar selalu di <code>h[0]</code>. Anak dari indeks i ada di <code>2i + 1</code> dan <code>2i + 2</code>, induknya di <code>(i - 1) / 2</code>.',
+        note: ['Perintah yang dijalankan', ops.join(', ')] });
+      data.forEach((v, k) => {
+        const g = `${k + 1}. ${ops[k]}`;
+        if (alNum(v)) {
+          let i = h.length; h.push(v);
+          r.push({ grp: g, kind: 'Masuk', ln: 'put', vars: { n: h.length, x: v, i, 'h[i]': v }, S: S({ cur: i }), title: `${v} ditaruh di h[${i}]`,
+            body: `Angka baru selalu ditaruh di tempat kosong pertama, yaitu <code>h[${i}]</code>, supaya pohonnya tetap lengkap. ${i ? 'Sekarang dicek apakah ia lebih besar dari induknya.' : 'Heap tadinya kosong, jadi ia langsung menjadi akar.'}` });
+          while (i > 0) {
+            const p = (i - 1) >> 1, up = h[p] < h[i]; r.cnt.Perbandingan++;
+            r.push({ grp: g, kind: 'Bandingkan', ln: 'upCmp', vars: { n: h.length, x: v, i, 'h[i]': h[i], 'induk / anak': h[p] }, S: S({ cur: i, other: p }), title: `${h[i]} lebih besar dari induk ${h[p]}?`,
+              body: `Induk dari indeks ${i} adalah <code>(${i} - 1) / 2 = ${p}</code>, isinya ${h[p]}. ${up ? `${h[i]} > ${h[p]}, aturan heap dilanggar, jadi keduanya ditukar.` : `${h[i]} tidak lebih besar, jadi ${h[i]} berhenti di sini.`}`,
+              q: { t: `Apakah ${h[i]} ditukar dengan induknya (${h[p]})?`, o: ['Ya, naik', 'Tidak, berhenti'], a: up ? 0 : 1 } });
+            if (!up) break;
+            [h[i], h[p]] = [h[p], h[i]]; r.cnt.Pertukaran++;
+            r.push({ grp: g, kind: 'Tukar', ln: 'upSwap', vars: { n: h.length, x: v, i: p, 'h[i]': h[p] }, S: S({ cur: p, other: i, sw: true }), title: `${v} naik ke h[${p}]`, body: `<code>swap</code> menukar isi h[${i}] dan h[${p}], lalu <code>i = ${p}</code>.${p === 0 ? ` ${v} sekarang di akar, jadi perulangan berhenti.` : ''}` });
+            i = p;
+          }
+          return;
+        }
+        if (!h.length) {
+          r.push({ grp: g, kind: 'Gagal', ln: 'empty', vars: { n: 0 }, S: S({}), title: 'Heap kosong', body: 'Tidak ada yang bisa diambil. Fungsi mengembalikan -1 sebagai tanda gagal.' });
+          out.push(-1); return;
+        }
+        const top = h[0], last = h.pop(); out.push(top);
+        if (h.length) h[0] = last;
+        r.push({ grp: g, kind: 'Keluar', ln: 'take', vars: { n: h.length, x: top, i: 0, 'h[i]': h.length ? last : undefined }, S: S({ cur: h.length ? 0 : null, took: top }), title: `${top} diambil dari akar`,
+          body: h.length ? `Yang terbesar selalu di <code>h[0]</code>, yaitu ${top}. Tempatnya diisi angka paling akhir, ${last}, lalu <code>n--</code>. Akar baru ini kemungkinan terlalu kecil, jadi harus turun.` : `${top} adalah satu-satunya isi heap. Sekarang heap kosong.` });
+        if (!h.length) return;
+        let i = 0;
+        for (;;) {
+          const L = 2 * i + 1, R = 2 * i + 2; let b = i;
+          if (L < h.length) { r.cnt.Perbandingan++; if (h[L] > h[b]) b = L; }
+          if (R < h.length) { r.cnt.Perbandingan++; if (h[R] > h[b]) b = R; }
+          const kids = [L, R].filter(c => c < h.length);
+          if (!kids.length) { r.push({ grp: g, kind: 'Selesai', ln: 'downEnd', vars: { n: h.length, i, 'h[i]': h[i] }, S: S({ cur: i, took: top }), title: `${h[i]} sampai di daun`, body: `h[${i}] tidak punya anak, jadi ${h[i]} berhenti di sini.` }); break; }
+          const kv = kids.map(c => h[c]), o = [...kids.map(c => `Tukar dengan ${h[c]}`), 'Tidak ditukar'];
+          r.push({ grp: g, kind: 'Bandingkan', ln: 'downCmp', vars: { n: h.length, i, 'h[i]': h[i], 'induk / anak': kv.join(' / ') }, S: S({ cur: i, kids, took: top }), title: `Bandingkan ${h[i]} dengan anak ${kv.join(' dan ')}`,
+            body: b === i ? `Tidak ada anak yang lebih besar dari ${h[i]}, jadi aturan heap sudah terpenuhi.` : `Anak terbesar adalah ${h[b]} di h[${b}], dan ${h[b]} > ${h[i]}. Yang dinaikkan harus <b>anak yang paling besar</b>, supaya ia lebih besar dari saudaranya juga.`,
+            q: { t: `Apa yang dilakukan pada ${h[i]}?`, o, a: b === i ? o.length - 1 : kids.indexOf(b) } });
+          if (b === i) { r.push({ grp: g, kind: 'Selesai', ln: 'downEnd', vars: { n: h.length, i, 'h[i]': h[i] }, S: S({ cur: i, took: top }), title: `${h[i]} berhenti di h[${i}]`, body: '<code>besar == i</code>, jadi perulangan berhenti dengan <code>break</code>.' }); break; }
+          [h[i], h[b]] = [h[b], h[i]]; r.cnt.Pertukaran++;
+          r.push({ grp: g, kind: 'Tukar', ln: 'downSwap', vars: { n: h.length, i: b, 'h[i]': h[b] }, S: S({ cur: b, other: i, sw: true, took: top }), title: `${h[b]} turun ke h[${b}]`, body: `${h[i]} naik ke h[${i}] dan ${h[b]} turun ke h[${b}], lalu <code>i = ${b}</code>.` });
+          i = b;
+        }
+      });
+      r.push({ grp: 'Hasil', kind: 'Hasil', ln: 'end', vars: { n: h.length }, S: S({ end: true }), title: 'Selesai',
+        body: `Isi array heap: ${h.length ? alList(h) : 'kosong'}. Urutan yang diambil: ${out.length ? out.join(', ') : 'belum ada'}.${out.filter(x => x >= 0).length > 1 ? ' Perhatikan bahwa yang keluar selalu yang terbesar saat itu.' : ''}`,
+        note: ['Priority queue', 'Heap adalah cara paling umum membuat priority queue: antrian yang selalu melayani prioritas tertinggi lebih dulu, bukan yang datang lebih dulu. Sisip dan ambil sama-sama O(log n), karena hanya menyusuri satu jalur dari akar ke daun.'] });
+      return r.F;
+    },
+    view(A, s, f) {
+      const S = f.S, h = S.h, n = h.length;
+      let g = '', y = 40;
+      if (n) {
+        const nodes = h.map((v, i) => ({ id: i, v, l: 2 * i + 1 < n ? 2 * i + 1 : null, r: 2 * i + 2 < n ? 2 * i + 2 : null }));
+        const tr = alTreeSvg(nodes, 0, { top: 40, cls: i => i === S.cur ? (S.sw ? 'found' : 'cmp') : i === S.other || (S.kids || []).includes(i) ? 'chk' : S.end ? 'done' : '' });
+        g += tr.g; y = tr.h + 14;
+      } else g += `<text class="al-lbl al-muted" x="280" y="58" style="text-anchor:middle">heap kosong (n = 0)</text>`, y = 84;
+      const bw = 46, x0 = 280 - Math.max(n, 1) * 25;
+      g += `<text class="al-lbl" x="20" y="${y + 6}">array h</text>`;
+      h.forEach((v, i) => { const c = i === S.cur ? (S.sw ? 'found' : 'cmp') : i === S.other || (S.kids || []).includes(i) ? 'chk' : '';
+        g += `<g class="al-box${c === 'chk' ? ' al-done' : c ? ' al-' + c : ''}" transform="translate(${x0 + i * 50},${y + 16})"><rect width="${bw}" height="38" rx="6"/><text x="${bw / 2}" y="19">${v}</text></g><text class="al-idx" x="${x0 + i * 50 + bw / 2}" y="${y + 74}">${i}</text>`; });
+      y += 104;
+      g += `<text class="al-lbl" x="20" y="${y + 6}">diambil: ${S.out.length ? S.out.join(', ') : '–'}</text>`;
+      return `<svg class="al-svg" viewBox="0 0 560 ${y + 18}" role="img" aria-label="Heap: ${esc(h.join(', ') || 'kosong')}. Diambil: ${esc(S.out.join(', ') || 'belum ada')}">${g}</svg>`;
+    },
+    program(s) {
+      const L = ['#include <iostream>', '#include <algorithm>', 'using namespace std;', '', ...this.code.cpp, '', 'int main() {'], out = [], h = [];
+      const up = () => { let i = h.length - 1; while (i > 0 && h[(i - 1) >> 1] < h[i]) { const p = (i - 1) >> 1; [h[i], h[p]] = [h[p], h[i]]; i = p; } };
+      const down = () => { let i = 0; for (;;) { const a = 2 * i + 1, b = 2 * i + 2; let m = i; if (a < h.length && h[a] > h[m]) m = a; if (b < h.length && h[b] > h[m]) m = b; if (m === i) break; [h[i], h[m]] = [h[m], h[i]]; i = m; } };
+      s.data.forEach(v => {
+        if (alNum(v)) { L.push(`    sisip(${v});`); h.push(v); up(); }
+        else { L.push('    cout << "ambil: " << ambil() << endl;'); if (!h.length) out.push('ambil: -1'); else { const t = h[0], last = h.pop(); if (h.length) { h[0] = last; down(); } out.push('ambil: ' + t); } }
+      });
+      L.push('    cout << "Isi heap: ";', '    for (int i = 0; i < n; i++) cout << h[i] << " ";', '    cout << endl;', '    return 0;', '}');
+      out.push('Isi heap: ' + h.join(' '));
+      return { code: L.join('\n'), out: alOutLines(out) };
+    }
+  }
+});
+
+// ---------- Dijkstra (graf berbobot, matriks bobot) ----------
+const AL_DLET = 'ABCDEF';
+const alWGraphInput = {
+  mode: 'text', aria: 'Sisi berbobot, misalnya A-B:4, A-C:2', targetLabel: 'mulai', targetAria: 'Simpul awal (huruf)', targetMode: 'text',
+  hint: '2 sampai 10 sisi berbobot, dipisah koma, ditulis <b>A-B:4</b> (huruf A–F, bobot 1–20). Kotak <b>mulai</b> diisi huruf simpul awal.',
+  fmt: d => (d || []).join(', '),
+  parse(raw, rawT) {
+    const t = String(raw).split(/[\s,;]+/).filter(Boolean), seen = new Set(), data = [];
+    for (const x of t) {
+      const m = /^([A-Fa-f])-?([A-Fa-f])[:=](\d+)$/.exec(x);
+      if (!m) return { err: `"${x}" bukan sisi berbobot. Tulis seperti A-B:4 (huruf A–F, lalu titik dua dan bobotnya).` };
+      const a = m[1].toUpperCase(), b = m[2].toUpperCase(), w = +m[3];
+      if (a === b) return { err: `${a}-${b} menghubungkan simpul ke dirinya sendiri. Pakai dua huruf berbeda.` };
+      if (w < 1 || w > 20) return { err: `Bobot ${a}-${b} harus 1 sampai 20.` };
+      const key = [a, b].sort().join('');
+      if (seen.has(key)) return { err: `Sisi ${a}-${b} ditulis dua kali. Tulis setiap pasangan sekali saja.` };
+      seen.add(key); data.push(`${a}-${b}:${w}`);
+    }
+    if (data.length < 2 || data.length > 10) return { err: 'Isi 2 sampai 10 sisi. Contoh: A-B:4, A-C:2, B-C:1' };
+    const st = String(rawT).trim().toUpperCase();
+    if (!/^[A-F]$/.test(st) || !data.some(e => e.slice(0, 3).includes(st))) return { err: 'Isi kotak mulai dengan satu huruf simpul yang ada di sisi-sisi tadi.' };
+    return { data, target: st };
+  },
+  acak() {
+    const k = alRnd(4, 6), L = AL_DLET.slice(0, k).split(''), E = new Map();
+    for (let i = 1; i < k; i++) { const j = alRnd(0, i - 1); E.set(L[j] + '-' + L[i], alRnd(1, 12)); }
+    for (let t = 0; t < 12 && E.size < Math.min(10, k + alRnd(1, 3)); t++) { const a = alRnd(0, k - 1), b = alRnd(0, k - 1); if (a !== b) { const key = [L[a], L[b]].sort().join('-'); if (!E.has(key)) E.set(key, alRnd(1, 12)); } }
+    return { data: [...E].map(([e, w]) => `${e}:${w}`), target: 'A' };
+  }
+};
+const alWEdges = data => data.map(e => { const [ab, w] = e.split(':'), [a, b] = ab.split('-'); return { a, b, w: +w }; });
+Object.assign(AL_ALGO, {
+  dijkstra: {
+    target: true,
+    counters: ['Pemeriksaan sisi', 'Pembaruan'],
+    vars: ['u', 'v', 'jarak[u]', 'w[u][v]', 'jarak[v]'],
+    code: {
+      cpp: ['const int N = 6;            // simpul A–F = 0–5', 'const int INF = 9999;', 'int w[N][N];                // w[u][v] = bobot, 0 = tidak ada sisi', 'int jarak[N];', 'bool selesai[N];', '',
+        'void dijkstra(int awal) {', '    for (int i = 0; i < N; i++) {', '        jarak[i] = INF;', '        selesai[i] = false;', '    }', '    jarak[awal] = 0;',
+        '    for (int k = 0; k < N; k++) {', '        int u = -1;', '        for (int i = 0; i < N; i++)', '            if (!selesai[i] && (u == -1 || jarak[i] < jarak[u])) u = i;', '        if (jarak[u] == INF) break;', '        selesai[u] = true;',
+        '        for (int v = 0; v < N; v++) {', '            if (w[u][v] > 0 && jarak[u] + w[u][v] < jarak[v])', '                jarak[v] = jarak[u] + w[u][v];', '        }', '    }', '}'],
+      ps: ['dijkstra(awal):', '    semua jarak = ∞, jarak[awal] = 0', '    ulangi:', '        u = simpul belum selesai dengan jarak terkecil', '        jika jarak[u] = ∞: berhenti (sisanya tak terjangkau)', '        tandai u selesai',
+        '        untuk setiap tetangga v dari u:', '            jika jarak[u] + w(u,v) < jarak[v]:', '                jarak[v] = jarak[u] + w(u,v)']
+    },
+    lines: {
+      cpp: { decl: [1, 2, 3, 4, 5], init: [8, 9, 10, 11, 12], pick: [13, 14, 15, 16, 18], stop: [17], relax: [19, 20], upd: [21], end: [24] },
+      ps: { decl: [1], init: [2], pick: [3, 4, 6], stop: [5], relax: [7, 8], upd: [9], end: [1] }
+    },
+    input: alWGraphInput,
+    run(data, start) {
+      const r = alRec2(), E = alWEdges(data), nodes = [...new Set(E.flatMap(e => [e.a, e.b]))].sort(), W = {};
+      nodes.forEach(n => { W[n] = {}; }); E.forEach(e => { W[e.a][e.b] = e.w; W[e.b][e.a] = e.w; });
+      const D = {}, prev = {}, done = new Set(); nodes.forEach(n => { D[n] = Infinity; }); D[start] = 0;
+      r.cnt['Pemeriksaan sisi'] = 0; r.cnt.Pembaruan = 0;
+      const fmt = x => x === Infinity ? '∞' : x;
+      const S = o => Object.assign({ D: Object.assign({}, D), done: [...done], prev: Object.assign({}, prev) }, o);
+      r.push({ grp: 'Mulai', kind: 'Konsep', ln: 'decl', vars: {}, S: S({ pre: true }), title: `Jarak terpendek dari ${start}`,
+        body: `Setiap sisi punya <b>bobot</b> (misalnya jarak dalam km). Dijkstra mencari total bobot terkecil dari ${start} ke setiap simpul. Idenya: selalu kerjakan simpul yang jaraknya <b>paling kecil</b> dan belum selesai. Jarak simpul itu sudah pasti, lalu dipakai untuk memperbaiki jarak tetangganya.` });
+      r.push({ grp: 'Mulai', kind: 'Mulai', ln: 'init', vars: { 'jarak[u]': 0 }, S: S({}), title: `jarak[${start}] = 0, lainnya ∞`, body: `Belum ada jalur yang diketahui, jadi semua jarak diisi INF (∞, ditulis 9999 di kode). Hanya ${start} yang jaraknya 0, karena kita mulai dari sana.` });
+      for (;;) {
+        const left = nodes.filter(n => !done.has(n)); if (!left.length) break;
+        const u = left.reduce((m, n) => D[n] < D[m] ? n : m, left[0]);
+        if (D[u] === Infinity) {
+          r.push({ grp: 'Berhenti', kind: 'Hasil', ln: 'stop', vars: { u }, S: S({}), title: 'Sisanya tidak terjangkau', body: `Simpul yang belum selesai (${left.join(', ')}) semuanya masih ∞. Tidak ada jalur dari ${start} ke sana, jadi perulangan berhenti dengan <code>break</code>.` });
+          break;
+        }
+        const g = `pilih ${u}`, others = left.filter(n => n !== u).sort((a, b) => D[a] - D[b] || (a < b ? -1 : 1)).slice(0, 2), o = [u, ...others].sort();
+        r.push({ grp: g, kind: 'Pilih', ln: 'pick', vars: { u, 'jarak[u]': D[u] }, S: S({ u }), title: `${u} selesai, jaraknya ${D[u]}`,
+          body: `Di antara simpul yang belum selesai, jarak terkecil milik ${u} (${D[u]}).${left.length > 1 ? ` Tidak mungkin ada jalur lebih pendek ke ${u} lewat simpul lain, karena simpul lain jaraknya sudah ${D[u]} atau lebih dan bobot tidak pernah negatif.` : ''} ${u} ditandai selesai.`,
+          q: left.length > 1 ? { t: 'Simpul mana yang dikerjakan berikutnya?', o, a: o.indexOf(u) } : undefined });
+        done.add(u);
+        Object.keys(W[u]).sort().forEach(v => {
+          if (done.has(v)) return;
+          const w = W[u][v], cand = D[u] + w, better = cand < D[v]; r.cnt['Pemeriksaan sisi']++;
+          r.push({ grp: g, kind: 'Periksa', ln: 'relax', vars: { u, v, 'jarak[u]': D[u], 'w[u][v]': w, 'jarak[v]': fmt(D[v]) }, S: S({ u, v }), title: `Lewat ${u} ke ${v}: ${D[u]} + ${w} = ${cand}`,
+            body: `Jarak ke ${v} kalau lewat ${u} adalah ${D[u]} + ${w} = ${cand}. Jarak ${v} yang tercatat sekarang ${fmt(D[v])}. ${better ? `${cand} lebih kecil, jadi jalur lewat ${u} lebih pendek.` : `${cand} tidak lebih kecil, jadi jarak ${v} tetap.`}`,
+            q: { t: `Apakah jarak[${v}] diganti menjadi ${cand}?`, o: ['Ya, lebih pendek', 'Tidak, tetap'], a: better ? 0 : 1 } });
+          if (better) { const old = D[v]; D[v] = cand; prev[v] = u; r.cnt.Pembaruan++;
+            r.push({ grp: g, kind: 'Perbarui', ln: 'upd', vars: { u, v, 'jarak[u]': D[u], 'w[u][v]': w, 'jarak[v]': cand }, S: S({ u, v, hi: v }), title: `jarak[${v}] = ${cand}`, body: `${fmt(old)} diganti ${cand}. Untuk sementara, jalur terbaik ke ${v} datang dari ${u}. Nilai ini masih bisa diperbaiki lagi sampai ${v} sendiri dipilih.` }); }
+        });
+      }
+      const path = n => { const p = [n]; while (prev[p[0]]) p.unshift(prev[p[0]]); return p; };
+      const far = nodes.filter(n => n !== start && D[n] < Infinity).sort((a, b) => D[b] - D[a])[0];
+      r.push({ grp: 'Hasil', kind: 'Hasil', ln: 'end', vars: {}, S: S({ end: true }), title: 'Jarak terpendek dari ' + start,
+        body: nodes.map(n => `${n} = ${fmt(D[n])}`).join(', ') + '.' + (far ? ` Contoh rute: ke ${far} lewat ${path(far).join(' → ')}.` : ''),
+        note: ['Bobot negatif', 'Dijkstra hanya benar untuk bobot yang tidak negatif. Kalau ada bobot negatif, simpul yang sudah "selesai" ternyata masih bisa diperpendek, dan dipakai algoritma lain (Bellman-Ford).'] });
+      r.F.forEach(f => { f.S.nodes = nodes; f.S.E = E; f.S.start = start; });
+      return r.F;
+    },
+    view(A, s, f) {
+      const S = f.S, nodes = S.nodes, k = nodes.length, cx = 280, cy = 128, rx = 200, ry = 92;
+      const P = {}; alGraphOrder(nodes, S.E.map(e => e.a + '-' + e.b)).forEach((n, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / k; P[n] = [cx + rx * Math.cos(a), cy + ry * Math.sin(a)]; });
+      const tree = new Set(Object.entries(S.prev).map(([v, u]) => [u, v].sort().join('')));
+      let g = '';
+      S.E.forEach(e => { const on = S.u && S.v && [e.a, e.b].sort().join('') === [S.u, S.v].sort().join(''), tr = tree.has([e.a, e.b].sort().join(''));
+        g += `<line class="al-edge${on ? ' is-on' : tr ? ' is-tree' : ''}" x1="${P[e.a][0]}" y1="${P[e.a][1]}" x2="${P[e.b][0]}" y2="${P[e.b][1]}"/>`; });
+      // Bobot di tengah sisi, digeser sedikit tegak lurus supaya tidak menimpa garis
+      S.E.forEach(e => { const [x1, y1] = P[e.a], [x2, y2] = P[e.b], L = Math.hypot(x2 - x1, y2 - y1) || 1, nx = -(y2 - y1) / L, ny = (x2 - x1) / L, sg = (cx - (x1 + x2) / 2) * nx + (cy - (y1 + y2) / 2) * ny > 0 ? -1 : 1;
+        g += `<text class="al-idx al-w" x="${((x1 + x2) / 2 + sg * nx * 14).toFixed(1)}" y="${((y1 + y2) / 2 + sg * ny * 14 + 5).toFixed(1)}">${e.w}</text>`; });
+      nodes.forEach(n => { const c = n === S.u ? 'cmp' : n === S.v ? (S.hi ? 'found' : 'chk') : S.done.includes(n) || S.end ? 'done' : '';
+        g += `<g class="al-gn${c ? ' al-' + c : ''}" transform="translate(${P[n][0]},${P[n][1]})"><circle r="19"/><text>${n}</text></g>`; });
+      const y = 290, bw = 66, x0 = 280 - k * 37;
+      g += `<text class="al-lbl" x="20" y="${y - 30}">jarak dari ${S.start}</text>`;
+      nodes.forEach((n, i) => { const c = n === S.hi ? 'found' : n === S.u ? 'cmp' : S.done.includes(n) || S.end ? 'done' : '', d = S.pre ? '' : S.D[n] === Infinity ? '∞' : S.D[n];
+        g += `<text class="al-lbl" x="${x0 + i * 74 + bw / 2}" y="${y + 6}" style="text-anchor:middle">${n}</text><g class="al-box${c ? ' al-' + c : ''}" transform="translate(${x0 + i * 74},${y + 14})"><rect width="${bw}" height="38" rx="6"/><text x="${bw / 2}" y="19">${d}</text></g>`; });
+      return `<svg class="al-svg" viewBox="0 0 560 ${y + 64}" role="img" aria-label="Graf berbobot ${esc(S.E.map(e => e.a + '-' + e.b + ' ' + e.w).join(', '))}. Jarak: ${esc(nodes.map(n => n + ' ' + (S.D[n] === Infinity ? 'tak hingga' : S.D[n])).join(', '))}">${g}</svg>`;
+    },
+    program(s) {
+      const L = ['#include <iostream>', 'using namespace std;', '', ...this.code.cpp, '', 'void sambung(char a, char b, int bobot) {', "    w[a - 'A'][b - 'A'] = bobot;", "    w[b - 'A'][a - 'A'] = bobot;", '}', '', 'int main() {'];
+      alWEdges(s.data).forEach(e => L.push(`    sambung('${e.a}', '${e.b}', ${e.w});`));
+      const F = this.run(s.data, s.target), last = F[F.length - 1].S;
+      L.push(`    dijkstra('${s.target}' - 'A');`, `    char simpul[] = {${last.nodes.map(n => `'${n}'`).join(', ')}};`, `    for (int i = 0; i < ${last.nodes.length}; i++) {`, "        int j = jarak[simpul[i] - 'A'];",
+        '        cout << simpul[i] << ": ";', '        if (j == INF) cout << "tidak terjangkau" << endl;', '        else cout << j << endl;', '    }', '    return 0;', '}');
+      return { code: L.join('\n'), out: alOutLines(last.nodes.map(n => `${n}: ${last.D[n] === Infinity ? 'tidak terjangkau' : last.D[n]}`)) };
     }
   }
 });

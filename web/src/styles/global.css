@@ -285,6 +285,7 @@
   .al-bar.al-small rect { fill: #e8f1ff; stroke: #3b5b8c; }
   .al-bar.al-dim { opacity: .35; }
   .al-idx { font: 500 11px 'JetBrains Mono', ui-monospace, monospace; fill: #6c7480; text-anchor: middle; }
+  .al-idx.al-w { fill: #17202a; font-weight: 700; }
   .al-tmp { font: 500 11px 'JetBrains Mono', ui-monospace, monospace; fill: #6c7480; }
   .al-floor { stroke: #17202a; stroke-width: 1.5; }
   .al-ptr path { stroke: #17202a; stroke-width: 2; fill: none; }

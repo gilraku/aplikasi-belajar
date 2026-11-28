@@ -262,6 +262,47 @@ console.log(`bercabang: ${cab} jejak BST/hash/BFS/DFS cocok dengan simulasi`);
   for (let i = 0; i < 200; i++) { const r = AL[k].input.acak(), f = AL[k].input.fmt ? AL[k].input.fmt(r.data) : r.data.join(', '); if (AL[k].input.parse(f, String(r.target)).err) bad(k, 'acak tidak sah', f, r.target); }
 });
 
+// ---------- Heap dan Dijkstra ----------
+{
+  let n = 0;
+  for (let t = 0; t < 1500; t++) {
+    const len = 3 + rnd(8), data = []; for (let i = 0; i < len; i++) data.push(rnd(10) < 7 ? rnd(100) : 'ambil'); if (!data.some(v => typeof v === 'number')) data[0] = 5;
+    const F = AL.heap.run(data), last = F[F.length - 1].S, pool = [], outs = [];
+    data.forEach(v => { if (typeof v === 'number') pool.push(v); else if (!pool.length) outs.push(-1); else { pool.sort((a, b) => b - a); outs.push(pool.shift()); } });
+    if (JSON.stringify(last.out) !== JSON.stringify(outs)) bad('heap', 'urutan ambil salah', data.join(','), last.out.join(','));
+    if (JSON.stringify(last.h.slice().sort((a, b) => a - b)) !== JSON.stringify(pool.sort((a, b) => a - b))) bad('heap', 'isi akhir salah', data.join(','));
+    // Sifat heap: dicek di setiap langkah yang tidak sedang menukar/menaikkan (awal tiap perintah dan hasil akhir)
+    const h = last.h; for (let i = 1; i < h.length; i++) if (h[(i - 1) >> 1] < h[i]) { bad('heap', 'sifat heap rusak di akhir', data.join(','), h.join(',')); break; }
+    F.forEach(f => { if (f.kind === 'Selesai' || (f.ln === 'upCmp' && f.q && f.q.a === 1)) { const hh = f.S.h; for (let i = 1; i < hh.length; i++) if (hh[(i - 1) >> 1] < hh[i]) { bad('heap', 'sifat heap rusak setelah selesai naik/turun', data.join(','), hh.join(',')); break; } } });
+    if (t < 150) frameOk('heap', F, { data });
+    n++;
+  }
+  const L6 = 'ABCDEF';
+  for (let t = 0; t < 1500; t++) {
+    const k = 2 + rnd(5), E = new Map(); for (let i = 0; i < 2 + rnd(9); i++) { const a = rnd(k), b = rnd(k); if (a !== b) E.set(L6[Math.min(a, b)] + '-' + L6[Math.max(a, b)], 1 + rnd(20)); }
+    if (E.size < 2) continue;
+    const data = [...E].slice(0, 10).map(([e, w]) => `${e}:${w}`), nodes = [...new Set(data.flatMap(e => [e[0], e[2]]))].sort(), st = nodes[rnd(nodes.length)];
+    // Pembanding: relaksasi berulang (Bellman-Ford) — cara lain yang pasti benar untuk bobot positif
+    const D = {}; nodes.forEach(x => { D[x] = Infinity; }); D[st] = 0;
+    for (let r = 0; r < nodes.length; r++) data.forEach(e => { const a = e[0], b = e[2], w = +e.slice(4); if (D[a] + w < D[b]) D[b] = D[a] + w; if (D[b] + w < D[a]) D[a] = D[b] + w; });
+    const F = AL.dijkstra.run(data, st), got = F[F.length - 1].S.D;
+    if (nodes.some(x => got[x] !== D[x])) bad('dijkstra', 'jarak salah', data.join(','), st, JSON.stringify(got), JSON.stringify(D));
+    // Urutan pemilihan tidak pernah turun jaraknya
+    const picks = F.filter(f => f.kind === 'Pilih').map(f => f.vars['jarak[u]']); if (picks.some((v, i) => i && v < picks[i - 1])) bad('dijkstra', 'urutan pilih tidak naik', data.join(','));
+    if (t < 150) frameOk('dijkstra', F, { data, target: st });
+    n++;
+  }
+  for (const [k, d, tg] of [['heap', '99, 98, 97, 96, 95, 94, 93, 92, 91, 90', ''], ['heap', '1, 2, 3, 4, 5, 6, 7, 8, 9, 10', ''], ['dijkstra', 'A-B:20, A-C:20, A-D:20, A-E:20, A-F:20, B-C:20, B-D:20, C-E:20, D-F:20, E-F:20', 'A'], ['dijkstra', 'A-D:1, B-E:2, C-F:3', 'C']]) {
+    const r = AL[k].input.parse(d, tg); if (r.err) { bad(k, 'data ekstrem ditolak', d, r.err); continue; } frameOk(k, AL[k].run(r.data, r.target), { data: r.data, target: r.target }); }
+  console.log(`heap & dijkstra: ${n} jejak cocok dengan simulasi`);
+}
+[['heap', [['5, 3, ambil', ''], ['ambil, 4, 2', ''], ['1 2 3', ''], ['-, 7, pop', '']], [['5, 3', ''], ['ambil, ambil, ambil', ''], ['5, abc, 3', ''], ['100, 1, 2', ''], ['1,2,3,4,5,6,7,8,9,10,11', '']]],
+ ['dijkstra', [['A-B:4, A-C:2', 'A'], ['ab:3 bc=5', 'c'], ['A-B:20, B-C:1', 'B']], [['A-B:4', 'A'], ['A-B:4, B-C:2', 'D'], ['A-B:0, B-C:2', 'A'], ['A-B:21, B-C:2', 'A'], ['A-B, B-C', 'A'], ['A-G:4, B-C:2', 'A'], ['A-B:4, B-A:3', 'A'], ['A-A:4, B-C:2', 'B'], ['A-B:4, B-C:2', '']]]].forEach(([k, ok, no]) => {
+  ok.forEach(([d, t]) => { const r = AL[k].input.parse(d, t); if (r.err) bad(k, 'input sah ditolak', d, t, r.err); else { const f = AL[k].input.fmt ? AL[k].input.fmt(r.data) : r.data.join(', '); const r2 = AL[k].input.parse(f, String(r.target)); if (JSON.stringify(r2.data) !== JSON.stringify(r.data)) bad(k, 'fmt tidak bisa dibaca ulang', d); } });
+  no.forEach(([d, t]) => { if (!AL[k].input.parse(d, t).err) bad(k, 'input salah diterima', d, t); });
+  for (let i = 0; i < 200; i++) { const r = AL[k].input.acak(), f = AL[k].input.fmt ? AL[k].input.fmt(r.data) : r.data.join(', '); if (AL[k].input.parse(f, String(r.target)).err) bad(k, 'acak tidak sah', f, r.target); }
+});
+
 // ---------- 1b. Program lengkap: dikompilasi g++ dan output-nya dicocokkan ----------
 {
   const { execFileSync } = await import('node:child_process');
@@ -279,6 +320,8 @@ console.log(`bercabang: ${cab} jejak BST/hash/BFS/DFS cocok dengan simulasi`);
       traversal: [['50, 30, 70, 20, 40, 60, 80', ''], ['10, 20, 30', ''], ['5, 3, 8, 1', '']],
       bsthapus: [['50, 30, 70, 20, 40, 60, 80', '50'], ['50, 30, 70, 20, 40, 60, 80', '20'], ['50, 30, 70, 60', '70'], ['50, 30, 70', '45'], ['50, 70, 60', '50'], ['5, 3, 8', '5']],
       kurung: [['{[(a+b)*c]}', ''], ['([)]', ''], ['(()', ''], ['())', ''], [')(', '']],
+      heap: [['40, 25, 60, ambil, 50, 10, ambil, ambil', ''], ['ambil, 5, ambil', ''], ['1, 2, 3, 4, 5, 6, 7, 8, 9, 10', ''], ['10, 9, 8, ambil, ambil, ambil, ambil', '']],
+      dijkstra: [['A-B:4, A-C:2, B-C:1, B-D:5, C-D:8, C-E:10, D-E:2, D-F:6, E-F:2', 'A'], ['A-B:3, C-D:1', 'A'], ['B-D:7, D-F:1, B-F:9', 'F']],
       postfix: [['5 3 + 2 *', ''], ['9 4 - 7 2 / *', ''], ['2 9 - 4 /', ''], ['3 7 -', ''], ['2 3 4 * +', '']], dfs: [['A-B, A-C, B-D, C-D, C-E, D-F, E-F', 'A'], ['A-H, H-B, B-G', 'G']] };
     for (const k of Object.keys(AL)) {
       const sample = OWN[k] ? OWN[k].map(([d, t]) => AL[k].input.parse(d, t)) : [[5, 1, 4, 2, 8], [7, 7, 3], [0, 99, 0, 99, 50, 1, 2, 3], [3, 1, 2]].flatMap(d0 => {
@@ -401,7 +444,9 @@ try {
       linked: ['9, 4, 7, 1', '7', ['tambahBelakang(9);', 'hapus(7);'], '9'],
       traversal: ['9, 4, 7, 1', '', ['akar = sisip(akar, 9);', 'postorder(akar);'], '9, 9, 1'],
       bsthapus: ['9, 4, 7, 1', '4', ['akar = sisip(akar, 7);', 'akar = hapus(akar, 4);'], '9, 4'],
-      kurung: ['(a[b]{c})', '', ['string s = "(a[b]{c})";'], 'a+b']
+      kurung: ['(a[b]{c})', '', ['string s = "(a[b]{c})";'], 'a+b'],
+      heap: ['9, 4, ambil, 1', '', ['sisip(9);', 'sisip(4);', 'ambil()', 'sisip(1);'], 'ambil, ambil, ambil'],
+      dijkstra: ['A-B:3, B-C:4, A-C:9', 'B', ["sambung('A', 'B', 3);", "dijkstra('B' - 'A');"], 'A-B:3, B-C']
     }, OWN = OWNS[algo] || ['9, 4, 7, 1', '7', [m.id === 'pencarian-biner' ? '{1, 4, 7, 9}' : '{9, 4, 7, 1}'], '1, 2'];
     // Keyboard HP harus bisa mengetik isi yang sah: ada huruf → inputmode wajib text
     for (const [key, val] of [['data', OWN[0]], ['target', OWN[1]]]) {
@@ -477,15 +522,27 @@ try {
       if (Math.min(p.right, q.right) - Math.max(p.left, q.left) > 2 && Math.min(p.bottom, q.bottom) - Math.max(p.top, q.top) > 2) o.push(`teks menumpuk "${ts[i].t}" / "${ts[j].t}"`); }
     return o.map(x => `lab ${li + 1}: ${x}`);
   });
+  const N8 = '99, 1, 98, 2, 97, 3, 96, 4';
+  const XL = { linear: [N8, '4'], biner: [N8, '4'], bubble: [N8], selection: [N8], insertion: [N8], merge: [N8], quick: [N8], array1d: [N8], kembar: [N8],
+    stack: ['1, 2, 3, 4, 5, 6, pop, pop, pop, pop'], queue: ['1, 2, 3, 4, 5, 6, deq, 7, 8, deq'], linked: ['99, 98, 97, 96, 95, 94', '94'],
+    bigo: ['1, 8, 16, 32, 64'], array2d: ['99 98 97 96 95; 1 2 3 4 5; 50 51 52 53 54; 7 8 9 10 11'], rekursi: ['7'], perulangan: ['6'], pointer: ['98, 0'], structsort: ['100, 0, 99, 1, 98, 2'],
+    bst: ['10, 20, 30, 40, 50, 60, 70, 80', '80'], hash: ['9, 19, 29, 39, 49, 59, 69, 79', '79'], bfs: ['A-B, B-C, C-D, D-E, E-F, F-G, G-H, A-H, B-G, C-F', 'D'], dfs: ['A-B, B-C, C-D, D-E, E-F, F-G, G-H, A-H, B-G, C-F', 'D'],
+    traversal: ['1, 2, 3, 4, 5, 6, 7, 8'], bsthapus: ['8, 7, 6, 5, 4, 3, 2, 1', '1'], kurung: ['(((((((((((((((('], postfix: ['1 2 3 4 5 6 + + + + +'],
+    heap: ['99, 98, 97, 96, 95, 94, 93, 92, 91, 90'], dijkstra: ['A-B:20, A-C:20, A-D:20, A-E:20, A-F:20, B-C:20, B-D:20, C-E:20, D-F:20, E-F:20', 'A'] };
+  const lupa = Object.keys(AL).filter(k => !XL[k]); if (lupa.length) bad('data terpanjang belum didaftarkan untuk', lupa.join(', '));
   for (const [nama, vp] of [['HP', { width: 360, height: 800 }], ['desktop', { width: 1280, height: 900 }]]) {
     const ctxG = await browser.newContext({ viewport: vp, reducedMotion: 'reduce' }), pg = await ctxG.newPage();
     pg.on('pageerror', e => errs.push(e.message));
     for (const m of sda.meetings) {
       await pg.goto(URL0 + `#/c/${sda.id}/m/${m.id}`); await pg.waitForSelector('.al'); await pg.evaluate(() => document.fonts.ready);
       if (nama === 'HP') { const w = await pg.evaluate(() => document.documentElement.scrollWidth); if (w > vp.width) bad(m.id, 'HP melebar', w); }
-      const temu = new Set(), labs = pg.locator('.al');
-      for (let li = 0; li < await labs.count(); li++) {
+      const temu = new Set(), labs = pg.locator('.al'), algos = m.materi.filter(b => b.type === 'algo-lab').map(b => b.algo);
+      for (let li = 0; li < await labs.count(); li++) for (const xl of [null, XL[algos[li]]]) {
         const L = labs.nth(li);
+        if (xl === undefined) continue;
+        // Putaran kedua: data terpanjang/terbesar yang masih diterima, supaya gambar tetap muat untuk isian pengguna
+        if (xl) { await L.locator('input[data-key="data"]').fill(xl[0]); if (xl[1] != null) await L.locator('input[data-key="target"]').fill(xl[1]); await L.locator('button[type="submit"]').click();
+          if (await L.locator('[role="alert"]').count()) { temu.add(`lab ${li + 1}: data terpanjang ditolak ${xl[0]}`); continue; } }
         for (let k = 0; k < 400; k++) {
           await pg.waitForTimeout(40); (await pg.evaluate(gambar)).forEach(x => temu.add(x));
           // Nama dan isi kartu variabel tidak terpotong
